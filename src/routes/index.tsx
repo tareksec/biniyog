@@ -179,20 +179,21 @@ const WHY = [
 function WhyChoose() {
   return (
     <section id="why" className="border-t border-border bg-background">
-      <div className="mx-auto max-w-7xl px-5 py-24 sm:px-8 sm:py-28">
+      <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-28">
         <SectionHeader
           eyebrow="কেন আমরা"
           title="বিশ্বস্ত ও শরীয়াহ সম্মত বিনিয়োগের জন্য"
         />
-        <div
-          data-stagger-group
-          className="mt-14 grid gap-6 md:grid-cols-3"
-        >
+        <div className="mt-10 grid gap-5 sm:mt-14 sm:gap-6 md:grid-cols-3">
           {WHY.map((w, i) => (
-            <div
+            <motion.div
               key={w.label}
-              data-stagger-item
-              className="group relative overflow-hidden rounded-3xl border border-border bg-card p-7 shadow-[var(--shadow-card)] transition duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)]"
+              variants={revealItem}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ delay: i * 0.1 }}
+              className="group relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)] transition duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] sm:p-7"
             >
               <span
                 className="grid h-12 w-12 place-items-center rounded-2xl border border-border bg-background text-primary shadow-sm"
@@ -201,15 +202,15 @@ function WhyChoose() {
                   {w.icon}
                 </svg>
               </span>
-              <h3 className="mt-6 text-xl font-bold leading-tight">
+              <h3 className="mt-5 text-lg font-bold leading-tight sm:mt-6 sm:text-xl">
                 {w.label}
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              <p className="mt-2 text-[13.5px] leading-relaxed text-muted-foreground sm:text-sm">
                 {w.desc}
               </p>
               <a
                 href="#opportunities"
-                className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition hover:gap-2.5"
+                className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition hover:gap-2.5 sm:mt-6"
               >
                 আরও জানুন
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -222,7 +223,7 @@ function WhyChoose() {
               >
                 {String(i + 1).padStart(2, "0")}
               </span>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
@@ -248,25 +249,29 @@ const STEPS = [
 function HowItWorks() {
   return (
     <section id="how" className="relative overflow-hidden border-t border-border bg-surface">
-      <div className="relative mx-auto max-w-7xl px-5 py-24 sm:px-8 sm:py-28">
+      <div className="relative mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-28">
         <SectionHeader eyebrow="কীভাবে কাজ করে" title="তিন ধাপে বিনিয়োগ শুরু করুন" />
-        <div data-stagger-group className="mt-14 grid gap-6 md:grid-cols-3">
+        <div className="mt-10 grid gap-5 sm:mt-14 sm:gap-6 md:grid-cols-3">
           {STEPS.map((s, i) => (
-            <div
+            <motion.div
               key={s.title}
-              data-stagger-item
-              className="relative overflow-hidden rounded-3xl border border-border bg-card p-8 shadow-[var(--shadow-card)] transition duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)]"
+              variants={revealItem}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ delay: i * 0.1 }}
+              className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)] transition duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] sm:p-8"
             >
               <div className="grid h-10 w-10 place-items-center rounded-full bg-primary/10 text-sm font-bold text-primary num">
                 {String(i + 1).padStart(2, "0")}
               </div>
-              <h3 className="mt-5 text-xl font-bold leading-tight">
+              <h3 className="mt-4 text-lg font-bold leading-tight sm:mt-5 sm:text-xl">
                 {s.title}
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              <p className="mt-2 text-[13.5px] leading-relaxed text-muted-foreground sm:text-sm">
                 {s.desc}
               </p>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
@@ -301,9 +306,9 @@ function Opportunities({ projects }: { projects: typeof import("@/lib/projects")
           </div>
         </div>
 
-        <div data-stagger-group className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 grid gap-5 sm:mt-12 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
           {projects.map((p, i) => (
-            <div key={p.id} data-stagger-item>
+            <div key={p.id}>
               <OpportunityCard project={p} index={i} />
             </div>
           ))}
