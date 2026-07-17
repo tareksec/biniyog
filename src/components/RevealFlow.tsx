@@ -2,11 +2,8 @@ import { useState, useRef } from "react";
 import ReCAPTCHA from "react-google-recaptcha";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Google's public test site key (always returns success). Replace via
-// VITE_RECAPTCHA_SITE_KEY at deploy for real verification.
-const TEST_SITE_KEY = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI";
-const SITE_KEY =
-  (import.meta.env.VITE_RECAPTCHA_SITE_KEY as string | undefined) || TEST_SITE_KEY;
+// Public reCAPTCHA v2 site key (safe to ship in the client bundle).
+const SITE_KEY = "6LeN2lgtAAAAAGkypoqi19d66hgsIH2YTxDOBpSM";
 
 export type RevealedData = {
   phone_number: string;
