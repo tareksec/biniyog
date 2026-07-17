@@ -1,7 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { motion } from "framer-motion";
 import { OpportunityCard } from "@/components/OpportunityCard";
 import { projects, isFullyFunded } from "@/lib/projects";
 import { HeroIllustration } from "@/components/HeroIllustration";
@@ -12,10 +10,6 @@ import {
   LINKEDIN_URL,
 } from "@/components/InstructorSection";
 
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger);
-}
-
 export const Route = createFileRoute("/")({
   component: LandingPage,
 });
@@ -24,8 +18,6 @@ function LandingPage() {
   const open = projects.filter((p) => !isFullyFunded(p));
   const funded = projects.filter(isFullyFunded);
   const ordered = [...open, ...funded];
-
-  useStaggerAnimations();
 
   return (
     <div className="min-h-screen bg-background text-foreground antialiased">
@@ -41,39 +33,10 @@ function LandingPage() {
   );
 }
 
-function useStaggerAnimations() {
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.utils.toArray<HTMLElement>("[data-stagger-group]").forEach((group) => {
-        const items = group.querySelectorAll<HTMLElement>("[data-stagger-item]");
-        if (!items.length) return;
-        gsap.from(items, {
-          opacity: 0,
-          y: 40,
-          duration: 0.8,
-          stagger: 0.12,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: group,
-            start: "top 82%",
-            once: true,
-          },
-        });
-      });
-
-      const heroArt = document.querySelector("[data-hero-art]");
-      if (heroArt) {
-        gsap.from(heroArt, {
-          opacity: 0,
-          scale: 0.9,
-          duration: 1.1,
-          ease: "back.out(1.4)",
-        });
-      }
-    });
-    return () => ctx.revert();
-  }, []);
-}
+const revealItem = {
+  hidden: { opacity: 0, y: 24 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } },
+};
 
 function Nav() {
   return (
