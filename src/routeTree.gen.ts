@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as OpportunitiesIdRouteImport } from './routes/opportunities.$id'
 import { Route as ApiPublicRevealDetailsRouteImport } from './routes/api/public/reveal-details'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OpportunitiesIdRoute = OpportunitiesIdRouteImport.update({
+  id: '/opportunities/$id',
+  path: '/opportunities/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicRevealDetailsRoute = ApiPublicRevealDetailsRouteImport.update({
@@ -25,27 +31,31 @@ const ApiPublicRevealDetailsRoute = ApiPublicRevealDetailsRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/opportunities/$id': typeof OpportunitiesIdRoute
   '/api/public/reveal-details': typeof ApiPublicRevealDetailsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/opportunities/$id': typeof OpportunitiesIdRoute
   '/api/public/reveal-details': typeof ApiPublicRevealDetailsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/opportunities/$id': typeof OpportunitiesIdRoute
   '/api/public/reveal-details': typeof ApiPublicRevealDetailsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/public/reveal-details'
+  fullPaths: '/' | '/opportunities/$id' | '/api/public/reveal-details'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/public/reveal-details'
-  id: '__root__' | '/' | '/api/public/reveal-details'
+  to: '/' | '/opportunities/$id' | '/api/public/reveal-details'
+  id: '__root__' | '/' | '/opportunities/$id' | '/api/public/reveal-details'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  OpportunitiesIdRoute: typeof OpportunitiesIdRoute
   ApiPublicRevealDetailsRoute: typeof ApiPublicRevealDetailsRoute
 }
 
@@ -56,6 +66,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/opportunities/$id': {
+      id: '/opportunities/$id'
+      path: '/opportunities/$id'
+      fullPath: '/opportunities/$id'
+      preLoaderRoute: typeof OpportunitiesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/reveal-details': {
@@ -70,6 +87,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  OpportunitiesIdRoute: OpportunitiesIdRoute,
   ApiPublicRevealDetailsRoute: ApiPublicRevealDetailsRoute,
 }
 export const routeTree = rootRouteImport
