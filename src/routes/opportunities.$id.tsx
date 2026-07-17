@@ -1,8 +1,8 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useState } from "react";
-import { motion } from "framer-motion";
 import { projects, isFullyFunded, statusLabel, parseLinks } from "@/lib/projects";
-import { RevealFlow, maskPhone, type RevealedData } from "@/components/RevealFlow";
+
+const SHEET_URL =
+  "https://docs.google.com/spreadsheets/d/1-IvI2R8sSBPb5VOM8RmwClQw1hRINsfsTrKHGS08AR8/edit?gid=0#gid=0";
 
 export const Route = createFileRoute("/opportunities/$id")({
   loader: ({ params }) => {
@@ -51,7 +51,6 @@ function NotFoundView() {
 
 function OpportunityDetailsPage() {
   const { project } = Route.useLoaderData();
-  const [revealed, setRevealed] = useState<RevealedData | null>(null);
   const funded = isFullyFunded(project);
   const links = parseLinks(project.links);
 
@@ -117,39 +116,20 @@ function OpportunityDetailsPage() {
         {!funded && (
           <section className="mt-10 rounded-2xl border border-dashed border-border bg-surface p-6">
             <h4 className="font-display text-lg">যোগাযোগ ও ব্যাংক তথ্য</h4>
-            {!revealed ? (
-              <>
-                <div className="mt-3 space-y-1 text-sm">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <span>ফোন:</span>
-                    <span className="num tracking-wider">{maskPhone("0000000000")}</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">ব্যাংক ডিটেইলস যাচাইয়ের পরে দেখানো হবে।</p>
-                </div>
-                <div className="mt-4">
-                  <RevealFlow projectId={project.id} onRevealed={setRevealed} />
-                </div>
-              </>
-            ) : (
-              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-3 space-y-4 text-sm">
-                <div>
-                  <div className="text-xs uppercase tracking-wider text-muted-foreground">উদ্যোক্তা</div>
-                  <div className="mt-0.5 text-foreground">{revealed.contact_person || "—"}</div>
-                </div>
-                <div>
-                  <div className="text-xs uppercase tracking-wider text-muted-foreground">ফোন</div>
-                  <a href={`tel:${revealed.phone_number.replace(/\s+/g, "")}`} className="num mt-0.5 block text-lg font-semibold text-primary">
-                    {revealed.phone_number || "—"}
-                  </a>
-                </div>
-                <div>
-                  <div className="text-xs uppercase tracking-wider text-muted-foreground">ব্যাংক ডিটেইলস</div>
-                  <pre className="mt-1 whitespace-pre-wrap rounded-lg bg-background p-4 font-mono text-xs leading-relaxed text-foreground/85">
-{revealed.bank_details || "—"}
-                  </pre>
-                </div>
-              </motion.div>
-            )}
+            <p className="mt-2 text-sm text-muted-foreground">
+              সম্পূর্ণ যোগাযোগ ও ব্যাংক তথ্য দেখতে নিচের Google Sheet ওপেন করুন।
+            </p>
+            <a
+              href={SHEET_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:opacity-90"
+            >
+              যোগাযোগ ও ব্যাংক তথ্য দেখুন
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M7 17L17 7M9 7h8v8" />
+              </svg>
+            </a>
           </section>
         )}
 
