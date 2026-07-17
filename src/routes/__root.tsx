@@ -83,20 +83,23 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "যাচাইকৃত SME এবং উঠতি স্টার্টআপে সম্পূর্ণ শরীয়াহ সম্মত উপায়ে বিনিয়োগ করুন — মুদারাবা ও পার্টনারশিপ মডেলে আকর্ষণীয় মুনাফা।",
       },
-      { property: "og:title", content: "বিনিয়োগ বৃদ্ধি — হালাল বিনিয়োগ প্ল্যাটফর্ম" },
+      { property: "og:title", content: "বিনিয়োগ বৃদ্ধি — হালাল ও নিরাপদ SME বিনিয়োগ প্ল্যাটফর্ম" },
       {
         property: "og:description",
-        content: "যাচাইকৃত SME ব্যবসায় শরীয়াহ সম্মত বিনিয়োগ — মুদারাবা ও পার্টনারশিপ।",
+        content: "যাচাইকৃত SME এবং উঠতি স্টার্টআপে সম্পূর্ণ শরীয়াহ সম্মত উপায়ে বিনিয়োগ করুন — মুদারাবা ও পার্টনারশিপ মডেলে আকর্ষণীয় মুনাফা।",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "বিনিয়োগ বৃদ্ধি — হালাল ও নিরাপদ SME বিনিয়োগ প্ল্যাটফর্ম" },
+      { name: "twitter:description", content: "যাচাইকৃত SME এবং উঠতি স্টার্টআপে সম্পূর্ণ শরীয়াহ সম্মত উপায়ে বিনিয়োগ করুন — মুদারাবা ও পার্টনারশিপ মডেলে আকর্ষণীয় মুনাফা।" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/08159e7b-18a6-4096-b77d-f8a90b15d9eb" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/08159e7b-18a6-4096-b77d-f8a90b15d9eb" },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
