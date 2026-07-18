@@ -2,7 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { projects, isFullyFunded, statusLabel, parseLinks } from "@/lib/projects";
 
 const SHEET_URL =
-  "https://docs.google.com/spreadsheets/d/1-IvI2R8sSBPb5VOM8RmwClQw1hRINsfsTrKHGS08AR8/edit?gid=0#gid=0";
+  "https://docs.google.com/spreadsheets/d/1HsSR7t_2zZaNbvqmbhWiuYikfYsF8rfzcQK2gmfIB4U/edit?gid=0#gid=0";
 
 export const Route = createFileRoute("/opportunities/$id")({
   loader: ({ params }) => {
@@ -16,7 +16,7 @@ export const Route = createFileRoute("/opportunities/$id")({
     }
     const p = loaderData.project;
     const title = `${p.project_name} · বিনিয়োগ বৃদ্ধি`;
-    const desc = (p.entrepreneur_description || "যাচাইকৃত হালাল বিনিয়োগের সুযোগ").slice(0, 155);
+    const desc = (p.entrepreneur_description || "যাচাইকৃত শরীয়াহ সম্মত বিনিয়োগের সুযোগ").slice(0, 155);
     return {
       meta: [
         { title },
@@ -113,12 +113,13 @@ function OpportunityDetailsPage() {
           </section>
         )}
 
-        {!funded && (
-          <section className="mt-10 rounded-2xl border border-dashed border-border bg-surface p-6">
-            <h4 className="font-display text-lg">যোগাযোগ ও ব্যাংক তথ্য</h4>
-            <p className="mt-2 text-sm text-muted-foreground">
-              সম্পূর্ণ যোগাযোগ ও ব্যাংক তথ্য দেখতে নিচের Google Sheet ওপেন করুন।
-            </p>
+        <section className="mt-10 rounded-2xl border border-dashed border-border bg-surface p-6">
+          <h4 className="font-display text-lg">যোগাযোগ ও ব্যাংক তথ্য</h4>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {funded
+              ? "এই রাউন্ডের বিনিয়োগ সম্পন্ন। বিস্তারিত রেকর্ড ও যোগাযোগের তথ্য নিচের Google Sheet-এ দেখুন।"
+              : "সম্পূর্ণ যোগাযোগ ও ব্যাংক তথ্য দেখতে নিচের Google Sheet ওপেন করুন।"}
+          </p>
             <a
               href={SHEET_URL}
               target="_blank"
@@ -130,8 +131,7 @@ function OpportunityDetailsPage() {
                 <path d="M7 17L17 7M9 7h8v8" />
               </svg>
             </a>
-          </section>
-        )}
+        </section>
 
         <div className="mt-12">
           <Link to="/" className="text-sm text-muted-foreground hover:text-primary">← আরও বিনিয়োগ সুযোগ দেখুন</Link>
