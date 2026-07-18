@@ -92,7 +92,7 @@ function Hero() {
           </span>
 
           <h1 className="mt-6 text-4xl font-bold leading-[1.15] tracking-tight text-foreground sm:text-5xl md:text-[3.6rem]">
-            হালাল বিনিয়োগে দেশের{" "}
+            শরীয়াহ সম্মত বিনিয়োগে দেশের{" "}
             <span className="gradient-text">সম্ভাবনাময় ব্যবসায়</span>{" "}
             অংশীদার হোন
           </h1>
@@ -165,7 +165,7 @@ const WHY = [
     ),
   },
   {
-    label: "হালাল ও শরীয়াহ সম্মত",
+    label: "শরীয়াহ সম্মত মডেল",
     desc: "মুদারাবা / পার্টনারশিপ মডেল — সম্পূর্ণ সুদ মুক্ত ও শরীয়াহ অনুমোদিত।",
     icon: <path d="M12 3v18M5 8a7 7 0 0 0 7 4 7 7 0 0 0 7-4" />,
   },
