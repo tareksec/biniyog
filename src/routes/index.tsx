@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { OpportunityCard } from "@/components/OpportunityCard";
-import { projects, isFullyFunded } from "@/lib/projects";
+import { projects, isFullyFunded, parseAmount, parseRoi } from "@/lib/projects";
 import { HeroIllustration } from "@/components/HeroIllustration";
 import { CountUp } from "@/components/CountUp";
 import {
@@ -9,16 +11,15 @@ import {
   CONSULTANCY_URL,
   LINKEDIN_URL,
 } from "@/components/InstructorSection";
+import { OpportunityFilters, type SortKey } from "@/components/OpportunityFilters";
+import { TestimonialsSection } from "@/components/TestimonialsSection";
+import { FaqSection } from "@/components/FaqSection";
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
 });
 
 function LandingPage() {
-  const open = projects.filter((p) => !isFullyFunded(p));
-  const funded = projects.filter(isFullyFunded);
-  const ordered = [...open, ...funded];
-
   return (
     <div className="min-h-screen bg-background text-foreground antialiased">
       <Nav />
@@ -26,7 +27,9 @@ function LandingPage() {
       <WhyChoose />
       <HowItWorks />
       <InstructorSection />
-      <Opportunities projects={ordered} />
+      <Opportunities />
+      <TestimonialsSection />
+      <FaqSection />
       <FinalCTA />
       <Footer />
     </div>
@@ -55,6 +58,7 @@ function Nav() {
           <a href="#how" className="transition hover:text-primary">কীভাবে কাজ করে</a>
           <a href="#expert" className="transition hover:text-primary">এক্সপার্ট</a>
           <a href="#opportunities" className="transition hover:text-primary">সুযোগসমূহ</a>
+          <Link to="/dashboard" className="transition hover:text-primary">ড্যাশবোর্ড</Link>
         </nav>
         <a
           href="#opportunities"
