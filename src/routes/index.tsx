@@ -283,7 +283,30 @@ function HowItWorks() {
   );
 }
 
-function Opportunities({ projects }: { projects: typeof import("@/lib/projects").projects }) {
+function Opportunities() {
+  const [category, setCategory] = useState<string>("all");
+  const [sort, setSort] = useState<SortKey>("default");
+
+  const filtered = useMemo(() => {
+    let list = projects.slice();
+    if (category !== "all") list = list.filter((p) => p.business_type === category);
+    switch (sort) {
+      case "investment_asc":
+        list.sort((a, b) => parseAmount(a.investment_required) - parseAmount(b.investment_required));
+        break;
+      case "investment_desc":
+        list.sort((a, b) => parseAmount(b.investment_required) - parseAmount(a.investment_required));
+        break;
+      case "roi_desc":
+        list.sort((a, b) => parseRoi(b.expected_profit_annual) - parseRoi(a.expected_profit_annual));
+        break;
+      default:
+        // funded last
+        list.sort((a, b) => Number(isFullyFunded(a)) - Number(isFullyFunded(b)));
+    }
+    return list;
+  }, [category, sort]);
+
   return (
     <section id="opportunities" className="border-t border-border bg-background">
       <div className="mx-auto max-w-7xl px-5 py-24 sm:px-8 sm:py-28">
@@ -303,20 +326,34 @@ function Opportunities({ projects }: { projects: typeof import("@/lib/projects")
             <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
             <span className="text-muted-foreground">
               <span className="num font-bold text-foreground">
-                {projects.filter((p) => !isFullyFunded(p)).length}
+                {filtered.filter((p) => !isFullyFunded(p)).length}
               </span>{" "}
               টি সক্রিয় সুযোগ
             </span>
           </div>
         </div>
 
-        <div className="mt-10 grid gap-5 sm:mt-12 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
-          {projects.map((p, i) => (
+        <OpportunityFilters
+          projects={projects}
+          category={category}
+          onCategory={setCategory}
+          sort={sort}
+          onSort={setSort}
+        />
+
+        <div className="mt-8 grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+          {filtered.map((p, i) => (
             <div key={p.id}>
               <OpportunityCard project={p} index={i} />
             </div>
           ))}
         </div>
+
+        {filtered.length === 0 && (
+          <p className="mt-10 text-center text-sm text-muted-foreground">
+            এই ক্যাটাগরিতে বর্তমানে কোনো সুযোগ নেই।
+          </p>
+        )}
       </div>
     </section>
   );
