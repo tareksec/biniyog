@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { OpportunityCard } from "@/components/OpportunityCard";
-import { projects, isFullyFunded } from "@/lib/projects";
+import { projects, isFullyFunded, parseAmount, parseRoi } from "@/lib/projects";
 import { HeroIllustration } from "@/components/HeroIllustration";
 import { CountUp } from "@/components/CountUp";
 import {
@@ -9,16 +11,15 @@ import {
   CONSULTANCY_URL,
   LINKEDIN_URL,
 } from "@/components/InstructorSection";
+import { OpportunityFilters, type SortKey } from "@/components/OpportunityFilters";
+import { TestimonialsSection } from "@/components/TestimonialsSection";
+import { FaqSection } from "@/components/FaqSection";
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
 });
 
 function LandingPage() {
-  const open = projects.filter((p) => !isFullyFunded(p));
-  const funded = projects.filter(isFullyFunded);
-  const ordered = [...open, ...funded];
-
   return (
     <div className="min-h-screen bg-background text-foreground antialiased">
       <Nav />
@@ -26,7 +27,9 @@ function LandingPage() {
       <WhyChoose />
       <HowItWorks />
       <InstructorSection />
-      <Opportunities projects={ordered} />
+      <Opportunities />
+      <TestimonialsSection />
+      <FaqSection />
       <FinalCTA />
       <Footer />
     </div>
@@ -55,6 +58,7 @@ function Nav() {
           <a href="#how" className="transition hover:text-primary">কীভাবে কাজ করে</a>
           <a href="#expert" className="transition hover:text-primary">এক্সপার্ট</a>
           <a href="#opportunities" className="transition hover:text-primary">সুযোগসমূহ</a>
+          <Link to="/dashboard" className="transition hover:text-primary">ড্যাশবোর্ড</Link>
         </nav>
         <a
           href="#opportunities"
@@ -279,7 +283,30 @@ function HowItWorks() {
   );
 }
 
-function Opportunities({ projects }: { projects: typeof import("@/lib/projects").projects }) {
+function Opportunities() {
+  const [category, setCategory] = useState<string>("all");
+  const [sort, setSort] = useState<SortKey>("default");
+
+  const filtered = useMemo(() => {
+    let list = projects.slice();
+    if (category !== "all") list = list.filter((p) => p.business_type === category);
+    switch (sort) {
+      case "investment_asc":
+        list.sort((a, b) => parseAmount(a.investment_required) - parseAmount(b.investment_required));
+        break;
+      case "investment_desc":
+        list.sort((a, b) => parseAmount(b.investment_required) - parseAmount(a.investment_required));
+        break;
+      case "roi_desc":
+        list.sort((a, b) => parseRoi(b.expected_profit_annual) - parseRoi(a.expected_profit_annual));
+        break;
+      default:
+        // funded last
+        list.sort((a, b) => Number(isFullyFunded(a)) - Number(isFullyFunded(b)));
+    }
+    return list;
+  }, [category, sort]);
+
   return (
     <section id="opportunities" className="border-t border-border bg-background">
       <div className="mx-auto max-w-7xl px-5 py-24 sm:px-8 sm:py-28">
@@ -299,20 +326,34 @@ function Opportunities({ projects }: { projects: typeof import("@/lib/projects")
             <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
             <span className="text-muted-foreground">
               <span className="num font-bold text-foreground">
-                {projects.filter((p) => !isFullyFunded(p)).length}
+                {filtered.filter((p) => !isFullyFunded(p)).length}
               </span>{" "}
               টি সক্রিয় সুযোগ
             </span>
           </div>
         </div>
 
-        <div className="mt-10 grid gap-5 sm:mt-12 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
-          {projects.map((p, i) => (
+        <OpportunityFilters
+          projects={projects}
+          category={category}
+          onCategory={setCategory}
+          sort={sort}
+          onSort={setSort}
+        />
+
+        <div className="mt-8 grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+          {filtered.map((p, i) => (
             <div key={p.id}>
               <OpportunityCard project={p} index={i} />
             </div>
           ))}
         </div>
+
+        {filtered.length === 0 && (
+          <p className="mt-10 text-center text-sm text-muted-foreground">
+            এই ক্যাটাগরিতে বর্তমানে কোনো সুযোগ নেই।
+          </p>
+        )}
       </div>
     </section>
   );

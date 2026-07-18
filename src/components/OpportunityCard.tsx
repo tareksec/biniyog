@@ -28,7 +28,7 @@ export function OpportunityCard({
       <Link
         to="/opportunities/$id"
         params={{ id: project.id }}
-        className={`group relative flex h-full flex-col justify-between overflow-hidden rounded-2xl border bg-card p-6 shadow-[var(--shadow-card)] transition cursor-pointer hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)] ${
+        className={`group relative flex h-full flex-col justify-between overflow-hidden rounded-2xl border bg-card p-6 shadow-[var(--shadow-card)] transition-all duration-300 ease-out cursor-pointer hover:-translate-y-1 hover:scale-[1.01] hover:shadow-[var(--shadow-elevated)] hover:ring-1 hover:ring-primary/20 ${
           funded
             ? "border-border/60 opacity-80 grayscale hover:grayscale-0 hover:border-primary/40"
             : "border-border hover:border-primary/40"

@@ -1,5 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { projects, isFullyFunded, statusLabel, parseLinks } from "@/lib/projects";
+import { projects, isFullyFunded, statusLabel, parseLinks, fundingProgress } from "@/lib/projects";
+import { motion } from "framer-motion";
 
 const SHEET_URL =
   "https://docs.google.com/spreadsheets/d/1HsSR7t_2zZaNbvqmbhWiuYikfYsF8rfzcQK2gmfIB4U/edit?gid=0#gid=0";
@@ -82,6 +83,8 @@ function OpportunityDetailsPage() {
           {project.entrepreneur_description || "—"}
         </p>
 
+        <FundingProgress percent={fundingProgress(project)} funded={funded} />
+
         <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-5 rounded-xl border border-border bg-surface p-6 sm:grid-cols-3">
           <Field label="বিনিয়োগ প্রয়োজন" value={project.investment_required} num />
           <Field label="সম্ভাব্য লাভ" value={project.expected_profit_annual} num accent />
@@ -90,6 +93,10 @@ function OpportunityDetailsPage() {
           <Field label="যাচাইকরণ" value={project.verification_type} />
           <Field label="টার্নওভার" value={project.turnover_capital} num />
         </div>
+
+        <BusinessBackground project={project} />
+        <RiskAnalysis />
+        <LegalSecurity />
 
         {project.investment_terms && (
           <section className="mt-8">
@@ -149,5 +156,110 @@ function Field({ label, value, num, accent }: { label: string; value: string; nu
         {value || "—"}
       </div>
     </div>
+  );
+}
+
+function FundingProgress({ percent, funded }: { percent: number; funded: boolean }) {
+  return (
+    <section className="mt-8 rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
+      <div className="flex items-end justify-between gap-3">
+        <div>
+          <h4 className="text-sm font-semibold">তহবিল সংগ্রহের অগ্রগতি</h4>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {funded ? "এই রাউন্ডের বিনিয়োগ সম্পন্ন হয়েছে।" : "বর্তমান বিনিয়োগ কমিটমেন্টের অনুপাত।"}
+          </p>
+        </div>
+        <div className="num text-2xl font-bold text-primary">{percent}%</div>
+      </div>
+      <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-muted">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${percent}%` }}
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+          className="h-full rounded-full bg-primary"
+        />
+      </div>
+    </section>
+  );
+}
+
+function BusinessBackground({ project }: { project: { entrepreneur_description: string; company_maturity: string; location: string; business_type: string } }) {
+  return (
+    <section className="mt-10">
+      <h3 className="font-display text-xl">ব্যবসার পটভূমি</h3>
+      <p className="mt-3 text-sm leading-relaxed text-foreground/85">
+        {project.entrepreneur_description ||
+          "উদ্যোক্তা তার নিজস্ব দক্ষতা ও অভিজ্ঞতা কাজে লাগিয়ে ব্যবসাটি পরিচালনা করছেন।"}{" "}
+        প্রতিষ্ঠানটি {project.location || "বাংলাদেশে"} {project.business_type ? `${project.business_type} খাতে ` : ""}
+        কাজ করছে এবং বর্তমানে {project.company_maturity || "স্থিতিশীল"} পর্যায়ে রয়েছে। ব্যবসার আয়ের ধারা,
+        গ্রাহক বেইজ ও অপারেশনাল খরচ যাচাই করে প্রজেক্টটি তালিকাভুক্ত করা হয়েছে।
+      </p>
+    </section>
+  );
+}
+
+const RISKS: { label: string; level: "low" | "med" | "high"; text: string }[] = [
+  { label: "মার্কেট রিস্ক", level: "med", text: "চাহিদা ও প্রতিযোগিতার পরিবর্তনে আয় ওঠানামা করতে পারে।" },
+  { label: "অপারেশনাল রিস্ক", level: "low", text: "উদ্যোক্তার অভিজ্ঞতা ও প্রক্রিয়া পর্যাপ্তভাবে গঠিত।" },
+  { label: "নগদ প্রবাহ ঝুঁকি", level: "med", text: "মৌসুমি সেলস চক্রের কারণে মাসভেদে ক্যাশফ্লো ভিন্ন হতে পারে।" },
+];
+
+function RiskAnalysis() {
+  return (
+    <section className="mt-10">
+      <h3 className="font-display text-xl">ঝুঁকি বিশ্লেষণ</h3>
+      <div className="mt-3 grid gap-3 sm:grid-cols-3">
+        {RISKS.map((r) => (
+          <div key={r.label} className="rounded-xl border border-border bg-card p-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold">{r.label}</span>
+              <RiskDot level={r.level} />
+            </div>
+            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{r.text}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function RiskDot({ level }: { level: "low" | "med" | "high" }) {
+  const map = {
+    low: { c: "bg-primary", t: "কম" },
+    med: { c: "bg-yellow-500", t: "মাঝারি" },
+    high: { c: "bg-destructive", t: "উচ্চ" },
+  }[level];
+  return (
+    <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
+      <span className={`h-2 w-2 rounded-full ${map.c}`} />
+      {map.t}
+    </span>
+  );
+}
+
+const LEGAL = [
+  "নোটারাইজড চুক্তিনামা ও লিগ্যাল রিভিউ সম্পন্ন",
+  "উদ্যোক্তার ব্যাকগ্রাউন্ড ও ক্রেডিট চেক যাচাইকৃত",
+  "নিরাপত্তা হিসেবে পোস্ট-ডেটেড চেক / কোল্যাটারাল রাখা হয়",
+  "প্রয়োজনে এসক্রো ব্যাংক অ্যাকাউন্ট ব্যবহারের ব্যবস্থা",
+];
+
+function LegalSecurity() {
+  return (
+    <section className="mt-10">
+      <h3 className="font-display text-xl">আইনি নিরাপত্তা</h3>
+      <ul className="mt-3 space-y-2">
+        {LEGAL.map((l) => (
+          <li key={l} className="flex items-start gap-2.5 rounded-xl border border-border bg-card px-4 py-3 text-sm">
+            <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                <path d="M5 12l5 5L20 7" />
+              </svg>
+            </span>
+            <span className="text-foreground/85">{l}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
