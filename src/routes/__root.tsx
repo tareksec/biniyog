@@ -77,21 +77,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "বিনিয়োগ বৃদ্ধি — শরীয়াহ সম্মত ও নিরাপদ SME বিনিয়োগ প্ল্যাটফর্ম" },
+      { title: "বিনিয়োগ বৃদ্ধি — নিরাপদ ও স্বচ্ছ SME বিনিয়োগ প্ল্যাটফর্ম" },
       {
         name: "description",
         content:
-          "যাচাইকৃত SME এবং উঠতি স্টার্টআপে সম্পূর্ণ শরীয়াহ সম্মত উপায়ে বিনিয়োগ করুন — মুদারাবা ও পার্টনারশিপ মডেলে আকর্ষণীয় মুনাফা।",
+          "যাচাইকৃত SME এবং উঠতি স্টার্টআপে নিরাপদ ও স্বচ্ছ উপায়ে বিনিয়োগ করুন — পার্টনারশিপ মডেলে আকর্ষণীয় মুনাফা।",
       },
-      { property: "og:title", content: "বিনিয়োগ বৃদ্ধি — শরীয়াহ সম্মত ও নিরাপদ SME বিনিয়োগ প্ল্যাটফর্ম" },
+      { property: "og:title", content: "বিনিয়োগ বৃদ্ধি — নিরাপদ ও স্বচ্ছ SME বিনিয়োগ প্ল্যাটফর্ম" },
       {
         property: "og:description",
-        content: "যাচাইকৃত SME এবং উঠতি স্টার্টআপে সম্পূর্ণ শরীয়াহ সম্মত উপায়ে বিনিয়োগ করুন — মুদারাবা ও পার্টনারশিপ মডেলে আকর্ষণীয় মুনাফা।",
+        content: "যাচাইকৃত SME এবং উঠতি স্টার্টআপে নিরাপদ ও স্বচ্ছ উপায়ে বিনিয়োগ করুন — পার্টনারশিপ মডেলে আকর্ষণীয় মুনাফা।",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "বিনিয়োগ বৃদ্ধি — শরীয়াহ সম্মত ও নিরাপদ SME বিনিয়োগ প্ল্যাটফর্ম" },
-      { name: "twitter:description", content: "যাচাইকৃত SME এবং উঠতি স্টার্টআপে সম্পূর্ণ শরীয়াহ সম্মত উপায়ে বিনিয়োগ করুন — মুদারাবা ও পার্টনারশিপ মডেলে আকর্ষণীয় মুনাফা।" },
+      { name: "twitter:title", content: "বিনিয়োগ বৃদ্ধি — নিরাপদ ও স্বচ্ছ SME বিনিয়োগ প্ল্যাটফর্ম" },
+      { name: "twitter:description", content: "যাচাইকৃত SME এবং উঠতি স্টার্টআপে নিরাপদ ও স্বচ্ছ উপায়ে বিনিয়োগ করুন — পার্টনারশিপ মডেলে আকর্ষণীয় মুনাফা।" },
       { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/08159e7b-18a6-4096-b77d-f8a90b15d9eb" },
       { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/08159e7b-18a6-4096-b77d-f8a90b15d9eb" },
     ],

@@ -92,17 +92,17 @@ function Hero() {
                 <path d="M5 12l5 5L20 7" />
               </svg>
             </span>
-            <span className="text-muted-foreground">শরীয়াহ সম্মত · মুদারাবা মডেল</span>
+            <span className="text-muted-foreground">নিরাপদ · পার্টনারশিপ মডেল</span>
           </span>
 
           <h1 className="mt-6 text-4xl font-bold leading-[1.15] tracking-tight text-foreground sm:text-5xl md:text-[3.6rem]">
-            শরীয়াহ সম্মত বিনিয়োগে দেশের{" "}
+            নিরাপদ বিনিয়োগে দেশের{" "}
             <span className="gradient-text">সম্ভাবনাময় ব্যবসায়</span>{" "}
             অংশীদার হোন
           </h1>
 
           <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            যাচাইকৃত SME এবং উঠতি স্টার্টআপে সম্পূর্ণ শরীয়াহ সম্মত উপায়ে
+            যাচাইকৃত SME এবং উঠতি স্টার্টআপে নিরাপদ ও স্বচ্ছ উপায়ে
             আকর্ষণীয় মুনাফা অর্জন করুন।
           </p>
 
@@ -135,7 +135,7 @@ function Hero() {
           <div className="mt-12 grid max-w-lg grid-cols-3 gap-6 border-t border-border/70 pt-7 text-left">
             <Stat value={<><CountUp to={18} />–<CountUp to={33} />%</>} label="বার্ষিক মুনাফা" />
             <Stat value={<><CountUp to={projects.length} />+</>} label="যাচাইকৃত প্রজেক্ট" />
-            <Stat value={<><CountUp to={100} />%</>} label="শরীয়াহ সম্মত" />
+            <Stat value={<><CountUp to={1200} />+</>} label="সক্রিয় বিনিয়োগকারী" />
           </div>
         </div>
 
@@ -169,8 +169,8 @@ const WHY = [
     ),
   },
   {
-    label: "শরীয়াহ সম্মত মডেল",
-    desc: "মুদারাবা / পার্টনারশিপ মডেল — সম্পূর্ণ সুদ মুক্ত ও শরীয়াহ অনুমোদিত।",
+    label: "স্বচ্ছ পার্টনারশিপ",
+    desc: "পার্টনারশিপ মডেলে মুনাফা-ক্ষতি ভাগাভাগি — সম্পূর্ণ স্বচ্ছ চুক্তি ও রিপোর্টিং।",
     icon: <path d="M12 3v18M5 8a7 7 0 0 0 7 4 7 7 0 0 0 7-4" />,
   },
   {
@@ -186,7 +186,7 @@ function WhyChoose() {
       <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-28">
         <SectionHeader
           eyebrow="কেন আমরা"
-          title="বিশ্বস্ত ও শরীয়াহ সম্মত বিনিয়োগের জন্য"
+          title="বিশ্বস্ত ও নিরাপদ বিনিয়োগের জন্য"
         />
         <div className="mt-10 grid gap-5 sm:mt-14 sm:gap-6 md:grid-cols-3">
           {WHY.map((w, i) => (
@@ -242,7 +242,7 @@ const STEPS = [
   },
   {
     title: "উদ্যোক্তার সাথে চুক্তি স্বাক্ষর করুন",
-    desc: "মুদারাবা / পার্টনারশিপ চুক্তি — লিগ্যাল ডকুমেন্ট ও সিকিউরিটি চেক সহ।",
+    desc: "পার্টনারশিপ চুক্তি — লিগ্যাল ডকুমেন্ট ও সিকিউরিটি চেক সহ।",
   },
   {
     title: "বিনিয়োগ করুন, মুনাফা নিন",
@@ -372,7 +372,7 @@ function FinalCTA() {
           আজই <span className="gradient-text">অংশীদার</span> হোন
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-          দেশের সম্ভাবনাময় ব্যবসাগুলোতে শরীয়াহ সম্মত উপায়ে বিনিয়োগ শুরু করুন।
+          দেশের সম্ভাবনাময় ব্যবসাগুলোতে নিরাপদ উপায়ে বিনিয়োগ শুরু করুন।
         </p>
         <a
           href="#opportunities"
@@ -423,7 +423,7 @@ function Footer() {
             LinkedIn
           </a>
         </div>
-        <p>© {new Date().getFullYear()} · শরীয়াহ সম্মত বিনিয়োগ প্ল্যাটফর্ম</p>
+        <p>© {new Date().getFullYear()} · নিরাপদ বিনিয়োগ প্ল্যাটফর্ম</p>
       </div>
     </footer>
   );
