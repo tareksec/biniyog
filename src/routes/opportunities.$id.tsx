@@ -17,7 +17,7 @@ export const Route = createFileRoute("/opportunities/$id")({
     }
     const p = loaderData.project;
     const title = `${p.project_name} · বিনিয়োগ বৃদ্ধি`;
-    const desc = (p.entrepreneur_description || "যাচাইকৃত শরীয়াহ সম্মত বিনিয়োগের সুযোগ").slice(0, 155);
+    const desc = (p.entrepreneur_description || "যাচাইকৃত নিরাপদ বিনিয়োগের সুযোগ").slice(0, 155);
     return {
       meta: [
         { title },
