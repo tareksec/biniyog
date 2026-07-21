@@ -80,6 +80,11 @@ export function OpportunityCard({
           <h3 className="font-display text-xl sm:text-2xl font-bold leading-tight text-foreground line-clamp-2">
             {project.project_name || "—"}
           </h3>
+          {project.founder_name && (
+            <p className="mt-1.5 text-[15px] font-semibold text-foreground/85 line-clamp-1">
+              {project.founder_name}
+            </p>
+          )}
           <p className="mt-1.5 text-sm text-muted-foreground font-medium">
             {project.business_type || "ব্যবসার ধরন —"}
           </p>

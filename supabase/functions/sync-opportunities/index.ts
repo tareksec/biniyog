@@ -8,13 +8,19 @@ const corsHeaders = {
 
 // Simple slugify function for generating IDs from names
 function generateSlug(text: string) {
-  return text
+  let slug = text
     .toString()
     .toLowerCase()
     .trim()
     .replace(/\s+/g, '-')        // Replace spaces with -
-    .replace(/[^\w\-]+/g, '')    // Remove all non-word chars
-    .replace(/\-\-+/g, '-');     // Replace multiple - with single -
+    .replace(/[^\p{L}\p{N}\-]+/gu, '') // Keep all letters (including Bengali), numbers, and dashes
+    .replace(/\-\-+/g, '-')      // Replace multiple - with single -
+    .replace(/^-+|-+$/g, '');    // Trim dashes from start/end
+
+  if (!slug) {
+    slug = `project-${Math.random().toString(36).substring(2, 9)}`;
+  }
+  return slug;
 }
 
 serve(async (req) => {
@@ -68,8 +74,9 @@ serve(async (req) => {
         const val = row[i] || null;
         const normalizedHeader = header.toLowerCase().trim();
         
-        if (normalizedHeader === "opportunities" || normalizedHeader === "id") obj.id = val;
-        else if (normalizedHeader === "name") obj.name = val;
+        if (normalizedHeader === "id") obj.id = val;
+        else if (normalizedHeader === "opportunities") obj.name = val;
+        else if (normalizedHeader === "name" || normalizedHeader === "founder") obj.founder_name = val;
         else if (normalizedHeader === "cfa-comment") obj.cfa_comment = val;
         else if (normalizedHeader === "guarantee") obj.guarantee = val;
         else if (normalizedHeader === "category") obj.category = val;
@@ -82,7 +89,8 @@ serve(async (req) => {
         else if (normalizedHeader === "adress" || normalizedHeader === "address") obj.address = val;
         else if (normalizedHeader === "organization-type") obj.organization_type = val;
         else if (normalizedHeader === "estimated-capital") obj.estimated_capital = val;
-        else if (normalizedHeader === "image_url" || normalizedHeader === "image-url") obj.image_url = val;
+        else if (normalizedHeader === "image_url" || normalizedHeader === "image-url" || normalizedHeader === "image-link") obj.image_url = val;
+        else if (normalizedHeader === "website_url" || normalizedHeader === "website-url" || normalizedHeader === "links") obj.links = val;
       });
       
       // Skip rows that have no name (likely blank rows)

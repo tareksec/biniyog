@@ -4,6 +4,7 @@ import publicRaw from "@/data/public-projects.json";
 export type PublicProject = {
   id: string;
   project_name: string;
+  founder_name?: string;
   entrepreneur_description: string;
   verification_type: string;
   business_type: string;
@@ -49,6 +50,7 @@ export async function fetchProjects(): Promise<PublicProject[]> {
     const mapped = rawData.map((row: any) => ({
       id: row.id || `unknown-${Math.random()}`,
       project_name: row.name || "",
+      founder_name: row.founder_name || "",
       entrepreneur_description: row.description || "",
       verification_type: row.guarantee || "",
       business_type: row.category || "",
@@ -182,6 +184,21 @@ export function getRiskLevel(p: PublicProject): { level: "low" | "med" | "high";
  * Translates Bengali categories to English concepts to fetch highly accurate internet images.
  */
 export function resolveImageUrl(project: PublicProject): string {
+  // If an explicit image URL is provided in the sheet/database, use it first
+  if (project.image_url && project.image_url.trim() !== "") {
+    const rawUrl = project.image_url.trim();
+    
+    // Convert Google Drive sharing links to direct image view links
+    if (rawUrl.includes("drive.google.com")) {
+      const match = rawUrl.match(/\/d\/([a-zA-Z0-9_-]+)/) || rawUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+      if (match && match[1]) {
+        return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+      }
+    }
+    
+    return rawUrl;
+  }
+
   const c = (project.business_type || "").toLowerCase();
   
   // 1. Agriculture / Farming

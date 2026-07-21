@@ -23,7 +23,7 @@ export const Route = createFileRoute("/opportunities/$id")({
     }
     const p = loaderData.project;
     const title = `${p.project_name} · বিনিয়োগ বৃদ্ধি`;
-    const desc = (p.entrepreneur_description || "যাচাইকৃত নিরাপদ বিনিয়োগের সুযোগ").slice(0, 155);
+    const desc = (p.entrepreneur_description || "যাচাইকৃত বিনিয়োগের সুযোগ").slice(0, 155);
     return {
       meta: [
         { title },
@@ -101,6 +101,11 @@ function OpportunityDetailsPage() {
           </span>
         </div>
         <h1 className="mt-4 font-display text-3xl sm:text-4xl">{project.project_name}</h1>
+        {project.founder_name && (
+          <p className="mt-2 text-lg font-semibold text-foreground/85">
+            {project.founder_name}
+          </p>
+        )}
         <p className="mt-2 text-sm text-muted-foreground">
           {project.business_type} · {project.location || "বাংলাদেশ"}
         </p>

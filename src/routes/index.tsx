@@ -138,6 +138,11 @@ function Nav() {
               বিনিয়োগ শুরু করুন
             </a>
           </div>
+
+          <p className="mt-6 text-xs sm:text-sm font-semibold text-destructive/90 flex items-center gap-2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            সতর্কতা: বিনিয়োগ মানেই ঝুঁকি আছে। নিজ দায়িত্বে বুঝে বিনিয়োগ করুন।
+          </p>
         </nav>
       )}
     </header>
@@ -164,17 +169,17 @@ function Hero() {
                 <path d="M5 12l5 5L20 7" />
               </svg>
             </span>
-            <span className="text-muted-foreground">নিরাপদ · পার্টনারশিপ মডেল</span>
+            <span className="text-muted-foreground">যাচাইকৃত · পার্টনারশিপ মডেল</span>
           </span>
 
           <h1 className="mt-6 text-4xl font-bold leading-[1.15] tracking-tight text-foreground sm:text-5xl md:text-[3.6rem]">
-            নিরাপদ বিনিয়োগে দেশের{" "}
+            সঠিক বিনিয়োগে দেশের{" "}
             <span className="gradient-text">সম্ভাবনাময় ব্যবসায়</span>{" "}
             অংশীদার হোন
           </h1>
 
           <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            যাচাইকৃত SME এবং উঠতি স্টার্টআপে নিরাপদ ও স্বচ্ছ উপায়ে
+            যাচাইকৃত SME এবং উঠতি স্টার্টআপে স্বচ্ছ উপায়ে
             আকর্ষণীয় মুনাফা অর্জন করুন।
           </p>
 
@@ -259,7 +264,7 @@ function Stat({ value, label }: { value: React.ReactNode; label: string }) {
 
 const WHY = [
   {
-    label: "নিরাপদ বিনিয়োগ",
+    label: "যাচাইকৃত বিনিয়োগ",
     desc: "প্রতিটি বিনিয়োগে লিগ্যাল ডকুমেন্ট ও সিকিউরিটি চেক নিশ্চিত করা হয়।",
     icon: (
       <path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z" />
@@ -298,7 +303,7 @@ function WhyChoose() {
       <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-28">
         <SectionHeader
           eyebrow="কেন আমরা"
-          title="বিশ্বস্ত ও নিরাপদ বিনিয়োগের জন্য"
+          title="বিশ্বস্ত বিনিয়োগের জন্য"
         />
         <div className="mt-10 grid gap-5 sm:mt-14 sm:gap-6 md:grid-cols-3">
           {WHY.map((w, i) => (
@@ -491,7 +496,7 @@ function FinalCTA() {
           আজই <span className="gradient-text">অংশীদার</span> হোন
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-          দেশের সম্ভাবনাময় ব্যবসাগুলোতে নিরাপদ উপায়ে বিনিয়োগ শুরু করুন।
+          দেশের সম্ভাবনাময় ব্যবসাগুলোতে বিনিয়োগ শুরু করুন।
         </p>
         <a
           href="#opportunities"
@@ -542,7 +547,7 @@ function Footer() {
             LinkedIn
           </a>
         </div>
-        <p>© {new Date().getFullYear()} · নিরাপদ বিনিয়োগ প্ল্যাটফর্ম</p>
+        <p>© {new Date().getFullYear()} · বিনিয়োগ প্ল্যাটফর্ম</p>
       </div>
     </footer>
   );
