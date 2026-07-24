@@ -34,6 +34,33 @@ export const Route = createFileRoute("/")({
 });
 
 function LandingPage() {
+  // ─── SCROLL RESTORATION ───
+  useEffect(() => {
+    // Restore scroll position on mount
+    const savedScroll = sessionStorage.getItem("landing_scroll_pos");
+    if (savedScroll) {
+      // Small timeout to allow the page and dynamic data to render
+      setTimeout(() => {
+        window.scrollTo({ top: parseInt(savedScroll, 10), behavior: "instant" });
+      }, 150);
+    }
+
+    // Save scroll position on scroll (debounced)
+    let timeoutId: ReturnType<typeof setTimeout>;
+    const handleScroll = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        sessionStorage.setItem("landing_scroll_pos", window.scrollY.toString());
+      }, 150);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      clearTimeout(timeoutId);
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-background text-foreground antialiased">
       <Nav />
@@ -459,11 +486,49 @@ function Opportunities() {
   const search = Route.useSearch();
   const navigate = useNavigate({ from: "/" });
 
-  const category = search.category || "all";
-  const sort = (search.sort as SortKey) || "default";
+  // ─── FILTER RESTORATION & PERSISTENCE ───
+  const [category, setCategoryState] = useState<string>(() => {
+    return search.category || sessionStorage.getItem("landing_category") || "all";
+  });
+  const [sort, setSortState] = useState<SortKey>(() => {
+    return (search.sort as SortKey) || (sessionStorage.getItem("landing_sort") as SortKey) || "default";
+  });
 
-  const setCategory = (c: string) => navigate({ search: (prev) => ({ ...prev, category: c }), replace: true });
-  const setSort = (s: SortKey) => navigate({ search: (prev) => ({ ...prev, sort: s }), replace: true });
+  // Sync session storage to URL on initial mount if URL is empty
+  useEffect(() => {
+    const storedCat = sessionStorage.getItem("landing_category");
+    const storedSort = sessionStorage.getItem("landing_sort") as SortKey;
+    if (!search.category && storedCat && storedCat !== "all") {
+      navigate({ search: (prev) => ({ ...prev, category: storedCat }), replace: true });
+    }
+    if (!search.sort && storedSort && storedSort !== "default") {
+      navigate({ search: (prev) => ({ ...prev, sort: storedSort }), replace: true });
+    }
+  }, []);
+
+  // Update URL if browser navigation (back button) changes query params
+  useEffect(() => {
+    if (search.category && search.category !== category) {
+      setCategoryState(search.category);
+      sessionStorage.setItem("landing_category", search.category);
+    }
+    if (search.sort && search.sort !== sort) {
+      setSortState(search.sort as SortKey);
+      sessionStorage.setItem("landing_sort", search.sort);
+    }
+  }, [search.category, search.sort]);
+
+  const setCategory = (c: string) => {
+    setCategoryState(c);
+    sessionStorage.setItem("landing_category", c);
+    navigate({ search: (prev) => ({ ...prev, category: c !== "all" ? c : undefined }), replace: true });
+  };
+
+  const setSort = (s: SortKey) => {
+    setSortState(s);
+    sessionStorage.setItem("landing_sort", s);
+    navigate({ search: (prev) => ({ ...prev, sort: s !== "default" ? s : undefined }), replace: true });
+  };
 
   const filtered = useMemo(() => {
     let list = (projects || []).slice();
