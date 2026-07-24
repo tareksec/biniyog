@@ -1,0 +1,23 @@
+-- ============================================================
+-- Migration: Disable public signups in Supabase Auth
+-- ============================================================
+-- NOTE: Supabase Auth signup restriction CANNOT be set via SQL migrations.
+-- You must configure this in the Supabase Dashboard:
+--
+--   1. Go to: Authentication → Providers → Email
+--   2. Make sure "Enable Email provider" is ON
+--   3. Go to: Authentication → Settings
+--   4. DISABLE "Allow new users to sign up"
+--      (This prevents anyone from self-registering)
+--   5. To add admin users, go to: Authentication → Users → "Add user"
+--      and create accounts manually with email/password.
+--
+-- Alternatively, if using supabase/config.toml for local dev:
+--   [auth]
+--   enable_signup = false
+--
+-- This file serves as documentation only. No SQL to execute.
+-- ============================================================
+
+-- Placeholder so the migration runner doesn't complain about an empty file.
+select 1;

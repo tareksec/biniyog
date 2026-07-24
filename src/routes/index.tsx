@@ -1,9 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { OpportunityCard } from "@/components/OpportunityCard";
-import { useProjects, isFullyFunded, parseAmount, parseRoi } from "@/lib/projects";
+import { useOpportunities, isFullyFunded, parseAmount, parseRoi } from "@/lib/projects";
 import { HeroIllustration } from "@/components/HeroIllustration";
 import { CountUp } from "@/components/CountUp";
 import {
@@ -16,6 +16,7 @@ import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { InvestmentCalculator } from "@/components/InvestmentCalculator";
 import { FaqSection } from "@/components/FaqSection";
 import heroImage from "@/hero/hero.png";
+import { Loader2 } from "lucide-react";
 
 type OpportunitiesSearch = {
   category?: string;
@@ -59,93 +60,146 @@ const revealItem = {
 
 function Nav() {
   const [open, setOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("");
+
+  // Track active section on scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id);
+          }
+        });
+      },
+      { rootMargin: "-20% 0px -70% 0px", threshold: 0 }
+    );
+    
+    const sections = ["top", "why", "how", "expert", "opportunities"];
+    sections.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+    
+    return () => observer.disconnect();
+  }, []);
+
+  const links = [
+    { href: "#why", id: "why", label: "কেন আমরা" },
+    { href: "#how", id: "how", label: "কীভাবে কাজ করে" },
+    { href: "#expert", id: "expert", label: "এক্সপার্ট" },
+    { href: "#opportunities", id: "opportunities", label: "সুযোগসমূহ" },
+  ];
+
   return (
-    <header className="sticky top-0 z-30 border-b border-border/70 bg-background/80 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
-        <a href="#top" className="flex items-center gap-2">
-          <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
-              <path d="M4 20V10M10 20V4M16 20v-8M22 20H2" />
-            </svg>
-          </span>
-          <span className="text-lg font-bold leading-none">বিনিয়োগ বৃদ্ধি</span>
-        </a>
-        <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground md:flex" aria-label="প্রধান নেভিগেশন">
-          <a href="#why" className="transition hover:text-primary">কেন আমরা</a>
-          <a href="#how" className="transition hover:text-primary">কীভাবে কাজ করে</a>
-          <a href="#expert" className="transition hover:text-primary">এক্সপার্ট</a>
-          <a href="#opportunities" className="transition hover:text-primary">সুযোগসমূহ</a>
-          <Link to="/insights" className="transition hover:text-primary">ইনসাইটস</Link>
-          <Link to="/dashboard" className="transition hover:text-primary">ড্যাশবোর্ড</Link>
-        </nav>
-        <div className="flex items-center gap-3">
-          <a
-            href="#opportunities"
-            className="hidden items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:scale-[1.03] md:inline-flex"
-          >
-            বিনিয়োগ শুরু করুন
-            <span className="grid h-6 w-6 place-items-center rounded-full bg-white/15">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-                <path d="M7 17L17 7M8 7h9v9" />
+    <>
+      <header className="fixed left-4 right-4 top-4 z-50 mx-auto max-w-5xl rounded-full border border-border/50 bg-background/80 px-4 py-3 shadow-[0_4px_20px_rgba(0,0,0,0.08)] backdrop-blur-[12px] sm:px-6 transition-all duration-300">
+        <div className="flex items-center justify-between">
+          <a href="#top" className="flex items-center gap-2 transition-transform hover:scale-105" onClick={() => setOpen(false)}>
+            <span className="grid h-8 w-8 place-items-center rounded-full bg-primary text-primary-foreground shadow-sm">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                <path d="M4 20V10M10 20V4M16 20v-8M22 20H2" />
               </svg>
             </span>
+            <span className="text-lg font-bold leading-none tracking-tight">বিনিয়োগ বৃদ্ধি</span>
           </a>
-          {/* Mobile hamburger */}
-          <button
-            className="grid h-9 w-9 place-items-center rounded-lg border border-border bg-card shadow-sm md:hidden"
-            aria-label={open ? "মেনু বন্ধ করুন" : "মেনু খুলুন"}
-            aria-expanded={open}
-            onClick={() => setOpen((v) => !v)}
-          >
-            {open ? (
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12" /></svg>
-            ) : (
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><path d="M3 12h18M3 6h18M3 18h18" /></svg>
-            )}
-          </button>
-        </div>
-      </div>
-      {/* Mobile dropdown */}
-      {open && (
-        <nav className="border-t border-border bg-background/95 backdrop-blur px-5 pb-4 md:hidden" aria-label="মোবাইল নেভিগেশন">
-          <div className="flex flex-col gap-1 pt-2 text-sm font-medium">
-            {[
-              { href: "#why", label: "কেন আমরা" },
-              { href: "#how", label: "কীভাবে কাজ করে" },
-              { href: "#expert", label: "এক্সপার্ট" },
-              { href: "#opportunities", label: "সুযোগসমূহ" },
-            ].map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                className="rounded-xl px-4 py-3 text-muted-foreground transition hover:bg-surface hover:text-primary"
-              >
-                {item.label}
-              </a>
-            ))}
-            <Link to="/insights" onClick={() => setOpen(false)} className="rounded-xl px-4 py-3 text-muted-foreground transition hover:bg-surface hover:text-primary">
-              ইনসাইটস
-            </Link>
-            <Link to="/dashboard" onClick={() => setOpen(false)} className="rounded-xl px-4 py-3 text-muted-foreground transition hover:bg-surface hover:text-primary">
-              ড্যাশবোর্ড
-            </Link>
+          
+          <nav className="hidden items-center gap-1.5 md:flex" aria-label="প্রধান নেভিগেশন">
+            {links.map((l) => {
+              const isActive = activeSection === l.id;
+              return (
+                <a
+                  key={l.id}
+                  href={l.href}
+                  className={`rounded-full px-4 py-2 text-[14.5px] font-medium transition-all duration-200 ${
+                    isActive
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
+                >
+                  {l.label}
+                </a>
+              );
+            })}
+            <div className="mx-2 h-4 w-px bg-border/80"></div>
+            <Link to="/insights" className="rounded-full px-4 py-2 text-[14.5px] font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground">ইনসাইটস</Link>
+            <Link to="/dashboard" className="rounded-full px-4 py-2 text-[14.5px] font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground">ড্যাশবোর্ড</Link>
+          </nav>
+          
+          <div className="flex items-center gap-3">
             <a
               href="#opportunities"
-              onClick={() => setOpen(false)}
-              className="mt-2 rounded-full bg-primary px-4 py-3 text-center text-sm font-semibold text-primary-foreground"
+              className="hidden items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-md transition-all hover:scale-[1.03] hover:shadow-lg md:inline-flex"
             >
               বিনিয়োগ শুরু করুন
+              <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                  <path d="M7 17L17 7M8 7h9v9" />
+                </svg>
+              </span>
             </a>
+            
+            {/* Mobile hamburger */}
+            <button
+              className="grid h-10 w-10 place-items-center rounded-full bg-muted/50 text-foreground transition hover:bg-muted active:scale-95 md:hidden"
+              aria-label={open ? "মেনু বন্ধ করুন" : "মেনু খুলুন"}
+              aria-expanded={open}
+              onClick={() => setOpen((v) => !v)}
+            >
+              {open ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12" /></svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><path d="M4 12h16M4 6h16M4 18h16" /></svg>
+              )}
+            </button>
           </div>
+        </div>
+      </header>
 
-          <p className="mt-6 text-xs sm:text-sm font-semibold text-destructive/90 flex items-center gap-2">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            সতর্কতা: বিনিয়োগ মানেই ঝুঁকি আছে। নিজ দায়িত্বে বুঝে বিনিয়োগ করুন।
-          </p>
-        </nav>
+      {/* Mobile dropdown */}
+      {open && (
+        <div className="fixed inset-0 z-40 bg-background/60 backdrop-blur-sm transition-opacity md:hidden">
+          <nav className="absolute left-4 right-4 top-24 rounded-3xl border border-border/50 bg-background/95 p-5 shadow-2xl backdrop-blur-xl animate-in slide-in-from-top-4 fade-in duration-200" aria-label="মোবাইল নেভিগেশন">
+            <div className="flex flex-col gap-1 text-[15px] font-medium">
+              {links.map((item) => {
+                const isActive = activeSection === item.id;
+                return (
+                  <a
+                    key={item.id}
+                    href={item.href}
+                    onClick={() => setOpen(false)}
+                    className={`rounded-2xl px-5 py-3.5 transition-colors ${
+                      isActive ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-surface hover:text-foreground"
+                    }`}
+                  >
+                    {item.label}
+                  </a>
+                );
+              })}
+              <div className="my-2 h-px w-full bg-border/50"></div>
+              <Link to="/insights" onClick={() => setOpen(false)} className="rounded-2xl px-5 py-3.5 text-muted-foreground transition hover:bg-surface hover:text-foreground">
+                ইনসাইটস
+              </Link>
+              <Link to="/dashboard" onClick={() => setOpen(false)} className="rounded-2xl px-5 py-3.5 text-muted-foreground transition hover:bg-surface hover:text-foreground">
+                ড্যাশবোর্ড
+              </Link>
+              <a
+                href="#opportunities"
+                onClick={() => setOpen(false)}
+                className="mt-4 rounded-full bg-primary px-5 py-4 text-center font-bold text-primary-foreground shadow-md transition active:scale-95"
+              >
+                বিনিয়োগ শুরু করুন
+              </a>
+            </div>
+            
+            <p className="mt-6 text-center text-xs font-semibold text-destructive/90 flex items-center justify-center gap-1.5 opacity-80">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              বিনিয়োগ মানেই ঝুঁকি। বুঝে বিনিয়োগ করুন।
+            </p>
+          </nav>
+        </div>
       )}
-    </header>
+    </>
   );
 }
 
@@ -401,7 +455,7 @@ function HowItWorks() {
 }
 
 function Opportunities() {
-  const { data: projects } = useProjects();
+  const { data: projects, isLoading } = useOpportunities();
   const search = Route.useSearch();
   const navigate = useNavigate({ from: "/" });
 
@@ -413,16 +467,16 @@ function Opportunities() {
 
   const filtered = useMemo(() => {
     let list = (projects || []).slice();
-    if (category !== "all") list = list.filter((p) => p.business_type === category);
+    if (category !== "all") list = list.filter((p) => p.category === category);
     switch (sort) {
       case "investment_asc":
-        list.sort((a, b) => parseAmount(a.investment_required) - parseAmount(b.investment_required));
+        list.sort((a, b) => parseAmount(a.investment_amount) - parseAmount(b.investment_amount));
         break;
       case "investment_desc":
-        list.sort((a, b) => parseAmount(b.investment_required) - parseAmount(a.investment_required));
+        list.sort((a, b) => parseAmount(b.investment_amount) - parseAmount(a.investment_amount));
         break;
       case "roi_desc":
-        list.sort((a, b) => parseRoi(b.expected_profit_annual) - parseRoi(a.expected_profit_annual));
+        list.sort((a, b) => parseRoi(b.expected_profit) - parseRoi(a.expected_profit));
         break;
       default:
         // funded last
@@ -465,15 +519,21 @@ function Opportunities() {
           onSort={setSort}
         />
 
-        <div className="mt-8 grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
-          {filtered.map((p, i) => (
-            <div key={p.id}>
-              <OpportunityCard project={p} index={i} />
-            </div>
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="mt-16 flex items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <div className="mt-8 grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+            {filtered.map((p, i) => (
+              <div key={p.id}>
+                <OpportunityCard project={p} index={i} />
+              </div>
+            ))}
+          </div>
+        )}
 
-        {filtered.length === 0 && (
+        {!isLoading && filtered.length === 0 && (
           <p className="mt-10 text-center text-sm text-muted-foreground">
             এই ক্যাটাগরিতে বর্তমানে কোনো সুযোগ নেই।
           </p>
@@ -547,7 +607,12 @@ function Footer() {
             LinkedIn
           </a>
         </div>
-        <p>© {new Date().getFullYear()} · বিনিয়োগ প্ল্যাটফর্ম</p>
+        <div className="flex flex-col items-center gap-1 sm:items-end">
+          <p>© {new Date().getFullYear()} · বিনিয়োগ প্ল্যাটফর্ম</p>
+          <p>
+            Created by <a href="https://artx.techvrs.com/" target="_blank" rel="noopener noreferrer" className="font-medium text-foreground transition hover:text-primary">ArtX TechVRS</a>
+          </p>
+        </div>
       </div>
     </footer>
   );

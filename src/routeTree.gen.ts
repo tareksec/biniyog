@@ -12,6 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as InsightsRouteImport } from './routes/insights'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
+import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as OpportunitiesIdRouteImport } from './routes/opportunities.$id'
 import { Route as ApiPublicRevealDetailsRouteImport } from './routes/api/public/reveal-details'
 
@@ -30,6 +33,21 @@ const InsightsRoute = InsightsRouteImport.update({
   path: '/insights',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminDashboardRoute = AdminDashboardRouteImport.update({
+  id: '/admin/dashboard',
+  path: '/admin/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/admin/login',
+  path: '/admin/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OpportunitiesIdRoute = OpportunitiesIdRouteImport.update({
   id: '/opportunities/$id',
   path: '/opportunities/$id',
@@ -45,14 +63,20 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/insights': typeof InsightsRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/login': typeof AdminLoginRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
+  '/admin/': typeof AdminIndexRoute
   '/api/public/reveal-details': typeof ApiPublicRevealDetailsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/insights': typeof InsightsRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/login': typeof AdminLoginRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
+  '/admin': typeof AdminIndexRoute
   '/api/public/reveal-details': typeof ApiPublicRevealDetailsRoute
 }
 export interface FileRoutesById {
@@ -60,7 +84,10 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/insights': typeof InsightsRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/login': typeof AdminLoginRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
+  '/admin/': typeof AdminIndexRoute
   '/api/public/reveal-details': typeof ApiPublicRevealDetailsRoute
 }
 export interface FileRouteTypes {
@@ -69,21 +96,30 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/insights'
+    | '/admin/dashboard'
+    | '/admin/login'
     | '/opportunities/$id'
+    | '/admin/'
     | '/api/public/reveal-details'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/dashboard'
     | '/insights'
+    | '/admin/dashboard'
+    | '/admin/login'
     | '/opportunities/$id'
+    | '/admin'
     | '/api/public/reveal-details'
   id:
     | '__root__'
     | '/'
     | '/dashboard'
     | '/insights'
+    | '/admin/dashboard'
+    | '/admin/login'
     | '/opportunities/$id'
+    | '/admin/'
     | '/api/public/reveal-details'
   fileRoutesById: FileRoutesById
 }
@@ -91,7 +127,10 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
   InsightsRoute: typeof InsightsRoute
+  AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminLoginRoute: typeof AdminLoginRoute
   OpportunitiesIdRoute: typeof OpportunitiesIdRoute
+  AdminIndexRoute: typeof AdminIndexRoute
   ApiPublicRevealDetailsRoute: typeof ApiPublicRevealDetailsRoute
 }
 
@@ -118,6 +157,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InsightsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/dashboard': {
+      id: '/admin/dashboard'
+      path: '/admin/dashboard'
+      fullPath: '/admin/dashboard'
+      preLoaderRoute: typeof AdminDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/admin/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/opportunities/$id': {
       id: '/opportunities/$id'
       path: '/opportunities/$id'
@@ -139,7 +199,10 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
   InsightsRoute: InsightsRoute,
+  AdminDashboardRoute: AdminDashboardRoute,
+  AdminLoginRoute: AdminLoginRoute,
   OpportunitiesIdRoute: OpportunitiesIdRoute,
+  AdminIndexRoute: AdminIndexRoute,
   ApiPublicRevealDetailsRoute: ApiPublicRevealDetailsRoute,
 }
 export const routeTree = rootRouteImport

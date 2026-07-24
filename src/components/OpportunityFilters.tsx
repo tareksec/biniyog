@@ -1,4 +1,4 @@
-import { uniqueCategories, type PublicProject } from "@/lib/projects";
+import { uniqueCategories, type Opportunity } from "@/lib/projects";
 
 export type SortKey = "default" | "investment_asc" | "investment_desc" | "roi_desc";
 
@@ -9,7 +9,7 @@ export function OpportunityFilters({
   sort,
   onSort,
 }: {
-  projects: PublicProject[];
+  projects: Opportunity[];
   category: string;
   onCategory: (c: string) => void;
   sort: SortKey;

@@ -1,19 +1,11 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { fallbackProjects, fetchProjects, isFullyFunded, statusLabel, parseLinks, fundingProgress, getRiskLevel, resolveImageUrl } from "@/lib/projects";
+import { fetchOpportunities, isFullyFunded, statusLabel, parseLinks, fundingProgress, getRiskLevel, resolveImageUrl, getStatusConfig, type Opportunity } from "@/lib/projects";
 import { motion } from "framer-motion";
-
-const SHEET_URL =
-  "https://docs.google.com/spreadsheets/d/1HsSR7t_2zZaNbvqmbhWiuYikfYsF8rfzcQK2gmfIB4U/edit?gid=0#gid=0";
 
 export const Route = createFileRoute("/opportunities/$id")({
   loader: async ({ params }) => {
-    // First try fallback (local JSON) for instant lookup
-    let project = fallbackProjects.find((p) => p.id === params.id);
-    // If not found locally, try fetching live from Supabase
-    if (!project) {
-      const allProjects = await fetchProjects();
-      project = allProjects.find((p) => p.id === params.id);
-    }
+    const allProjects = await fetchOpportunities();
+    const project = allProjects.find((p) => p.id === params.id || p.slug === params.id);
     if (!project) throw notFound();
     return { project };
   },
@@ -22,8 +14,8 @@ export const Route = createFileRoute("/opportunities/$id")({
       return { meta: [{ title: "Not found · বিনিয়োগ বৃদ্ধি" }, { name: "robots", content: "noindex" }] };
     }
     const p = loaderData.project;
-    const title = `${p.project_name} · বিনিয়োগ বৃদ্ধি`;
-    const desc = (p.entrepreneur_description || "যাচাইকৃত বিনিয়োগের সুযোগ").slice(0, 155);
+    const title = `${p.name} · বিনিয়োগ বৃদ্ধি`;
+    const desc = (p.description || "যাচাইকৃত বিনিয়োগের সুযোগ").slice(0, 155);
     return {
       meta: [
         { title },
@@ -59,7 +51,7 @@ function NotFoundView() {
 function OpportunityDetailsPage() {
   const { project } = Route.useLoaderData();
   const funded = isFullyFunded(project);
-  const links = parseLinks(project.links);
+  const links = parseLinks(project.website_url);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -80,7 +72,7 @@ function OpportunityDetailsPage() {
         <div className="mb-10 w-full overflow-hidden rounded-2xl border border-border bg-muted">
           <img
             src={resolveImageUrl(project)}
-            alt={project.project_name || "প্রজেক্টের ছবি"}
+            alt={project.name || "প্রজেক্টের ছবি"}
             className="h-64 w-full object-cover sm:h-80 lg:h-96"
             onError={(e) => {
               (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=1200&auto=format&fit=crop";
@@ -100,29 +92,29 @@ function OpportunityDetailsPage() {
             {getRiskLevel(project).label}
           </span>
         </div>
-        <h1 className="mt-4 font-display text-3xl sm:text-4xl">{project.project_name}</h1>
-        {project.founder_name && (
+        <h1 className="mt-4 font-display text-3xl sm:text-4xl">{project.name}</h1>
+        {project.owner_name && (
           <p className="mt-2 text-lg font-semibold text-foreground/85">
-            {project.founder_name}
+            {project.owner_name} {project.owner_phone && <span className="text-muted-foreground text-sm font-normal ml-2">({project.owner_phone})</span>}
           </p>
         )}
         <p className="mt-2 text-sm text-muted-foreground">
-          {project.business_type} · {project.location || "বাংলাদেশ"}
+          {project.category} · {project.address || "বাংলাদেশ"}
         </p>
 
         <p className="mt-6 text-[15px] leading-relaxed text-foreground/85">
-          {project.entrepreneur_description || "—"}
+          {project.description || "—"}
         </p>
 
-        <FundingProgress percent={fundingProgress(project)} funded={funded} />
+        <FundingProgress project={project} />
 
         <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-5 rounded-xl border border-border bg-surface p-6 sm:grid-cols-3">
-          <Field label="বিনিয়োগ প্রয়োজন" value={project.investment_required} num />
-          <Field label="সম্ভাব্য লাভ" value={project.expected_profit_annual} num accent />
-          <Field label="মুনাফা প্রদান" value={project.profit_payout_schedule} />
-          <Field label="বিনিয়োগ মডেল" value={project.investment_model} />
-          <Field label="যাচাইকরণ" value={project.verification_type} />
-          <Field label="টার্নওভার" value={project.turnover_capital} num />
+          <Field label="বিনিয়োগ প্রয়োজন" value={project.investment_amount || ""} num />
+          <Field label="সম্ভাব্য লাভ" value={project.expected_profit || ""} num accent />
+          <Field label="মুনাফা প্রদান" value={project.profit_period || ""} />
+          <Field label="বিনিয়োগ মডেল" value={project.investment_type || ""} />
+          <Field label="যাচাইকরণ" value={project.guarantee || ""} />
+          <Field label="টার্নওভার" value={project.estimated_capital || ""} num />
         </div>
 
         <BusinessBackground project={project} />
@@ -130,10 +122,10 @@ function OpportunityDetailsPage() {
         <RiskAnalysis />
         <LegalSecurity />
 
-        {project.investment_terms && (
+        {project.cfa_comment && (
           <section className="mt-8">
             <h4 className="text-xs uppercase tracking-widest text-muted-foreground">বিনিয়োগের শর্তাবলী</h4>
-            <p className="mt-2 text-sm leading-relaxed text-foreground/85">{project.investment_terms}</p>
+            <p className="mt-2 text-sm leading-relaxed text-foreground/85">{project.cfa_comment}</p>
           </section>
         )}
 
@@ -156,20 +148,19 @@ function OpportunityDetailsPage() {
           <h4 className="font-display text-lg">যোগাযোগ ও ব্যাংক তথ্য</h4>
           <p className="mt-2 text-sm text-muted-foreground">
             {funded
-              ? "এই রাউন্ডের বিনিয়োগ সম্পন্ন। বিস্তারিত রেকর্ড ও যোগাযোগের তথ্য নিচের Google Sheet-এ দেখুন।"
-              : "সম্পূর্ণ যোগাযোগ ও ব্যাংক তথ্য দেখতে নিচের Google Sheet ওপেন করুন।"}
+              ? "এই রাউন্ডের বিনিয়োগ সম্পন্ন।"
+              : "নিচে বিনিয়োগের ব্যাংক একাউন্ট এবং যোগাযোগের তথ্য দেওয়া হলো।"}
           </p>
-            <a
-              href={SHEET_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-4 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:opacity-90"
-            >
-              যোগাযোগ ও ব্যাংক তথ্য দেখুন
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M7 17L17 7M9 7h8v8" />
-              </svg>
-            </a>
+          
+          {project.bank_details ? (
+             <div className="mt-4 rounded-xl border border-border bg-background p-4 text-sm leading-relaxed text-foreground whitespace-pre-wrap">
+               {project.bank_details}
+             </div>
+          ) : (
+            <div className="mt-4 rounded-xl border border-border bg-background p-4 text-sm text-muted-foreground italic">
+              কোনো ব্যাংক তথ্য যোগ করা হয়নি।
+            </div>
+          )}
         </section>
 
         <div className="mt-12">
@@ -191,12 +182,16 @@ function Field({ label, value, num, accent }: { label: string; value: string; nu
   );
 }
 
-function FundingProgress({ percent, funded }: { percent: number; funded: boolean }) {
+function FundingProgress({ project }: { project: Opportunity }) {
+  const percent = fundingProgress(project);
+  const config = getStatusConfig(project.status);
+  const funded = isFullyFunded(project);
+
   return (
     <section className="mt-8 rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
       <div className="flex items-end justify-between gap-3">
         <div>
-          <h4 className="text-sm font-semibold">তহবিল সংগ্রহের অগ্রগতি</h4>
+          <h4 className="text-sm font-semibold">বিনিয়োগ করুন</h4>
           <p className="mt-0.5 text-xs text-muted-foreground">
             {funded ? "এই রাউন্ডের বিনিয়োগ সম্পন্ন হয়েছে।" : "বর্তমান বিনিয়োগ কমিটমেন্টের অনুপাত।"}
           </p>
@@ -208,22 +203,22 @@ function FundingProgress({ percent, funded }: { percent: number; funded: boolean
           initial={{ width: 0 }}
           animate={{ width: `${percent}%` }}
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-          className="h-full rounded-full bg-primary"
+          className={`h-full rounded-full ${config.color}`}
         />
       </div>
     </section>
   );
 }
 
-function BusinessBackground({ project }: { project: { entrepreneur_description: string; company_maturity: string; location: string; business_type: string } }) {
+function BusinessBackground({ project }: { project: any }) {
   return (
     <section className="mt-10">
       <h3 className="font-display text-xl">ব্যবসার পটভূমি</h3>
       <p className="mt-3 text-sm leading-relaxed text-foreground/85">
-        {project.entrepreneur_description ||
+        {project.description ||
           "উদ্যোক্তা তার নিজস্ব দক্ষতা ও অভিজ্ঞতা কাজে লাগিয়ে ব্যবসাটি পরিচালনা করছেন।"}{" "}
-        প্রতিষ্ঠানটি {project.location || "বাংলাদেশে"} {project.business_type ? `${project.business_type} খাতে ` : ""}
-        কাজ করছে এবং বর্তমানে {project.company_maturity || "স্থিতিশীল"} পর্যায়ে রয়েছে। ব্যবসার আয়ের ধারা,
+        প্রতিষ্ঠানটি {project.address || "বাংলাদেশে"} {project.category ? `${project.category} খাতে ` : ""}
+        কাজ করছে এবং বর্তমানে {project.organization_type || "স্থিতিশীল"} পর্যায়ে রয়েছে। ব্যবসার আয়ের ধারা,
         গ্রাহক বেইজ ও অপারেশনাল খরচ যাচাই করে প্রজেক্টটি তালিকাভুক্ত করা হয়েছে।
       </p>
     </section>
