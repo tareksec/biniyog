@@ -149,18 +149,26 @@ function OpportunityDetailsPage() {
           <p className="mt-2 text-sm text-muted-foreground">
             {funded
               ? "এই রাউন্ডের বিনিয়োগ সম্পন্ন।"
-              : "নিচে বিনিয়োগের ব্যাংক একাউন্ট এবং যোগাযোগের তথ্য দেওয়া হলো।"}
+              : "ব্যাংক তথ্য ও বিনিয়োগের বিস্তারিত জানতে নিচের লিংকে ভিজিট করুন।"}
           </p>
           
-          {project.bank_details ? (
-             <div className="mt-4 rounded-xl border border-border bg-background p-4 text-sm leading-relaxed text-foreground whitespace-pre-wrap">
-               {project.bank_details}
-             </div>
-          ) : (
-            <div className="mt-4 rounded-xl border border-border bg-background p-4 text-sm text-muted-foreground italic">
-              কোনো ব্যাংক তথ্য যোগ করা হয়নি।
-            </div>
-          )}
+          <div className="mt-6">
+            <a 
+              href="https://docs.google.com/spreadsheets/d/1HsSR7t_2zZaNbvqmbhWiuYikfYsF8rfzcQK2gmfIB4U/edit?gid=0#gid=0" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-primary px-8 py-3.5 text-sm font-semibold text-primary-foreground shadow-md hover:bg-primary-glow hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+              ব্যাংক তথ্য দেখুন (Google Sheet)
+            </a>
+          </div>
         </section>
 
         <div className="mt-12">
