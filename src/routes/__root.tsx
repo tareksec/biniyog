@@ -96,8 +96,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "সমৃদ্ধি — স্বচ্ছ SME বিনিয়োগ প্ল্যাটফর্ম" },
       { name: "twitter:description", content: "যাচাইকৃত SME এবং জাচাইকৃত ব্যবসা প্রতিষ্ঠানে স্বচ্ছ উপায়ে বিনিয়োগ করুন — আকর্ষণীয় মুনাফা।" },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/08159e7b-18a6-4096-b77d-f8a90b15d9eb" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/08159e7b-18a6-4096-b77d-f8a90b15d9eb" },
+      { property: "og:image", content: "/og-image.jpg" },
+      { name: "twitter:image", content: "/og-image.jpg" },
     ],
     links: [
       { rel: "icon", type: "image/png", href: "/logo.png" },
