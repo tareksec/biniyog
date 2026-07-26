@@ -1,5 +1,8 @@
 import { motion } from "framer-motion";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { Heart } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useBookmarks } from "@/hooks/useBookmarks";
 import {
   type Opportunity,
   isFullyFunded,
@@ -15,7 +18,7 @@ import {
    Category icon map — maps common Bengali category keywords
    to small SVG icons
    ──────────────────────────────────────────────────────────── */
-function getCategoryIcon(category: string | null): { icon: JSX.Element; bg: string; fg: string } {
+export function getCategoryIcon(category: string | null): { icon: JSX.Element; bg: string; fg: string } {
   const c = (category || "").toLowerCase();
 
   if (c.includes("এগ্রো") || c.includes("কৃষি") || c.includes("খামার") || c.includes("মাছ") || c.includes("ডেইরি"))
@@ -78,7 +81,7 @@ function getCategoryIcon(category: string | null): { icon: JSX.Element; bg: stri
 }
 
 /* ──── Ring colors mapping from status ──── */
-function getStatusRingColors(status: string | null): { stroke: string; trail: string } {
+export function getStatusRingColors(status: string | null): { stroke: string; trail: string } {
   switch (status) {
     case "বিনিয়োগ নেওয়া চলমান-সুযোগ আছে":
       return { stroke: "url(#ringGradGreen)", trail: "stroke-emerald-100 dark:stroke-emerald-900/30" };
@@ -96,7 +99,7 @@ function getStatusRingColors(status: string | null): { stroke: string; trail: st
 }
 
 /* ──── Risk chip styles ──── */
-function riskChipStyle(level: "low" | "med" | "high"): { bg: string; text: string } {
+export function riskChipStyle(level: "low" | "med" | "high"): { bg: string; text: string } {
   switch (level) {
     case "low":
       return { bg: "bg-emerald-50 dark:bg-emerald-900/30", text: "text-emerald-700 dark:text-emerald-400" };
@@ -110,7 +113,7 @@ function riskChipStyle(level: "low" | "med" | "high"): { bg: string; text: strin
 /* ────────────────────────────────────────────────────────────
    Circular Ring Progress
    ──────────────────────────────────────────────────────────── */
-function CircularProgress({
+export function CircularProgress({
   percent,
   status,
   label,
@@ -187,10 +190,29 @@ function CircularProgress({
 export function OpportunityCard({
   project,
   index,
+  isSelectedForCompare,
+  onToggleCompare,
+  isCompareDisabled,
+  onQuickView,
 }: {
   project: Opportunity;
   index: number;
+  isSelectedForCompare?: boolean;
+  onToggleCompare?: () => void;
+  isCompareDisabled?: boolean;
+  onQuickView?: () => void;
 }) {
+  const { isBookmarked, toggleBookmark } = useBookmarks();
+  const saved = isBookmarked(project.id);
+  const navigate = useNavigate();
+
+  const handleCardClick = () => {
+    if (onQuickView) {
+      onQuickView();
+    } else {
+      navigate({ to: "/opportunities/$id", params: { id: project.id } });
+    }
+  };
   const funded = isFullyFunded(project);
   const active = isOpen(project);
   const percent = fundingProgress(project);
@@ -206,14 +228,30 @@ export function OpportunityCard({
       transition={{ duration: 0.5, delay: index * 0.05, ease: [0.22, 1, 0.36, 1] }}
       className="h-full"
     >
-      <Link
-        to="/opportunities/$id"
-        params={{ id: project.id }}
+      <div
+        onClick={handleCardClick}
         className={`group relative flex h-full flex-col overflow-hidden rounded-[1.75rem] bg-muted/40 p-2 transition-all duration-300 ease-out cursor-pointer hover:-translate-y-1.5 ${
           funded ? "opacity-75 hover:opacity-100" : ""
         }`}
         style={{ boxShadow: "0 8px 30px rgba(0,0,0,0.06)" }}
       >
+        {onToggleCompare && (
+          <div className="absolute top-4 left-4 z-10" onClick={(e) => e.stopPropagation()}>
+            <Checkbox 
+              checked={isSelectedForCompare} 
+              onCheckedChange={onToggleCompare} 
+              disabled={isCompareDisabled && !isSelectedForCompare}
+              className="h-5 w-5 rounded border-2 border-border/80 bg-background/80 backdrop-blur-sm data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+            />
+          </div>
+        )}
+
+        <button
+          onClick={(e) => { e.stopPropagation(); toggleBookmark(project.id); }}
+          className="absolute top-4 right-4 z-10 p-2 rounded-full bg-background/80 backdrop-blur-sm border border-border/60 hover:bg-background transition-colors shadow-sm"
+        >
+          <Heart className={`h-4 w-4 ${saved ? "fill-primary text-primary" : "text-muted-foreground hover:text-foreground"}`} />
+        </button>
         {/* Inner card — the "card floating on card" effect */}
         <div
           className="flex flex-1 flex-col rounded-[1.35rem] bg-card p-5 sm:p-6"
@@ -309,30 +347,32 @@ export function OpportunityCard({
                 {project.investment_type}
               </span>
             )}
+            {/* Duration chip */}
+            <span className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold bg-muted/50 text-muted-foreground dark:bg-muted/30">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              {project.profit_period || "চুক্তি অনুযায়ী"}
+            </span>
           </div>
 
-          {/* ── Footer CTA ── */}
-          <div className="mt-auto pt-5">
-            <div className="flex items-center justify-between rounded-xl bg-muted/50 px-4 py-3 transition-colors group-hover:bg-primary/5">
-              <span className="text-[13px] font-semibold text-muted-foreground group-hover:text-primary transition-colors">
-                বিস্তারিত দেখুন
-              </span>
-              <span className="grid h-7 w-7 place-items-center rounded-full bg-primary text-primary-foreground shadow-sm transition-transform group-hover:translate-x-0.5 group-hover:scale-110">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M5 12h14M13 5l7 7-7 7" />
-                </svg>
-              </span>
-            </div>
+          <div className="mt-6">
+            <Link
+              to="/opportunities/$id"
+              params={{ id: project.id }}
+              onClick={(e) => e.stopPropagation()}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary/10 px-4 py-2.5 text-sm font-bold text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
+            >
+              বিস্তারিত দেখুন
+            </Link>
           </div>
         </div>
-      </Link>
+      </div>
     </motion.div>
   );
 }
 
 /* ──── Helpers ──── */
 
-function formatProfit(profitStr: string) {
+export function formatProfit(profitStr: string) {
   if (!profitStr) return { percentage: "—", freq: "বার্ষিক" };
 
   const match = profitStr.match(/([\d०-९০-৯\-–\s]+%)/);

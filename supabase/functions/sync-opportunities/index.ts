@@ -89,7 +89,9 @@ serve(async (req) => {
         else if (normalizedHeader === "adress" || normalizedHeader === "address") obj.address = val;
         else if (normalizedHeader === "organization-type") obj.organization_type = val;
         else if (normalizedHeader === "estimated-capital") obj.estimated_capital = val;
-        else if (normalizedHeader === "image_url" || normalizedHeader === "image-url" || normalizedHeader === "image-link") obj.image_url = val;
+        else if (normalizedHeader === "image_url" || normalizedHeader === "image-url" || normalizedHeader === "image-link" || normalizedHeader === "image_urls") {
+          obj.image_urls = val ? val.split(',').map((u: string) => u.trim()).filter(Boolean) : null;
+        }
         else if (normalizedHeader === "website_url" || normalizedHeader === "website-url" || normalizedHeader === "links") obj.links = val;
       });
       

@@ -93,7 +93,7 @@ export function OpportunityForm({
 
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
   // Fetch existing opportunities for dynamic category datalist
   const { data: opportunities } = useOpportunities();
@@ -120,7 +120,7 @@ export function OpportunityForm({
     organization_type: "",
     estimated_capital: "",
     website_url: "",
-    image_url: "",
+    image_urls: [] as string[],
   });
 
   const [risks, setRisks] = useState<RiskRow[]>([]);
@@ -149,9 +149,9 @@ export function OpportunityForm({
         organization_type: opportunity.organization_type || "",
         estimated_capital: opportunity.estimated_capital || "",
         website_url: opportunity.website_url || "",
-        image_url: opportunity.image_url || "",
+        image_urls: opportunity.image_urls || [],
       });
-      setImagePreview(opportunity.image_url || null);
+      setImagePreviews(opportunity.image_urls || []);
 
       async function loadSubsections() {
         if (!opportunity?.id) return;
@@ -182,9 +182,9 @@ export function OpportunityForm({
         organization_type: "",
         estimated_capital: "",
         website_url: "",
-        image_url: "",
+        image_urls: [],
       });
-      setImagePreview(null);
+      setImagePreviews([]);
       setRisks([]);
       setPayouts([]);
       setLegalChecks([]);
@@ -203,40 +203,54 @@ export function OpportunityForm({
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
 
-    // Validate file
-    if (!file.type.startsWith("image/")) {
-      toast.error("শুধুমাত্র ইমেজ ফাইল আপলোড করুন");
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("ফাইল সাইজ ৫MB এর বেশি হতে পারবে না");
+    if (form.image_urls.length + files.length > 3) {
+      toast.error("সর্বোচ্চ ৩টি ছবি আপলোড করা যাবে");
       return;
     }
 
     setUploading(true);
 
     try {
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
-      const filePath = `opportunities/${fileName}`;
+      const newUrls: string[] = [];
+      for (const file of files) {
+        if (!file.type.startsWith("image/")) {
+          toast.error("শুধুমাত্র ইমেজ ফাইল আপলোড করুন");
+          continue;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+          toast.error("ফাইল সাইজ ৫MB এর বেশি হতে পারবে না");
+          continue;
+        }
 
-      const { error: uploadError } = await supabase.storage
-        .from("opportunity-images")
-        .upload(filePath, file, { upsert: true });
+        const fileExt = file.name.split(".").pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+        const filePath = `opportunities/${fileName}`;
 
-      if (uploadError) throw uploadError;
+        const { error: uploadError } = await supabase.storage
+          .from("opportunity-images")
+          .upload(filePath, file, { upsert: true });
 
-      const { data: urlData } = supabase.storage
-        .from("opportunity-images")
-        .getPublicUrl(filePath);
+        if (uploadError) throw uploadError;
 
-      const publicUrl = urlData.publicUrl;
-      updateField("image_url", publicUrl);
-      setImagePreview(publicUrl);
-      toast.success("ইমেজ আপলোড হয়েছে");
+        const { data: urlData } = supabase.storage
+          .from("opportunity-images")
+          .getPublicUrl(filePath);
+
+        newUrls.push(urlData.publicUrl);
+      }
+
+      if (newUrls.length > 0) {
+        setForm(prev => {
+          const updatedUrls = [...prev.image_urls, ...newUrls].slice(0, 3);
+          const updated = { ...prev, image_urls: updatedUrls };
+          setImagePreviews(updatedUrls);
+          return updated;
+        });
+        toast.success("ইমেজ আপলোড হয়েছে");
+      }
     } catch (err: any) {
       console.error("Upload error:", err);
       toast.error("ইমেজ আপলোড ব্যর্থ হয়েছে");
@@ -245,9 +259,27 @@ export function OpportunityForm({
     }
   };
 
-  const removeImage = () => {
-    updateField("image_url", "");
-    setImagePreview(null);
+  const removeImage = (index: number) => {
+    setForm(prev => {
+      const updatedUrls = [...prev.image_urls];
+      updatedUrls.splice(index, 1);
+      const updated = { ...prev, image_urls: updatedUrls };
+      setImagePreviews(updatedUrls);
+      return updated;
+    });
+  };
+
+  const moveImage = (index: number, direction: "left" | "right") => {
+    setForm(prev => {
+      const newUrls = [...prev.image_urls];
+      if (direction === "left" && index > 0) {
+        [newUrls[index - 1], newUrls[index]] = [newUrls[index], newUrls[index - 1]];
+      } else if (direction === "right" && index < newUrls.length - 1) {
+        [newUrls[index + 1], newUrls[index]] = [newUrls[index], newUrls[index + 1]];
+      }
+      setImagePreviews(newUrls);
+      return { ...prev, image_urls: newUrls };
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -287,7 +319,7 @@ export function OpportunityForm({
           organization_type: form.organization_type || null,
           estimated_capital: form.estimated_capital || null,
           website_url: form.website_url || null,
-          image_url: form.image_url || null,
+          image_urls: form.image_urls.length > 0 ? form.image_urls : null,
         };
 
         const { error } = await supabase
@@ -317,7 +349,7 @@ export function OpportunityForm({
           organization_type: form.organization_type || null,
           estimated_capital: form.estimated_capital || null,
           website_url: form.website_url || null,
-          image_url: form.image_url || null,
+          image_urls: form.image_urls.length > 0 ? form.image_urls : null,
         };
 
         const { data: inserted, error } = await supabase
@@ -646,23 +678,48 @@ export function OpportunityForm({
 
             {/* Image Upload */}
             <div className="space-y-1.5">
-              <Label>প্রজেক্টের ছবি</Label>
-              {imagePreview ? (
-                <div className="relative inline-block">
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="h-32 w-auto rounded-lg border object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={removeImage}
-                    className="absolute -right-2 -top-2 rounded-full bg-destructive p-1 text-white shadow hover:bg-destructive/90"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
+              <Label>প্রজেক্টের ছবি (সর্বোচ্চ ৩টি)</Label>
+              {imagePreviews.length > 0 && (
+                <div className="flex flex-wrap gap-4 mb-4">
+                  {imagePreviews.map((preview, index) => (
+                    <div key={index} className="relative inline-block">
+                      <img
+                        src={preview}
+                        alt={`Preview ${index + 1}`}
+                        className="h-32 w-auto rounded-lg border object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="absolute -right-2 -top-2 rounded-full bg-destructive p-1 text-white shadow hover:bg-destructive/90"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                        {index > 0 && (
+                          <button
+                            type="button"
+                            onClick={(e) => { e.preventDefault(); moveImage(index, "left"); }}
+                            className="bg-black/50 text-white rounded p-1 hover:bg-black"
+                          >
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6"/></svg>
+                          </button>
+                        )}
+                        {index < imagePreviews.length - 1 && (
+                          <button
+                            type="button"
+                            onClick={(e) => { e.preventDefault(); moveImage(index, "right"); }}
+                            className="bg-black/50 text-white rounded p-1 hover:bg-black"
+                          >
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ) : (
+              )}
+              {imagePreviews.length < 3 && (
                 <label
                   htmlFor="opp-image-upload"
                   className="flex cursor-pointer items-center gap-3 rounded-lg border-2 border-dashed border-border px-4 py-6 text-sm text-muted-foreground transition-colors hover:border-primary hover:bg-primary/5"
@@ -681,6 +738,7 @@ export function OpportunityForm({
                     id="opp-image-upload"
                     type="file"
                     accept="image/*"
+                    multiple
                     className="hidden"
                     onChange={handleImageUpload}
                     disabled={uploading}

@@ -170,8 +170,8 @@ export function getRiskLevel(p: Opportunity): { level: "low" | "med" | "high"; l
  * If missing, falls back to internet images based on category.
  */
 export function resolveImageUrl(project: Opportunity): string {
-  if (project.image_url && project.image_url.trim() !== "") {
-    return project.image_url.trim();
+  if (project.image_urls && project.image_urls.length > 0 && project.image_urls[0].trim() !== "") {
+    return project.image_urls[0].trim();
   }
 
   const c = (project.category || "").toLowerCase();
@@ -192,7 +192,7 @@ export function resolveImageUrl(project: Opportunity): string {
     return "https://images.unsplash.com/photo-1514933651103-005eec06c04b?q=80&w=800&auto=format&fit=crop";
   }
   if (c.includes("ই-কমার্স") || c.includes("রিটেইল") || c.includes("সুপারশপ") || c.includes("দোকান") || c.includes("শপ")) {
-    return "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=800&auto=format&fit=crop";
+    return "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=800&auto=format&fit=crop";
   }
   if (c.includes("ম্যানুফ্যাকচারিং") || c.includes("কারখানা") || c.includes("শিল্প") || c.includes("প্লাস্টিক") || c.includes("লোহা")) {
     return "https://images.unsplash.com/photo-1565514020179-026b92b84bb6?q=80&w=800&auto=format&fit=crop";
@@ -212,4 +212,19 @@ export function resolveImageUrl(project: Opportunity): string {
   
   // Default fallback
   return "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=800&auto=format&fit=crop";
+}
+
+/** 
+ * Resolves all image URLs for a project (up to 3).
+ * Falls back to an array containing a single default category image if none exist.
+ */
+export function resolveImageUrls(project: Opportunity): string[] {
+  if (project.image_urls && project.image_urls.length > 0) {
+    const validUrls = project.image_urls.filter(url => url && url.trim() !== "");
+    if (validUrls.length > 0) {
+      return validUrls.map(url => url.trim());
+    }
+  }
+  
+  return [resolveImageUrl(project)];
 }

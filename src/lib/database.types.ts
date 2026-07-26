@@ -39,7 +39,7 @@ export type Database = {
           organization_type: string | null;
           estimated_capital: string | null;
           website_url: string | null;
-          image_url: string | null;
+          image_urls: string[] | null;
           created_at: string;
           updated_at: string;
         };
@@ -63,7 +63,7 @@ export type Database = {
           organization_type?: string | null;
           estimated_capital?: string | null;
           website_url?: string | null;
-          image_url?: string | null;
+          image_urls?: string[] | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -87,7 +87,7 @@ export type Database = {
           organization_type?: string | null;
           estimated_capital?: string | null;
           website_url?: string | null;
-          image_url?: string | null;
+          image_urls?: string[] | null;
           created_at?: string;
           updated_at?: string;
         };

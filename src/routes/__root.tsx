@@ -10,6 +10,8 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
+import { GlobalNav } from "@/components/GlobalNav";
+import { Footer } from "@/components/Footer";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "sonner";
@@ -136,10 +138,16 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <ScrollRestoration />
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <div className="flex flex-col min-h-screen">
+        <div className="flex-grow">
+          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          <Outlet />
+        </div>
+        <Footer />
+      </div>
       
       {/* Global floating elements */}
+      <GlobalNav />
       <FloatingWhatsAppButton />
       <Toaster position="top-center" richColors />
     </QueryClientProvider>
@@ -152,7 +160,7 @@ function FloatingWhatsAppButton() {
       href="https://wa.me/8801316110209"
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg transition-transform hover:scale-110 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-[#25D366]/40"
+      className="fixed bottom-28 md:bottom-28 right-4 md:right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg transition-transform hover:scale-110 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-[#25D366]/40"
       aria-label="হোয়াটসঅ্যাপে যোগাযোগ করুন"
     >
       <svg

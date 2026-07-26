@@ -16,8 +16,8 @@ import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { InvestmentCalculator } from "@/components/InvestmentCalculator";
 import { FaqSection } from "@/components/FaqSection";
 import heroImage from "@/hero/hero.png";
-import { Loader2 } from "lucide-react";
 import { PolicySection } from "@/components/PolicySection";
+import { Loader2 } from "lucide-react";
 
 type OpportunitiesSearch = {
   category?: string;
@@ -64,12 +64,11 @@ function LandingPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground antialiased">
-      <Nav />
       <Hero />
-      <InstructorSection />
-      <Opportunities />
       <WhyChoose />
       <PolicySection />
+      <InstructorSection />
+      <Opportunities />
       <HowItWorks />
       <div className="bg-background">
         <InvestmentCalculator />
@@ -77,7 +76,6 @@ function LandingPage() {
       <TestimonialsSection />
       <FaqSection />
       <FinalCTA />
-      <Footer />
     </div>
   );
 }
@@ -86,151 +84,6 @@ const revealItem = {
   hidden: { opacity: 0, y: 24 },
   show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: "easeOut" } },
 } as const;
-
-function Nav() {
-  const [open, setOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState("");
-
-  // Track active section on scroll
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveSection(entry.target.id);
-          }
-        });
-      },
-      { rootMargin: "-20% 0px -70% 0px", threshold: 0 }
-    );
-    
-    const sections = ["top", "why", "how", "expert", "opportunities"];
-    sections.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
-    
-    return () => observer.disconnect();
-  }, []);
-
-  const links = [
-    { href: "#why", id: "why", label: "কেন আমরা" },
-    { href: "#how", id: "how", label: "কীভাবে কাজ করে" },
-    { href: "#expert", id: "expert", label: "এক্সপার্ট" },
-    { href: "#opportunities", id: "opportunities", label: "সুযোগসমূহ" },
-  ];
-
-  return (
-    <>
-      <header className="fixed left-4 right-4 top-4 z-50 mx-auto max-w-5xl rounded-full border border-border/50 bg-background/80 px-4 py-3 shadow-[0_4px_20px_rgba(0,0,0,0.08)] backdrop-blur-[12px] sm:px-6 transition-all duration-300">
-        <div className="flex items-center justify-between">
-          <a href="#top" className="flex items-center gap-2 transition-transform hover:scale-105" onClick={() => setOpen(false)}>
-            <span className="grid h-8 w-8 place-items-center rounded-full bg-primary text-primary-foreground shadow-sm">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
-                <path d="M4 20V10M10 20V4M16 20v-8M22 20H2" />
-              </svg>
-            </span>
-            <span className="text-lg font-bold leading-none tracking-tight">সমৃদ্ধি</span>
-          </a>
-          
-          <nav className="hidden items-center gap-1.5 md:flex" aria-label="প্রধান নেভিগেশন">
-            {links.map((l) => {
-              const isActive = activeSection === l.id;
-              return (
-                <a
-                  key={l.id}
-                  href={l.href}
-                  className={`rounded-full px-4 py-2 text-[14.5px] font-medium transition-all duration-200 ${
-                    isActive
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  }`}
-                >
-                  {l.label}
-                </a>
-              );
-            })}
-            <div className="mx-2 h-4 w-px bg-border/80"></div>
-            <Link to="/insights" className="rounded-full px-4 py-2 text-[14.5px] font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground">ইনসাইটস</Link>
-            <Link to="/dashboard" className="rounded-full px-4 py-2 text-[14.5px] font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground">ড্যাশবোর্ড</Link>
-          </nav>
-          
-          <div className="flex items-center gap-3">
-            <a
-              href="#opportunities"
-              className="hidden items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-md transition-all hover:scale-[1.03] hover:shadow-lg md:inline-flex"
-            >
-              বিনিয়োগ শুরু করুন
-              <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-                  <path d="M7 17L17 7M8 7h9v9" />
-                </svg>
-              </span>
-            </a>
-            
-            {/* Mobile hamburger */}
-            <button
-              className="grid h-10 w-10 place-items-center rounded-full bg-muted/50 text-foreground transition hover:bg-muted active:scale-95 md:hidden"
-              aria-label={open ? "মেনু বন্ধ করুন" : "মেনু খুলুন"}
-              aria-expanded={open}
-              onClick={() => setOpen((v) => !v)}
-            >
-              {open ? (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12" /></svg>
-              ) : (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><path d="M4 12h16M4 6h16M4 18h16" /></svg>
-              )}
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Mobile dropdown */}
-      {open && (
-        <div className="fixed inset-0 z-40 bg-background/60 backdrop-blur-sm transition-opacity md:hidden">
-          <nav className="absolute left-4 right-4 top-24 rounded-3xl border border-border/50 bg-background/95 p-5 shadow-2xl backdrop-blur-xl animate-in slide-in-from-top-4 fade-in duration-200" aria-label="মোবাইল নেভিগেশন">
-            <div className="flex flex-col gap-1 text-[15px] font-medium">
-              {links.map((item) => {
-                const isActive = activeSection === item.id;
-                return (
-                  <a
-                    key={item.id}
-                    href={item.href}
-                    onClick={() => setOpen(false)}
-                    className={`rounded-2xl px-5 py-3.5 transition-colors ${
-                      isActive ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-surface hover:text-foreground"
-                    }`}
-                  >
-                    {item.label}
-                  </a>
-                );
-              })}
-              <div className="my-2 h-px w-full bg-border/50"></div>
-              <Link to="/insights" onClick={() => setOpen(false)} className="rounded-2xl px-5 py-3.5 text-muted-foreground transition hover:bg-surface hover:text-foreground">
-                ইনসাইটস
-              </Link>
-              <Link to="/dashboard" onClick={() => setOpen(false)} className="rounded-2xl px-5 py-3.5 text-muted-foreground transition hover:bg-surface hover:text-foreground">
-                ড্যাশবোর্ড
-              </Link>
-              <a
-                href="#opportunities"
-                onClick={() => setOpen(false)}
-                className="mt-4 rounded-full bg-primary px-5 py-4 text-center font-bold text-primary-foreground shadow-md transition active:scale-95"
-              >
-                বিনিয়োগ শুরু করুন
-              </a>
-            </div>
-            
-            <p className="mt-6 text-center text-xs font-semibold text-destructive/90 flex items-center justify-center gap-1.5 opacity-80 leading-relaxed px-2">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-              <span>সতর্কতা: বিনিয়োগ মানেই ঝুঁকি ও সম্ভাবনা। সুদ আর বিনিয়োগ এক বিষয় না। সরাসরি ব্যবসায়ীর সাথে যোগাযোগের মাধ্যমে নিজে বুঝে বিনিয়োগ সিদ্ধান্ত গ্রহণ করুন।</span>
-            </p>
-          </nav>
-        </div>
-      )}
-    </>
-  );
-}
 
 function Hero() {
   return (
@@ -513,72 +366,12 @@ function HowItWorks() {
 
 function Opportunities() {
   const { data: projects, isLoading } = useOpportunities();
-  const search = Route.useSearch();
-  const navigate = useNavigate({ from: "/" });
-
-  // ─── FILTER RESTORATION & PERSISTENCE ───
-  const [category, setCategoryState] = useState<string>(() => {
-    return search.category || sessionStorage.getItem("landing_category") || "all";
-  });
-  const [sort, setSortState] = useState<SortKey>(() => {
-    return (search.sort as SortKey) || (sessionStorage.getItem("landing_sort") as SortKey) || "default";
-  });
-
-  // Sync session storage to URL on initial mount if URL is empty
-  useEffect(() => {
-    const storedCat = sessionStorage.getItem("landing_category");
-    const storedSort = sessionStorage.getItem("landing_sort") as SortKey;
-    if (!search.category && storedCat && storedCat !== "all") {
-      navigate({ search: (prev) => ({ ...prev, category: storedCat }), replace: true });
-    }
-    if (!search.sort && storedSort && storedSort !== "default") {
-      navigate({ search: (prev) => ({ ...prev, sort: storedSort }), replace: true });
-    }
-  }, []);
-
-  // Update URL if browser navigation (back button) changes query params
-  useEffect(() => {
-    if (search.category && search.category !== category) {
-      setCategoryState(search.category);
-      sessionStorage.setItem("landing_category", search.category);
-    }
-    if (search.sort && search.sort !== sort) {
-      setSortState(search.sort as SortKey);
-      sessionStorage.setItem("landing_sort", search.sort);
-    }
-  }, [search.category, search.sort]);
-
-  const setCategory = (c: string) => {
-    setCategoryState(c);
-    sessionStorage.setItem("landing_category", c);
-    navigate({ search: (prev) => ({ ...prev, category: c !== "all" ? c : undefined }), replace: true });
-  };
-
-  const setSort = (s: SortKey) => {
-    setSortState(s);
-    sessionStorage.setItem("landing_sort", s);
-    navigate({ search: (prev) => ({ ...prev, sort: s !== "default" ? s : undefined }), replace: true });
-  };
-
-  const filtered = useMemo(() => {
+  
+  const previewList = useMemo(() => {
     let list = (projects || []).slice();
-    if (category !== "all") list = list.filter((p) => p.category === category);
-    switch (sort) {
-      case "investment_asc":
-        list.sort((a, b) => parseAmount(a.investment_amount) - parseAmount(b.investment_amount));
-        break;
-      case "investment_desc":
-        list.sort((a, b) => parseAmount(b.investment_amount) - parseAmount(a.investment_amount));
-        break;
-      case "roi_desc":
-        list.sort((a, b) => parseRoi(b.expected_profit) - parseRoi(a.expected_profit));
-        break;
-      default:
-        // funded last
-        list.sort((a, b) => Number(isFullyFunded(a)) - Number(isFullyFunded(b)));
-    }
-    return list;
-  }, [category, sort, projects]);
+    list.sort((a, b) => Number(isFullyFunded(a)) - Number(isFullyFunded(b)));
+    return list.slice(0, 6);
+  }, [projects]);
 
   return (
     <section id="opportunities" className="border-t border-border bg-surface">
@@ -599,39 +392,39 @@ function Opportunities() {
             <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
             <span className="text-muted-foreground">
               <span className="num font-bold text-foreground">
-                {filtered.filter((p) => !isFullyFunded(p)).length}
+                {(projects || []).filter((p) => !isFullyFunded(p)).length}
               </span>{" "}
               টি সক্রিয় সুযোগ
             </span>
           </div>
         </div>
 
-        <OpportunityFilters
-          projects={projects || []}
-          category={category}
-          onCategory={setCategory}
-          sort={sort}
-          onSort={setSort}
-        />
-
         {isLoading ? (
           <div className="mt-16 flex items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="mt-8 grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
-            {filtered.map((p, i) => (
-              <div key={p.id}>
-                <OpportunityCard project={p} index={i} />
-              </div>
-            ))}
-          </div>
-        )}
-
-        {!isLoading && filtered.length === 0 && (
-          <p className="mt-10 text-center text-sm text-muted-foreground">
-            এই ক্যাটাগরিতে বর্তমানে কোনো সুযোগ নেই।
-          </p>
+          <>
+            <div className="mt-12 grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+              {previewList.map((p, i) => (
+                <div key={p.id}>
+                  <OpportunityCard project={p} index={i} />
+                </div>
+              ))}
+            </div>
+            
+            <div className="mt-16 flex justify-center">
+              <Link
+                to="/opportunities"
+                className="inline-flex items-center gap-2 rounded-full border-2 border-primary bg-background px-8 py-3.5 text-[15px] font-bold text-primary shadow-sm transition-all hover:bg-primary hover:text-primary-foreground hover:scale-[1.02]"
+              >
+                সব সুযোগ দেখুন
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M5 12h14M13 5l7 7-7 7" />
+                </svg>
+              </Link>
+            </div>
+          </>
         )}
       </div>
     </section>
@@ -668,50 +461,7 @@ function FinalCTA() {
   );
 }
 
-function Footer() {
-  return (
-    <footer className="border-t border-border bg-background">
-      <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-5 py-10 text-sm text-muted-foreground sm:flex-row sm:px-8">
-        <div className="flex items-center gap-2.5">
-          <span className="grid h-7 w-7 place-items-center rounded-md bg-primary text-primary-foreground">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-              <path d="M4 20V10M10 20V4M16 20v-8M22 20H2" />
-            </svg>
-          </span>
-          <span className="font-bold text-foreground">সমৃদ্ধি</span>
-        </div>
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          <a
-            href={CONSULTANCY_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2 font-medium text-foreground transition hover:border-primary/40 hover:text-primary"
-          >
-            📋 কনসালট্যান্সি
-          </a>
-          <a
-            href={LINKEDIN_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="LinkedIn"
-            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2 font-medium text-foreground transition hover:border-primary/40 hover:text-primary"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5zM.22 8h4.56v14H.22V8zm7.5 0h4.37v1.92h.06c.61-1.15 2.1-2.36 4.32-2.36 4.62 0 5.47 3.04 5.47 6.99V22h-4.56v-6.16c0-1.47-.03-3.36-2.05-3.36-2.05 0-2.36 1.6-2.36 3.26V22H7.72V8z" />
-            </svg>
-            LinkedIn
-          </a>
-        </div>
-        <div className="flex flex-col items-center gap-1 sm:items-end">
-          <p>© {new Date().getFullYear()} · বিনিয়োগ বৃদ্ধি প্ল্যাটফর্ম</p>
-          <p>
-            Created by <a href="https://artx.techvrs.com/" target="_blank" rel="noopener noreferrer" className="font-medium text-foreground transition hover:text-primary">ArtX TechVRS</a>
-          </p>
-        </div>
-      </div>
-    </footer>
-  );
-}
+
 
 function SectionHeader({
   eyebrow,

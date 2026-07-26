@@ -15,6 +15,7 @@ import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
+import { Route as OpportunitiesIndexRouteImport } from './routes/opportunities.index'
 import { Route as OpportunitiesIdRouteImport } from './routes/opportunities.$id'
 import { Route as ApiPublicRevealDetailsRouteImport } from './routes/api/public/reveal-details'
 
@@ -48,6 +49,11 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
   path: '/admin/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OpportunitiesIndexRoute = OpportunitiesIndexRouteImport.update({
+  id: '/opportunities/',
+  path: '/opportunities/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OpportunitiesIdRoute = OpportunitiesIdRouteImport.update({
   id: '/opportunities/$id',
   path: '/opportunities/$id',
@@ -67,6 +73,7 @@ export interface FileRoutesByFullPath {
   '/admin/login': typeof AdminLoginRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
   '/admin/': typeof AdminIndexRoute
+  '/opportunities/': typeof OpportunitiesIndexRoute
   '/api/public/reveal-details': typeof ApiPublicRevealDetailsRoute
 }
 export interface FileRoutesByTo {
@@ -77,6 +84,7 @@ export interface FileRoutesByTo {
   '/admin/login': typeof AdminLoginRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
   '/admin': typeof AdminIndexRoute
+  '/opportunities': typeof OpportunitiesIndexRoute
   '/api/public/reveal-details': typeof ApiPublicRevealDetailsRoute
 }
 export interface FileRoutesById {
@@ -88,6 +96,7 @@ export interface FileRoutesById {
   '/admin/login': typeof AdminLoginRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
   '/admin/': typeof AdminIndexRoute
+  '/opportunities/': typeof OpportunitiesIndexRoute
   '/api/public/reveal-details': typeof ApiPublicRevealDetailsRoute
 }
 export interface FileRouteTypes {
@@ -100,6 +109,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/opportunities/$id'
     | '/admin/'
+    | '/opportunities/'
     | '/api/public/reveal-details'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -110,6 +120,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/opportunities/$id'
     | '/admin'
+    | '/opportunities'
     | '/api/public/reveal-details'
   id:
     | '__root__'
@@ -120,6 +131,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/opportunities/$id'
     | '/admin/'
+    | '/opportunities/'
     | '/api/public/reveal-details'
   fileRoutesById: FileRoutesById
 }
@@ -131,6 +143,7 @@ export interface RootRouteChildren {
   AdminLoginRoute: typeof AdminLoginRoute
   OpportunitiesIdRoute: typeof OpportunitiesIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  OpportunitiesIndexRoute: typeof OpportunitiesIndexRoute
   ApiPublicRevealDetailsRoute: typeof ApiPublicRevealDetailsRoute
 }
 
@@ -178,6 +191,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/opportunities/': {
+      id: '/opportunities/'
+      path: '/opportunities'
+      fullPath: '/opportunities/'
+      preLoaderRoute: typeof OpportunitiesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/opportunities/$id': {
       id: '/opportunities/$id'
       path: '/opportunities/$id'
@@ -203,6 +223,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminLoginRoute: AdminLoginRoute,
   OpportunitiesIdRoute: OpportunitiesIdRoute,
   AdminIndexRoute: AdminIndexRoute,
+  OpportunitiesIndexRoute: OpportunitiesIndexRoute,
   ApiPublicRevealDetailsRoute: ApiPublicRevealDetailsRoute,
 }
 export const routeTree = rootRouteImport

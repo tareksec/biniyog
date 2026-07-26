@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { toast } from "sonner";
+import { useMemo } from "react";
 import {
   PieChart,
   Pie,
@@ -12,262 +11,348 @@ import {
   YAxis,
   Tooltip,
   CartesianGrid,
-  Legend,
 } from "recharts";
+import { fetchOpportunities, parseAmount, parseRoi, statusLabel } from "@/lib/projects";
+import { getCategoryIcon } from "@/components/OpportunityCard";
+import { ArrowRight, Briefcase, Activity, TrendingUp, PiggyBank, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard")({
+  loader: async () => {
+    return await fetchOpportunities();
+  },
   head: () => ({
     meta: [
-      { title: "ড্যাশবোর্ড · সমৃদ্ধি" },
+      { title: "সুযোগসমূহ ওভারভিউ · সমৃদ্ধি" },
       {
         name: "description",
-        content: "আপনার পোর্টফোলিও, বিনিয়োগ বন্টন ও মুনাফা পেআউটের বিস্তারিত ওভারভিউ।",
+        content: "সব বিনিয়োগ সুযোগের সার্বিক চিত্র এবং অ্যানালিটিক্স।",
       },
-      { name: "robots", content: "noindex" },
+      { name: "robots", content: "index, follow" },
     ],
   }),
   component: DashboardPage,
 });
 
-const PIE = [
-  { name: "এগ্রো", value: 35 },
-  { name: "ই-কমার্স", value: 25 },
-  { name: "রিটেইল", value: 20 },
-  { name: "টেক / স্টার্টআপ", value: 15 },
-  { name: "অন্যান্য", value: 5 },
-];
+// A tiny static decorative sparkline for KPI cards
+function MiniSparkline({ color }: { color: string }) {
+  return (
+    <svg width="60" height="25" viewBox="0 0 60 25" className="opacity-40">
+      <path
+        d="M0 20 Q 10 5, 20 15 T 40 10 T 60 5"
+        fill="none"
+        stroke={color}
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
 
-const BARS = [
-  { m: "জানু", payout: 12000 },
-  { m: "ফেব্রু", payout: 14500 },
-  { m: "মার্চ", payout: 13800 },
-  { m: "এপ্রিল", payout: 16200 },
-  { m: "মে", payout: 15400 },
-  { m: "জুন", payout: 17800 },
-];
-
-const PAYOUTS = [
-  { date: "১০ জুলাই ২০২৬", project: "গ্রীন এগ্রো লিমিটেড", amount: "৳ ১৮,৫০০", status: "সম্পন্ন" },
-  { date: "২৮ জুন ২০২৬", project: "নোভা ই-কমার্স", amount: "৳ ২২,০০০", status: "সম্পন্ন" },
-  { date: "১৫ জুন ২০২৬", project: "সবুজ রিটেইল চেইন", amount: "৳ ১০,২০০", status: "সম্পন্ন" },
-  { date: "১০ আগস্ট ২০২৬", project: "গ্রীন এগ্রো লিমিটেড", amount: "৳ ১৮,৫০০", status: "নির্ধারিত" },
-  { date: "৩০ আগস্ট ২০২৬", project: "টেকল্যাব স্টার্টআপ", amount: "৳ ১২,৭৫০", status: "নির্ধারিত" },
-];
-
-const COLORS = ["#146C43", "#2FA36F", "#5BBF8F", "#A7DCC0", "#D6ECDE"];
+const STATUS_COLORS: Record<string, string> = {
+  "বিনিয়োগ নেওয়া চলমান-সুযোগ আছে": "#146C43",
+  "বিনিয়োগ নেওয়া শেষের দিকে": "#eab308",
+  "বিনিয়োগ নেওয়া শেষ-সামনে আবার শুরু হবে ইনশা আল্লাহ": "#64748b",
+  "বিনিয়োগ নেওয়া শেষ-সামনে আবার শুরু হবে": "#64748b",
+};
 
 function DashboardPage() {
-  const [isSyncing, setIsSyncing] = useState(false);
+  const opportunities = Route.useLoaderData();
 
-  const handleSync = async () => {
-    setIsSyncing(true);
-    try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      
-      if (!supabaseUrl || !anonKey) {
-        throw new Error("Supabase credentials not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file.");
+  const metrics = useMemo(() => {
+    let active = 0;
+    let totalAmount = 0;
+    let totalRoi = 0;
+    let validRoiCount = 0;
+
+    const categoryMap: Record<string, number> = {};
+    const statusMap: Record<string, number> = {};
+    const rangeMap = {
+      "< ১ লক্ষ": 0,
+      "১ - ৫ লক্ষ": 0,
+      "৫ - ১০ লক্ষ": 0,
+      "১০+ লক্ষ": 0,
+    };
+
+    opportunities.forEach((p) => {
+      // Basic counts
+      if (p.status?.includes("চলমান-সুযোগ আছে")) active++;
+
+      // Amount
+      const amt = parseAmount(p.investment_amount);
+      totalAmount += amt;
+
+      if (amt < 100000) rangeMap["< ১ লক্ষ"]++;
+      else if (amt <= 500000) rangeMap["১ - ৫ লক্ষ"]++;
+      else if (amt <= 1000000) rangeMap["৫ - ১০ লক্ষ"]++;
+      else rangeMap["১০+ লক্ষ"]++;
+
+      // ROI
+      const roi = parseRoi(p.expected_profit);
+      if (roi > 0) {
+        totalRoi += roi;
+        validRoiCount++;
       }
-      
-      const response = await fetch(`${supabaseUrl}/functions/v1/sync-opportunities`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${anonKey}`
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error("Failed to sync: " + response.statusText);
-      }
-      
-      toast.success("Successfully synced opportunities from Google Sheets!");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to sync opportunities");
-    } finally {
-      setIsSyncing(false);
+
+      // Categories
+      const cat = p.category || "অন্যান্য";
+      categoryMap[cat] = (categoryMap[cat] || 0) + 1;
+
+      // Status
+      const stat = p.status || "অজানা";
+      statusMap[stat] = (statusMap[stat] || 0) + 1;
+    });
+
+    // Formatting total amount
+    let formattedAmount = "";
+    if (totalAmount >= 10000000) {
+      formattedAmount = `${(totalAmount / 10000000).toFixed(2)} কোটি`;
+    } else if (totalAmount >= 100000) {
+      formattedAmount = `${(totalAmount / 100000).toFixed(2)} লক্ষ`;
+    } else {
+      formattedAmount = totalAmount.toLocaleString();
     }
+
+    return {
+      total: opportunities.length,
+      active,
+      avgRoi: validRoiCount > 0 ? (totalRoi / validRoiCount).toFixed(1) : "0",
+      totalAmountFormatted: `৳ ${formattedAmount}`,
+      totalAmountRaw: totalAmount,
+      categories: Object.entries(categoryMap).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value),
+      statuses: Object.entries(statusMap).map(([name, value]) => ({ name, value })),
+      ranges: Object.entries(rangeMap).map(([name, value]) => ({ name, value })),
+    };
+  }, [opportunities]);
+
+  const recentOpps = useMemo(() => {
+    return [...opportunities]
+      .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
+      .slice(0, 5);
+  }, [opportunities]);
+
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="rounded-xl border border-border bg-card p-3 shadow-lg z-50">
+          <p className="font-bold text-foreground text-sm mb-1">{label || payload[0].name}</p>
+          <p className="text-primary font-semibold text-sm">
+            পরিমাণ: <span className="num">{payload[0].value}</span> টি
+          </p>
+        </div>
+      );
+    }
+    return null;
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-20 border-b border-border/70 bg-background/85 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 sm:px-8">
-          <Link to="/" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-            হোমে ফিরে যান
-          </Link>
-          <span className="text-sm font-bold">ড্যাশবোর্ড (প্রোটোটাইপ)</span>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-14">
-        <div className="flex flex-wrap items-end justify-between gap-3">
+    <div className="min-h-screen bg-background pb-32">
+      {/* Header */}
+      <div className="bg-primary/5 pt-28 pb-10 px-4 sm:px-6">
+        <div className="mx-auto max-w-7xl flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
           <div>
-            <h1 className="font-display text-3xl sm:text-4xl">আপনার পোর্টফোলিও</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              ডেমো ডেটা · প্রকৃত অ্যাকাউন্টের সাথে যুক্ত হলে এখানে লাইভ তথ্য দেখাবে।
+            <h1 className="text-3xl sm:text-4xl font-display font-extrabold text-foreground tracking-tight mb-2">
+              সুযোগসমূহ ওভারভিউ
+            </h1>
+            <p className="text-muted-foreground font-medium flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              সব বিনিয়োগ সুযোগের সার্বিক চিত্র ও পরিসংখ্যান
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleSync}
-              disabled={isSyncing}
-              className={`inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium shadow-sm transition ${
-                isSyncing ? "bg-muted text-muted-foreground cursor-not-allowed" : "bg-primary text-primary-foreground hover:opacity-90"
-              }`}
-            >
-              {isSyncing ? (
-                <>
-                  <svg className="animate-spin -ml-1 mr-1 h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                   সিঙ্ক হচ্ছে...
-                </>
-              ) : (
-                <>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                    <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                   সিঙ্ক করুন
-                </>
-              )}
-            </button>
-            <span className="pill bg-accent text-accent-foreground">
-              <span className="h-1.5 w-1.5 rounded-full bg-primary" aria-hidden="true" />
-              লাইভ প্রিভিউ
-            </span>
+          <Link 
+            to="/opportunities" 
+            className="inline-flex items-center gap-2 rounded-full bg-background px-5 py-2.5 text-sm font-bold text-foreground shadow-sm hover:shadow transition-shadow border border-border"
+          >
+            সব সুযোগ দেখুন <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </div>
+
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 -mt-6 space-y-6">
+        
+        {/* Top Highlight & KPI Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          {/* Highlight Card */}
+          <div className="lg:col-span-1 rounded-[2rem] bg-gradient-to-br from-primary via-[#0f5434] to-[#0a3621] p-8 text-primary-foreground shadow-xl relative overflow-hidden flex flex-col justify-between min-h-[220px] transition-transform hover:scale-[1.01] duration-300">
+            <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="relative z-10">
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-bold backdrop-blur-sm text-white/90 mb-4">
+                <Activity className="h-3.5 w-3.5" /> লাইভ মার্কেট
+              </div>
+              <h2 className="text-lg font-medium text-white/80 mb-1">মোট বিনিয়োগযোগ্য পরিমাণ</h2>
+              <div className="text-4xl sm:text-5xl font-display font-black tracking-tight num">
+                {metrics.totalAmountFormatted}
+              </div>
+            </div>
+            <div className="relative z-10 mt-6 flex justify-between items-end">
+              <p className="text-sm font-medium text-white/70 max-w-[200px]">
+                প্ল্যাটফর্মে থাকা সকল সুযোগের মোট মূলধন।
+              </p>
+              <div className="h-12 w-12 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-md">
+                <TrendingUp className="h-6 w-6 text-white" />
+              </div>
+            </div>
+          </div>
+
+          {/* 3 KPIs */}
+          <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <KpiCard 
+              label="মোট সুযোগ" 
+              value={metrics.total.toString()} 
+              icon={<Briefcase className="h-5 w-5" />} 
+              color="#146C43"
+            />
+            <KpiCard 
+              label="সক্রিয় সুযোগ" 
+              value={metrics.active.toString()} 
+              icon={<Activity className="h-5 w-5" />} 
+              color="#2FA36F"
+            />
+            <KpiCard 
+              label="গড় সম্ভাব্য লাভ" 
+              value={`${metrics.avgRoi}%`} 
+              icon={<PiggyBank className="h-5 w-5" />} 
+              color="#0ea5e9"
+            />
           </div>
         </div>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-3">
-          <SummaryCard label="মোট বিনিয়োগ" value="৳ ৫,৪০,০০০" hint="৭ টি সক্রিয় প্রজেক্ট" />
-          <SummaryCard label="YTD মুনাফা" value="৳ ৯৪,৭০০" hint="+১৭.৫% ROI" accent />
-          <SummaryCard label="পরবর্তী পেআউট" value="৳ ১৮,৫০০" hint="১০ আগস্ট ২০২৬" />
-        </div>
-
-        <div className="mt-8 grid gap-5 lg:grid-cols-5">
-          <ChartCard title="পোর্টফোলিও বন্টন" className="lg:col-span-2">
-            <ResponsiveContainer width="100%" height={260}>
-              <PieChart>
-                <Pie
-                  data={PIE}
-                  dataKey="value"
-                  innerRadius={55}
-                  outerRadius={90}
-                  paddingAngle={2}
-                  stroke="none"
-                >
-                  {PIE.map((_, i) => (
-                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(v: number) => `${v}%`} />
-                <Legend wrapperStyle={{ fontSize: 12 }} />
-              </PieChart>
-            </ResponsiveContainer>
-          </ChartCard>
-
-          <ChartCard title="মাসিক পেআউট (৳)" className="lg:col-span-3">
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={BARS}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="m" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-                <YAxis tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-                <Tooltip formatter={(v: number) => `৳ ${v.toLocaleString()}`} />
-                <Bar dataKey="payout" fill="#146C43" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartCard>
-        </div>
-
-
-        <section className="mt-8 overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)]">
-          <div className="flex items-center justify-between border-b border-border px-5 py-4">
-            <h3 className="font-semibold">পেআউট শিডিউল</h3>
-            <span className="text-xs text-muted-foreground">গত ও আসন্ন ট্রানজেকশন</span>
+        {/* Charts Grid Row 1 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          {/* Category Breakdown */}
+          <div className="rounded-[1.5rem] bg-card p-6 shadow-sm border border-border transition-shadow hover:shadow-md duration-300">
+            <h3 className="text-base font-bold text-foreground mb-6">ক্যাটাগরি অনুযায়ী সুযোগ</h3>
+            <div className="h-[280px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={metrics.categories} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-800" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'currentColor' }} className="text-muted-foreground" />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'currentColor' }} allowDecimals={false} className="text-muted-foreground" />
+                  <Tooltip cursor={{ fill: 'rgba(20, 108, 67, 0.05)' }} content={<CustomTooltip />} />
+                  <Bar dataKey="value" fill="#146C43" radius={[4, 4, 0, 0]} maxBarSize={50} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[520px] text-sm">
-              <thead className="bg-surface text-left text-xs uppercase tracking-wider text-muted-foreground">
-                <tr>
-                  <th className="px-5 py-3 font-medium">তারিখ</th>
-                  <th className="px-5 py-3 font-medium">প্রজেক্ট</th>
-                  <th className="px-5 py-3 font-medium">পরিমাণ</th>
-                  <th className="px-5 py-3 font-medium">স্ট্যাটাস</th>
-                </tr>
-              </thead>
-              <tbody>
-                {PAYOUTS.map((r, i) => (
-                  <tr key={i} className="border-t border-border/60">
-                    <td className="px-5 py-3 whitespace-nowrap">{r.date}</td>
-                    <td className="px-5 py-3">{r.project}</td>
-                    <td className="num px-5 py-3 font-semibold">{r.amount}</td>
-                    <td className="px-5 py-3">
-                      <span
-                        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                          r.status === "সম্পন্ন"
-                            ? "bg-accent text-accent-foreground"
-                            : "bg-muted text-muted-foreground"
-                        }`}
-                      >
-                        <span
-                          className={`h-1.5 w-1.5 rounded-full ${
-                            r.status === "সম্পন্ন" ? "bg-primary" : "bg-muted-foreground"
-                          }`}
-                        />
-                        {r.status}
-                      </span>
-                    </td>
-                  </tr>
+
+          {/* Status Distribution */}
+          <div className="rounded-[1.5rem] bg-card p-6 shadow-sm border border-border transition-shadow hover:shadow-md duration-300">
+            <h3 className="text-base font-bold text-foreground mb-6">স্ট্যাটাস ডিস্ট্রিবিউশন</h3>
+            <div className="h-[280px] w-full flex flex-col sm:flex-row items-center justify-center">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={metrics.statuses}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={70}
+                    outerRadius={100}
+                    paddingAngle={2}
+                    dataKey="value"
+                  >
+                    {metrics.statuses.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={STATUS_COLORS[entry.name] || "#94a3b8"} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CustomTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="flex flex-col gap-3 w-full sm:w-1/2 px-2 mt-4 sm:mt-0">
+                {metrics.statuses.map((s, i) => (
+                  <div key={i} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: STATUS_COLORS[s.name] || "#94a3b8" }} />
+                      <span className="text-xs font-semibold text-muted-foreground line-clamp-2">{s.name.replace("বিনিয়োগ নেওয়া ", "")}</span>
+                    </div>
+                    <span className="font-bold text-sm num ml-2">{s.value}</span>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            </div>
           </div>
-        </section>
+
+        </div>
+
+        {/* Third Row: Investment Range & Recent */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          {/* Investment Range */}
+          <div className="lg:col-span-2 rounded-[1.5rem] bg-card p-6 shadow-sm border border-border transition-shadow hover:shadow-md duration-300">
+            <h3 className="text-base font-bold text-foreground mb-6">বিনিয়োগের পরিমাণ (রেঞ্জ)</h3>
+            <div className="h-[250px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={metrics.ranges} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-800" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'currentColor' }} className="text-muted-foreground" />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'currentColor' }} allowDecimals={false} className="text-muted-foreground" />
+                  <Tooltip cursor={{ fill: 'rgba(20, 108, 67, 0.05)' }} content={<CustomTooltip />} />
+                  <Bar dataKey="value" fill="#5BBF8F" radius={[4, 4, 0, 0]} maxBarSize={60} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Recent Opportunities */}
+          <div className="lg:col-span-1 rounded-[1.5rem] bg-card shadow-sm border border-border overflow-hidden flex flex-col transition-shadow hover:shadow-md duration-300">
+            <div className="p-5 border-b border-border flex justify-between items-center bg-muted/30">
+              <h3 className="text-sm font-bold text-foreground">নতুন সুযোগসমূহ</h3>
+              <Link to="/opportunities" className="text-xs font-bold text-primary hover:underline">সব দেখুন</Link>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              {recentOpps.map((opp, i) => {
+                const catIcon = getCategoryIcon(opp.category);
+                return (
+                  <Link 
+                    key={opp.id}
+                    to="/opportunities/$id"
+                    params={{ id: opp.id }}
+                    className={`block p-4 hover:bg-muted/60 transition-colors ${i !== recentOpps.length -1 ? 'border-b border-border/60' : ''}`}
+                  >
+                    <div className="flex justify-between items-start gap-3 mb-2">
+                      <h4 className="font-bold text-sm text-foreground line-clamp-1">{opp.name}</h4>
+                      <div className="text-right shrink-0">
+                        <div className="text-[13px] font-bold text-primary num">{opp.investment_amount}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${catIcon.bg} ${catIcon.fg}`}>
+                        {catIcon.icon} <span className="line-clamp-1 max-w-[80px]">{opp.category || "অন্যান্য"}</span>
+                      </span>
+                      <span className="text-[10px] font-semibold text-muted-foreground truncate ml-2">
+                        {statusLabel(opp)}
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+
+        </div>
+
       </main>
     </div>
   );
 }
 
-function SummaryCard({
-  label,
-  value,
-  hint,
-  accent,
-}: {
-  label: string;
-  value: string;
-  hint: string;
-  accent?: boolean;
-}) {
+function KpiCard({ label, value, icon, color }: { label: string, value: string, icon: React.ReactNode, color: string }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
-      <div className="text-xs uppercase tracking-widest text-muted-foreground">{label}</div>
-      <div className={`num mt-2 text-2xl font-bold ${accent ? "text-primary" : "text-foreground"}`}>
-        {value}
+    <div className="rounded-[1.5rem] bg-card p-6 shadow-sm border border-border relative overflow-hidden flex flex-col justify-between transition-transform hover:scale-[1.02] duration-300 cursor-default min-h-[160px]">
+      <div className="flex justify-between items-start mb-4 relative z-10">
+        <div className="text-[13px] font-bold text-muted-foreground uppercase tracking-wide">{label}</div>
+        <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0" style={{ color }}>
+          {icon}
+        </div>
       </div>
-      <div className="mt-1 text-xs text-muted-foreground">{hint}</div>
-    </div>
-  );
-}
-
-function ChartCard({
-  title,
-  children,
-  className = "",
-}: {
-  title: string;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <div className={`rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)] ${className}`}>
-      <h3 className="mb-3 font-semibold">{title}</h3>
-      {children}
+      <div className="relative z-10 mt-auto">
+        <div className="text-3xl font-display font-extrabold text-foreground num tracking-tight">
+          {value}
+        </div>
+      </div>
+      <div className="absolute -bottom-3 -right-4 pointer-events-none">
+        <MiniSparkline color={color} />
+      </div>
     </div>
   );
 }

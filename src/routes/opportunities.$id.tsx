@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { fetchOpportunities, isFullyFunded, statusLabel, parseLinks, fundingProgress, getRiskLevel, resolveImageUrl, getStatusConfig, fetchOpportunitySubsections, type Opportunity, type OpportunityRisk, type OpportunityPayout, type OpportunityLegalCheck } from "@/lib/projects";
+import { fetchOpportunities, isFullyFunded, statusLabel, parseLinks, fundingProgress, getRiskLevel, resolveImageUrl, resolveImageUrls, getStatusConfig, fetchOpportunitySubsections, type Opportunity, type OpportunityRisk, type OpportunityPayout, type OpportunityLegalCheck, parseRoi } from "@/lib/projects";
+import { Slider } from "@/components/ui/slider";
 import { motion } from "framer-motion";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
 export const Route = createFileRoute("/opportunities/$id")({
   loader: async ({ params }) => {
@@ -64,21 +67,44 @@ function OpportunityDetailsPage() {
             </svg>
             সব সুযোগ
           </Link>
-          <span className="text-sm font-bold">সমৃদ্ধি</span>
+          <img src="/logo.png" alt="সমৃদ্ধি" className="h-6 w-auto" />
         </div>
       </header>
 
       <main className="mx-auto max-w-4xl px-5 py-10 sm:px-8 sm:py-14">
-        {/* Banner Image */}
+        {/* Banner Images */}
         <div className="mb-10 w-full overflow-hidden rounded-2xl border border-border bg-muted">
-          <img
-            src={resolveImageUrl(project)}
-            alt={project.name || "প্রজেক্টের ছবি"}
-            className="h-64 w-full object-cover sm:h-80 lg:h-96"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=1200&auto=format&fit=crop";
-            }}
-          />
+          {resolveImageUrls(project).length > 1 ? (
+            <Carousel className="w-full">
+              <CarouselContent>
+                {resolveImageUrls(project).map((url, i) => (
+                  <CarouselItem key={i}>
+                    <img
+                      src={url}
+                      alt={`${project.name || "প্রজেক্টের ছবি"} ${i + 1}`}
+                      className="h-64 w-full object-cover sm:h-80 lg:h-96"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=1200&auto=format&fit=crop";
+                      }}
+                    />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <div className="hidden sm:block">
+                <CarouselPrevious className="left-4 bg-background/80 hover:bg-background" />
+                <CarouselNext className="right-4 bg-background/80 hover:bg-background" />
+              </div>
+            </Carousel>
+          ) : (
+            <img
+              src={resolveImageUrl(project)}
+              alt={project.name || "প্রজেক্টের ছবি"}
+              className="h-64 w-full object-cover sm:h-80 lg:h-96"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=1200&auto=format&fit=crop";
+              }}
+            />
+          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -184,6 +210,8 @@ function OpportunityDetailsPage() {
           </section>
         )}
 
+        <InvestmentCalculator project={project} />
+
         <section className="mt-12 border-t border-border/80 pt-10 rounded-2xl border border-dashed border-border bg-surface/70 p-6 sm:p-8">
           <div className="flex items-center gap-3 border-l-4 border-primary pl-3.5">
             <h3 className="font-display text-xl font-bold text-foreground sm:text-2xl">যোগাযোগ ও ব্যাংক তথ্য</h3>
@@ -195,21 +223,15 @@ function OpportunityDetailsPage() {
           </p>
           
           <div className="mt-6">
-            <a 
-              href="https://docs.google.com/spreadsheets/d/1HsSR7t_2zZaNbvqmbhWiuYikfYsF8rfzcQK2gmfIB4U/edit?gid=0#gid=0" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-primary px-8 py-3.5 text-sm font-semibold text-primary-foreground shadow-md hover:bg-primary-glow hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="16" y1="13" x2="8" y2="13"></line>
-                <line x1="16" y1="17" x2="8" y2="17"></line>
-                <polyline points="10 9 9 9 8 9"></polyline>
-              </svg>
-              ব্যাংক তথ্য দেখুন (Google Sheet)
-            </a>
+            {project.bank_details ? (
+              <div className="rounded-xl bg-background p-4 text-sm leading-relaxed text-foreground whitespace-pre-wrap font-medium border border-border shadow-inner">
+                {project.bank_details}
+              </div>
+            ) : (
+              <div className="rounded-xl bg-background p-4 text-sm leading-relaxed text-muted-foreground italic border border-border shadow-inner">
+                বর্তমানে কোনো ব্যাংক তথ্য দেওয়া হয়নি। বিস্তারিত জানতে কর্তৃপক্ষের সাথে যোগাযোগ করুন।
+              </div>
+            )}
           </div>
         </section>
 
@@ -259,6 +281,77 @@ function FundingProgress({ project }: { project: Opportunity }) {
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
           className={`h-full rounded-full ${config.color}`}
         />
+      </div>
+    </section>
+  );
+}
+
+function InvestmentCalculator({ project }: { project: Opportunity }) {
+  const defaultRoi = parseRoi(project.expected_profit) || 15;
+  const [amount, setAmount] = useState(100000);
+  const [roi, setRoi] = useState(defaultRoi);
+
+  const estimatedProfit = Math.round((amount * roi) / 100);
+  const totalReturn = amount + estimatedProfit;
+
+  return (
+    <section className="mt-12 border-t border-border/80 pt-10">
+      <div className="flex items-center gap-3 border-l-4 border-primary pl-3.5 mb-6">
+        <h3 className="font-display text-xl font-bold text-foreground sm:text-2xl">রিটার্ন ক্যালকুলেটর</h3>
+      </div>
+      
+      <div className="grid gap-8 md:grid-cols-2 rounded-2xl border border-border bg-card p-6 shadow-sm">
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-muted-foreground">বিনিয়োগের পরিমাণ</span>
+              <span className="text-lg font-bold text-foreground num">৳ {(amount).toLocaleString()}</span>
+            </div>
+            <Slider
+              value={[amount]}
+              min={10000}
+              max={1000000}
+              step={10000}
+              onValueChange={([val]) => setAmount(val)}
+              className="py-2"
+            />
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-muted-foreground">প্রত্যাশিত মুনাফা (বার্ষিক)</span>
+              <span className="text-lg font-bold text-foreground num">{roi}%</span>
+            </div>
+            <Slider
+              value={[roi]}
+              min={5}
+              max={40}
+              step={1}
+              onValueChange={([val]) => setRoi(val)}
+              className="py-2"
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-col justify-center rounded-xl bg-primary/5 p-6 border border-primary/10">
+          <div className="space-y-4">
+            <div className="flex justify-between items-center border-b border-primary/10 pb-3">
+              <span className="text-sm font-medium text-muted-foreground">মূলধন</span>
+              <span className="text-base font-bold text-foreground num">৳ {(amount).toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between items-center border-b border-primary/10 pb-3">
+              <span className="text-sm font-medium text-primary">সম্ভাব্য মুনাফা</span>
+              <span className="text-base font-bold text-primary num">+ ৳ {(estimatedProfit).toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between items-center pt-1">
+              <span className="text-base font-bold text-foreground">মোট সম্ভাব্য প্রাপ্তি</span>
+              <span className="text-xl font-extrabold text-foreground num">৳ {(totalReturn).toLocaleString()}</span>
+            </div>
+          </div>
+          <p className="mt-4 text-[11px] text-muted-foreground text-center italic">
+            * এটি একটি সম্ভাব্য হিসাব। প্রকৃত মুনাফা ব্যবসার বাস্তব অবস্থার উপর নির্ভর করবে।
+          </p>
+        </div>
       </div>
     </section>
   );

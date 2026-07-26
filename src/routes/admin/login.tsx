@@ -68,8 +68,8 @@ function AdminLoginPage() {
       <div className="w-full max-w-md">
         {/* Logo / Header */}
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary shadow-lg">
-            <Lock className="h-8 w-8 text-white" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-sm border border-border">
+            <img src="/logo.png" alt="সমৃদ্ধি" className="h-12 w-12 object-contain" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">
             Admin Dashboard
