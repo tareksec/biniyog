@@ -66,11 +66,11 @@ function LandingPage() {
     <div className="min-h-screen bg-background text-foreground antialiased">
       <Nav />
       <Hero />
+      <InstructorSection />
+      <Opportunities />
       <WhyChoose />
       <PolicySection />
       <HowItWorks />
-      <InstructorSection />
-      <Opportunities />
       <div className="bg-background">
         <InvestmentCalculator />
       </div>
