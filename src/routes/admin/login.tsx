@@ -75,7 +75,7 @@ function AdminLoginPage() {
             Admin Dashboard
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            বিনিয়োগ বৃদ্ধি — অ্যাডমিন প্যানেল
+            সমৃদ্ধি — অ্যাডমিন প্যানেল
           </p>
         </div>
 

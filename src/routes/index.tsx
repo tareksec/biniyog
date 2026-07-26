@@ -17,6 +17,7 @@ import { InvestmentCalculator } from "@/components/InvestmentCalculator";
 import { FaqSection } from "@/components/FaqSection";
 import heroImage from "@/hero/hero.png";
 import { Loader2 } from "lucide-react";
+import { PolicySection } from "@/components/PolicySection";
 
 type OpportunitiesSearch = {
   category?: string;
@@ -66,6 +67,7 @@ function LandingPage() {
       <Nav />
       <Hero />
       <WhyChoose />
+      <PolicySection />
       <HowItWorks />
       <InstructorSection />
       <Opportunities />
@@ -128,7 +130,7 @@ function Nav() {
                 <path d="M4 20V10M10 20V4M16 20v-8M22 20H2" />
               </svg>
             </span>
-            <span className="text-lg font-bold leading-none tracking-tight">বিনিয়োগ বৃদ্ধি</span>
+            <span className="text-lg font-bold leading-none tracking-tight">সমৃদ্ধি</span>
           </a>
           
           <nav className="hidden items-center gap-1.5 md:flex" aria-label="প্রধান নেভিগেশন">
@@ -219,9 +221,9 @@ function Nav() {
               </a>
             </div>
             
-            <p className="mt-6 text-center text-xs font-semibold text-destructive/90 flex items-center justify-center gap-1.5 opacity-80">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-              বিনিয়োগ মানেই ঝুঁকি। বুঝে বিনিয়োগ করুন।
+            <p className="mt-6 text-center text-xs font-semibold text-destructive/90 flex items-center justify-center gap-1.5 opacity-80 leading-relaxed px-2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <span>সতর্কতা: বিনিয়োগ মানেই ঝুঁকি ও সম্ভাবনা। সুদ আর বিনিয়োগ এক বিষয় না। সরাসরি ব্যবসায়ীর সাথে যোগাযোগের মাধ্যমে নিজে বুঝে বিনিয়োগ সিদ্ধান্ত গ্রহণ করুন।</span>
             </p>
           </nav>
         </div>
@@ -250,7 +252,7 @@ function Hero() {
                 <path d="M5 12l5 5L20 7" />
               </svg>
             </span>
-            <span className="text-muted-foreground">যাচাইকৃত · পার্টনারশিপ মডেল</span>
+            <span className="text-muted-foreground">যাচাইকৃত · বিনিয়োগ মডেল</span>
           </span>
 
           <h1 className="mt-6 text-4xl font-bold leading-[1.15] tracking-tight text-foreground sm:text-5xl md:text-[3.6rem]">
@@ -260,8 +262,7 @@ function Hero() {
           </h1>
 
           <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            যাচাইকৃত SME এবং উঠতি স্টার্টআপে স্বচ্ছ উপায়ে
-            আকর্ষণীয় মুনাফা অর্জন করুন।
+            যাচাইকৃত SME এবং জাচাইকৃত ব্যবসা প্রতিষ্ঠানে স্বচ্ছ উপায়ে আকর্ষণীয় মুনাফা অর্জন করুন।
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-4">
@@ -291,9 +292,14 @@ function Hero() {
           </div>
 
           <div className="mt-12 grid max-w-lg grid-cols-3 gap-6 border-t border-border/70 pt-7 text-left">
-            <Stat value="১৮%–৩৩%" label="বার্ষিক মুনাফা" />
+            <Stat value="১৮%–২৫%" label="বার্ষিক মুনাফা" />
             <Stat value="১৫+" label="যাচাইকৃত প্রজেক্ট" />
-            <Stat value="১০০%" label="শরীয়াহ কমপ্লায়েন্ট" />
+            <Stat value="১০০%" label="সুদ এবং ঘুরিয়ে সুদ মুক্ত" />
+          </div>
+
+          <div className="mt-8 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-xs leading-relaxed text-amber-800 dark:text-amber-400 flex items-start gap-2.5 max-w-xl shadow-sm">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span><strong className="font-semibold">সতর্কতা:</strong> বিনিয়োগ মানেই ঝুঁকি ও সম্ভাবনা। সুদ আর বিনিয়োগ এক বিষয় না। সরাসরি ব্যবসায়ীর সাথে যোগাযোগের মাধ্যমে নিজে বুঝে বিনিয়োগ সিদ্ধান্ত গ্রহণ করুন।</span>
           </div>
         </div>
 
@@ -345,35 +351,57 @@ function Stat({ value, label }: { value: React.ReactNode; label: string }) {
 
 const WHY = [
   {
-    label: "যাচাইকৃত বিনিয়োগ",
-    desc: "প্রতিটি বিনিয়োগে লিগ্যাল ডকুমেন্ট ও সিকিউরিটি চেক নিশ্চিত করা হয়।",
+    label: "ব্যবসায়ীর সাথে সরাসরি সংযোগ",
+    desc: "আপনার ও ব্যবসায়ীর মাঝে সরাসরি যোগাযোগ এবং সম্পর্ক হবে। মাঝে কেউ থাকবে না।",
     icon: (
-      <path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z" />
+      <>
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+      </>
     ),
   },
   {
-    label: "স্বচ্ছ পার্টনারশিপ",
-    desc: "পার্টনারশিপ মডেলে মুনাফা-ক্ষতি ভাগাভাগি — সম্পূর্ণ স্বচ্ছ চুক্তি ও রিপোর্টিং।",
-    icon: <path d="M12 3v18M5 8a7 7 0 0 0 7 4 7 7 0 0 0 7-4" />,
-  },
-  {
-    label: "আকর্ষণীয় মুনাফা",
-    desc: "১৮%–৩৩% পর্যন্ত সম্ভাব্য বার্ষিক মুনাফা, স্বচ্ছ পেআউট শিডিউলে।",
-    icon: <path d="M3 17l6-6 4 4 8-8M14 7h7v7" />,
-  },
-  {
-    label: "সরাসরি যোগাযোগ ও চুক্তি",
-    desc: "কোনো মধ্যস্থতাকারী ছাড়াই ব্যবসায়ীর সাথে সরাসরি যোগাযোগ ও চুক্তি করুন। সম্পূর্ণ দায়িত্ব ও সিদ্ধান্ত আপনার নিজের।",
-    icon: <path d="M8 10h.01M12 10h.01M16 10h.01M21 12a8 8 0 0 1-11.6 7.2L3 21l1.8-6.4A8 8 0 1 1 21 12z" />,
-  },
-  {
-    label: "সুদ বিরোধী ব্যবসা যাচাই",
-    desc: "এমন কোনো প্রতিষ্ঠান রাখা হয় না যারা একই সাথে সুদে ঋণ নেয় এবং বিনিয়োগও নেয়। সব ব্যবসা যাচাই করে তালিকাভুক্ত করা হয়।",
+    label: "সুদ মুক্ত আয়",
+    desc: "সকল প্রকার আয় সুদ মুক্ত। কোন প্রকার বাহানা ও ঘুরিয়ে সুদ খাওয়ার সুযোগ নেই।",
     icon: <path d="M9 12l2 2 4-4M12 3l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V7l8-4z" />,
   },
   {
-    label: "সরেজমিনে যাচাইয়ের সুযোগ",
-    desc: "বিনিয়োগকারী যেকোনো সময় ব্যবসাপ্রতিষ্ঠান ও হিসাব সরাসরি গিয়ে যাচাই করতে পারবেন — সবসময় প্রবেশাধিকার থাকবে।",
+    label: "সমাজের জন্য কল্যাণকর ব্যবসা",
+    desc: "ক্ষতিকর পণ্য, ফটকাবাজি, জালিয়াতি, জুয়া, অস্বাস্থ্যকর খাবার, মাপে কম দেওয়া, পণ্যে ঠকানো হয় এমন ব্যবসাকে বাছাই করা হয় না।",
+    icon: <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />,
+  },
+  {
+    label: "স্বাধীন সিদ্ধান্ত",
+    desc: "নিজে যাচাই বাছাই করে স্বাধীন ভাবে সিদ্ধান্ত নিবেন। নিজের পছন্দ না হলে বিনিয়োগ করবেন না।",
+    icon: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />,
+  },
+  {
+    label: "আইনি সুরক্ষা",
+    desc: "প্রতিটি বিনিয়োগ লিগ্যাল ডকুমেন্ট ও সিকিউরিটি চেক নিশ্চিত করে করবেন।",
+    icon: <path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z" />,
+  },
+  {
+    label: "স্বচ্ছ চুক্তি",
+    desc: "প্রতি মাসের হিসাব প্রদর্শন বাবদ লাভ-ক্ষতি ভাগাভাগি — সম্পূর্ণ স্বচ্ছ রিপোর্টিং।",
+    icon: (
+      <>
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <path d="M14 2v6h6" />
+        <path d="M16 13H8" />
+        <path d="M16 17H8" />
+        <path d="M10 9H8" />
+      </>
+    ),
+  },
+  {
+    label: "আকর্ষণীয় মুনাফা",
+    desc: "১৮%–২৫% পর্যন্ত সম্ভাব্য বার্ষিক মুনাফার সম্ভাবনা।",
+    icon: <path d="M3 17l6-6 4 4 8-8M14 7h7v7" />,
+  },
+  {
+    label: "বিনিয়োগের আগে ও পরে সরেজমিনে যাচাইয়ের সুযোগ",
+    desc: "বিনিয়োগকারী যেকোনো সময় ব্যবসাপ্রতিষ্ঠান ও হিসাব সরাসরি নিজে গিয়ে যাচাই করতে পারবেন।",
     icon: <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />,
   },
 ];
@@ -386,7 +414,7 @@ function WhyChoose() {
           eyebrow="কেন আমরা"
           title="বিশ্বস্ত বিনিয়োগের জন্য"
         />
-        <div className="mt-10 grid gap-5 sm:mt-14 sm:gap-6 md:grid-cols-3">
+        <div className="mt-10 grid gap-5 sm:mt-14 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {WHY.map((w, i) => (
             <motion.div
               key={w.label}
@@ -395,21 +423,23 @@ function WhyChoose() {
               whileInView="show"
               viewport={{ once: true, amount: 0.2 }}
               transition={{ delay: i * 0.1 }}
-              className="group relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)] transition duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] sm:p-7"
+              className="group relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)] transition duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] sm:p-7 flex flex-col justify-between"
             >
-              <span
-                className="grid h-12 w-12 place-items-center rounded-2xl border border-primary/20 bg-primary/10 text-primary shadow-sm"
-              >
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  {w.icon}
-                </svg>
-              </span>
-              <h3 className="mt-5 text-lg font-bold leading-tight sm:mt-6 sm:text-xl">
-                {w.label}
-              </h3>
-              <p className="mt-2 text-[13.5px] leading-relaxed text-muted-foreground sm:text-sm">
-                {w.desc}
-              </p>
+              <div>
+                <span
+                  className="grid h-12 w-12 place-items-center rounded-2xl border border-primary/20 bg-primary/10 text-primary shadow-sm"
+                >
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    {w.icon}
+                  </svg>
+                </span>
+                <h3 className="mt-5 text-lg font-bold leading-tight sm:mt-6 sm:text-xl">
+                  {w.label}
+                </h3>
+                <p className="mt-2 text-[13.5px] leading-relaxed text-muted-foreground sm:text-sm">
+                  {w.desc}
+                </p>
+              </div>
               <a
                 href="#opportunities"
                 className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition hover:gap-2.5 sm:mt-6"
@@ -436,15 +466,15 @@ function WhyChoose() {
 const STEPS = [
   {
     title: "পছন্দের ব্যবসা নির্বাচন করুন",
-    desc: "যাচাইকৃত SME ও স্টার্টআপের তালিকা থেকে আপনার লক্ষ্য মিলিয়ে বেছে নিন।",
+    desc: "আমাদের যাচাইকৃত তালিকা থেকে আপনার লক্ষ্য মিলিয়ে পছন্দের ব্যবসা প্রতিষ্ঠানগুলো বেছে নিন।",
   },
   {
     title: "উদ্যোক্তার সাথে চুক্তি স্বাক্ষর করুন",
-    desc: "পার্টনারশিপ চুক্তি — লিগ্যাল ডকুমেন্ট ও সিকিউরিটি চেক সহ।",
+    desc: "লিগ্যাল ডকুমেন্টে চুক্তি করুন এবং চেক বুঝে নিন।",
   },
   {
-    title: "বিনিয়োগ করুন, মুনাফা নিন",
-    desc: "নির্দিষ্ট সময় অন্তর সম্মত পদ্ধতিতে মুনাফা বুঝে নিন।",
+    title: "সময় মত মুনাফা নিন",
+    desc: "নির্দিষ্ট সময় অন্তর ব্যবসার লাভ লোকসানের উপর ভিত্তি করে নিজের ভাগ বুঝে নিন।",
   },
 ];
 
@@ -628,7 +658,7 @@ function FinalCTA() {
           className="mt-8 inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-[15px] font-semibold text-primary-foreground shadow-[var(--shadow-elevated)] transition hover:scale-[1.03]"
           style={{ background: "var(--gradient-primary)" }}
         >
-          বিনিয়োগের সুযোগগুলো দেখুন
+          বিনিয়োগ শুরু করুন
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M5 12h14M13 5l7 7-7 7" />
           </svg>
@@ -648,7 +678,7 @@ function Footer() {
               <path d="M4 20V10M10 20V4M16 20v-8M22 20H2" />
             </svg>
           </span>
-          <span className="font-bold text-foreground">বিনিয়োগ বৃদ্ধি</span>
+          <span className="font-bold text-foreground">সমৃদ্ধি</span>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-3">
           <a
@@ -673,7 +703,7 @@ function Footer() {
           </a>
         </div>
         <div className="flex flex-col items-center gap-1 sm:items-end">
-          <p>© {new Date().getFullYear()} · বিনিয়োগ প্ল্যাটফর্ম</p>
+          <p>© {new Date().getFullYear()} · বিনিয়োগ বৃদ্ধি প্ল্যাটফর্ম</p>
           <p>
             Created by <a href="https://artx.techvrs.com/" target="_blank" rel="noopener noreferrer" className="font-medium text-foreground transition hover:text-primary">ArtX TechVRS</a>
           </p>

@@ -93,6 +93,108 @@ export type Database = {
         };
         Relationships: [];
       };
+      opportunity_risks: {
+        Row: {
+          id: string;
+          opportunity_id: string;
+          risk_name: string;
+          risk_level: string;
+          description: string | null;
+          sort_order: number | null;
+        };
+        Insert: {
+          id?: string;
+          opportunity_id: string;
+          risk_name: string;
+          risk_level?: string;
+          description?: string | null;
+          sort_order?: number | null;
+        };
+        Update: {
+          id?: string;
+          opportunity_id?: string;
+          risk_name?: string;
+          risk_level?: string;
+          description?: string | null;
+          sort_order?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "opportunity_risks_opportunity_id_fkey";
+            columns: ["opportunity_id"];
+            isOneToOne: false;
+            referencedRelation: "opportunities";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      opportunity_payouts: {
+        Row: {
+          id: string;
+          opportunity_id: string;
+          cycle_name: string;
+          target_profit: string | null;
+          actual_profit: string | null;
+          status: string;
+          sort_order: number | null;
+        };
+        Insert: {
+          id?: string;
+          opportunity_id: string;
+          cycle_name: string;
+          target_profit?: string | null;
+          actual_profit?: string | null;
+          status?: string;
+          sort_order?: number | null;
+        };
+        Update: {
+          id?: string;
+          opportunity_id?: string;
+          cycle_name?: string;
+          target_profit?: string | null;
+          actual_profit?: string | null;
+          status?: string;
+          sort_order?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "opportunity_payouts_opportunity_id_fkey";
+            columns: ["opportunity_id"];
+            isOneToOne: false;
+            referencedRelation: "opportunities";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      opportunity_legal_checks: {
+        Row: {
+          id: string;
+          opportunity_id: string;
+          check_text: string;
+          sort_order: number | null;
+        };
+        Insert: {
+          id?: string;
+          opportunity_id: string;
+          check_text: string;
+          sort_order?: number | null;
+        };
+        Update: {
+          id?: string;
+          opportunity_id?: string;
+          check_text?: string;
+          sort_order?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "opportunity_legal_checks_opportunity_id_fkey";
+            columns: ["opportunity_id"];
+            isOneToOne: false;
+            referencedRelation: "opportunities";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
       testimonials: {
         Row: {
           id: string;
@@ -138,6 +240,16 @@ export type Opportunity = Database["public"]["Tables"]["opportunities"]["Row"];
 export type OpportunityInsert = Database["public"]["Tables"]["opportunities"]["Insert"];
 export type OpportunityUpdate = Database["public"]["Tables"]["opportunities"]["Update"];
 
+export type OpportunityRisk = Database["public"]["Tables"]["opportunity_risks"]["Row"];
+export type OpportunityRiskInsert = Database["public"]["Tables"]["opportunity_risks"]["Insert"];
+
+export type OpportunityPayout = Database["public"]["Tables"]["opportunity_payouts"]["Row"];
+export type OpportunityPayoutInsert = Database["public"]["Tables"]["opportunity_payouts"]["Insert"];
+
+export type OpportunityLegalCheck = Database["public"]["Tables"]["opportunity_legal_checks"]["Row"];
+export type OpportunityLegalCheckInsert = Database["public"]["Tables"]["opportunity_legal_checks"]["Insert"];
+
 export type Testimonial = Database["public"]["Tables"]["testimonials"]["Row"];
 export type TestimonialInsert = Database["public"]["Tables"]["testimonials"]["Insert"];
 export type TestimonialUpdate = Database["public"]["Tables"]["testimonials"]["Update"];
+

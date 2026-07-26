@@ -4,7 +4,7 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/insights")({
   head: () => ({
     meta: [
-      { title: "ইনসাইটস ও ব্লগ · বিনিয়োগ বৃদ্ধি" },
+      { title: "ইনসাইটস ও ব্লগ · সমৃদ্ধি" },
       { name: "description", content: "হালাল বিনিয়োগ, ব্যবসা ও ফাইন্যান্স নিয়ে এক্সপার্টদের মতামত।" },
     ],
   }),

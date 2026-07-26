@@ -18,7 +18,7 @@ import {
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
-      { title: "ড্যাশবোর্ড · বিনিয়োগ বৃদ্ধি" },
+      { title: "ড্যাশবোর্ড · সমৃদ্ধি" },
       {
         name: "description",
         content: "আপনার পোর্টফোলিও, বিনিয়োগ বন্টন ও মুনাফা পেআউটের বিস্তারিত ওভারভিউ।",

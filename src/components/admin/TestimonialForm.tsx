@@ -147,7 +147,7 @@ export function TestimonialForm({
               onChange={(e) =>
                 setForm((prev) => ({ ...prev, quote: e.target.value }))
               }
-              placeholder="বিনিয়োগ বৃদ্ধি আমার জন্য খুবই উপকারী হয়েছে..."
+              placeholder="সমৃদ্ধি আমার জন্য খুবই উপকারী হয়েছে..."
               rows={4}
               required
             />

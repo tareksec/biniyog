@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import type { Opportunity } from "@/lib/database.types";
-export type { Opportunity };
+import type { Opportunity, OpportunityRisk, OpportunityPayout, OpportunityLegalCheck } from "@/lib/database.types";
+export type { Opportunity, OpportunityRisk, OpportunityPayout, OpportunityLegalCheck };
 
 export async function fetchOpportunities(): Promise<Opportunity[]> {
   const { data, error } = await supabase
@@ -21,6 +21,31 @@ export function useOpportunities() {
     queryKey: ["opportunities"],
     queryFn: fetchOpportunities,
     staleTime: 1000 * 60 * 5, // 5 min
+  });
+}
+
+export async function fetchOpportunitySubsections(opportunityId: string) {
+  if (!opportunityId) return { risks: [], payouts: [], legalChecks: [] };
+  
+  const [risksRes, payoutsRes, legalRes] = await Promise.all([
+    supabase.from("opportunity_risks").select("*").eq("opportunity_id", opportunityId).order("sort_order", { ascending: true }),
+    supabase.from("opportunity_payouts").select("*").eq("opportunity_id", opportunityId).order("sort_order", { ascending: true }),
+    supabase.from("opportunity_legal_checks").select("*").eq("opportunity_id", opportunityId).order("sort_order", { ascending: true }),
+  ]);
+
+  return {
+    risks: (risksRes.data || []) as OpportunityRisk[],
+    payouts: (payoutsRes.data || []) as OpportunityPayout[],
+    legalChecks: (legalRes.data || []) as OpportunityLegalCheck[],
+  };
+}
+
+export function useOpportunitySubsections(opportunityId?: string) {
+  return useQuery({
+    queryKey: ["opportunity_subsections", opportunityId],
+    queryFn: () => fetchOpportunitySubsections(opportunityId!),
+    enabled: !!opportunityId,
+    staleTime: 1000 * 60 * 2,
   });
 }
 
