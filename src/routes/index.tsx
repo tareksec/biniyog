@@ -17,7 +17,7 @@ import { InvestmentCalculator } from "@/components/InvestmentCalculator";
 import { FaqSection } from "@/components/FaqSection";
 import heroImage from "@/hero/hero.png";
 import { PolicySection } from "@/components/PolicySection";
-import { Loader2 } from "lucide-react";
+import { Loader2, CalendarCheck } from "lucide-react";
 
 type OpportunitiesSearch = {
   category?: string;
@@ -109,9 +109,8 @@ function Hero() {
           </span>
 
           <h1 className="mt-6 text-4xl font-bold leading-[1.15] tracking-tight text-foreground sm:text-5xl md:text-[3.6rem]">
-            সঠিক বিনিয়োগে দেশের{" "}
-            <span className="gradient-text">সম্ভাবনাময় ব্যবসায়</span>{" "}
-            অংশীদার হোন
+            দেশের <span className="gradient-text">সম্ভাবনাময় ব্যবসায়</span>{" "}
+            বিনিয়োগ করুন
           </h1>
 
           <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
@@ -119,8 +118,8 @@ function Hero() {
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-4">
-            <a
-              href="#opportunities"
+            <Link
+              to="/opportunities"
               className="group inline-flex items-center gap-3 rounded-full px-6 py-3.5 text-[15px] font-semibold text-primary-foreground shadow-[var(--shadow-elevated)] transition hover:scale-[1.03]"
               style={{ background: "var(--gradient-primary)" }}
             >
@@ -130,17 +129,17 @@ function Hero() {
                   <path d="M5 12h14M13 5l7 7-7 7" />
                 </svg>
               </span>
-            </a>
+            </Link>
             <a
-              href="#how"
+              href={CONSULTANCY_URL}
+              target="_blank"
+              rel="noopener noreferrer"
               className="group inline-flex items-center gap-3 text-[15px] font-medium text-foreground"
             >
               <span className="grid h-11 w-11 place-items-center rounded-full border border-border bg-card shadow-sm transition group-hover:border-primary/40 group-hover:text-primary">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M6 4l14 8-14 8V4z" />
-                </svg>
+                <CalendarCheck className="h-5 w-5" />
               </span>
-              কীভাবে কাজ করে
+              Book consultation service
             </a>
           </div>
 
@@ -149,38 +148,33 @@ function Hero() {
             <Stat value="১৫+" label="যাচাইকৃত প্রজেক্ট" />
             <Stat value="১০০%" label="সুদ এবং ঘুরিয়ে সুদ মুক্ত" />
           </div>
-
-          <div className="mt-8 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-xs leading-relaxed text-amber-800 dark:text-amber-400 flex items-start gap-2.5 max-w-xl shadow-sm">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            <span><strong className="font-semibold">সতর্কতা:</strong> বিনিয়োগ মানেই ঝুঁকি ও সম্ভাবনা। সুদ আর বিনিয়োগ এক বিষয় না। সরাসরি ব্যবসায়ীর সাথে যোগাযোগের মাধ্যমে নিজে বুঝে বিনিয়োগ সিদ্ধান্ত গ্রহণ করুন।</span>
-          </div>
         </div>
 
-        <div data-hero-art className="relative mx-auto w-full max-w-[480px] flex items-center justify-center">
-          {/* Subtle glowing background behind the transparent image */}
+        <div data-hero-art className="relative mx-auto w-full max-w-[620px] lg:max-w-[720px] flex items-center justify-center py-2 lg:-mr-6 scale-105 sm:scale-110 lg:scale-115 transition-all">
+          {/* Vibrant ambient glow behind the hero image */}
           <motion.div 
-            animate={{ opacity: [0.5, 0.8, 0.5], scale: [0.95, 1.05, 0.95] }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute inset-0 bg-primary/20 blur-[80px] rounded-full mix-blend-multiply" 
+            animate={{ opacity: [0.4, 0.7, 0.4], scale: [0.95, 1.05, 0.95] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -inset-4 bg-gradient-to-tr from-primary/30 via-emerald-500/20 to-teal-400/20 blur-[70px] rounded-full pointer-events-none -z-10" 
           />
           <motion.div 
-            animate={{ opacity: [0.3, 0.5, 0.3], scale: [1, 1.1, 1] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-            className="absolute inset-10 bg-[var(--primary-glow)] blur-[60px] rounded-full mix-blend-multiply" 
+            animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.1, 1] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+            className="absolute inset-8 bg-primary/25 blur-[50px] rounded-full pointer-events-none -z-10" 
           />
           
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            initial={{ opacity: 0, scale: 0.92, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="relative z-10 w-full"
+            className="relative z-10 w-full flex items-center justify-center"
           >
             <motion.img 
-              animate={{ y: [0, -15, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              animate={{ y: [0, -10, 0] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
               src={heroImage} 
               alt="Business Investment Growth" 
-              className="w-full h-auto drop-shadow-2xl"
+              className="w-full h-auto object-contain drop-shadow-[0_25px_60px_rgba(0,0,0,0.2)] transition-transform duration-500 hover:scale-[1.03]"
             />
           </motion.div>
         </div>
@@ -293,15 +287,15 @@ function WhyChoose() {
                   {w.desc}
                 </p>
               </div>
-              <a
-                href="#opportunities"
+              <Link
+                to="/opportunities"
                 className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition hover:gap-2.5 sm:mt-6"
               >
                 আরও জানুন
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M5 12h14M13 5l7 7-7 7" />
                 </svg>
-              </a>
+              </Link>
               <span
                 aria-hidden
                 className="num pointer-events-none absolute -bottom-4 right-4 text-6xl font-bold text-primary/10"
@@ -446,8 +440,8 @@ function FinalCTA() {
         <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
           দেশের সম্ভাবনাময় ব্যবসাগুলোতে বিনিয়োগ শুরু করুন।
         </p>
-        <a
-          href="#opportunities"
+        <Link
+          to="/opportunities"
           className="mt-8 inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-[15px] font-semibold text-primary-foreground shadow-[var(--shadow-elevated)] transition hover:scale-[1.03]"
           style={{ background: "var(--gradient-primary)" }}
         >
@@ -455,7 +449,7 @@ function FinalCTA() {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M5 12h14M13 5l7 7-7 7" />
           </svg>
-        </a>
+        </Link>
       </div>
     </section>
   );

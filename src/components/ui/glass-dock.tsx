@@ -12,6 +12,7 @@ export interface DockItem {
     icon: DockIcon;
     onClick?: () => void;
     href?: string;
+    highlight?: boolean;
 }
 
 export interface GlassDockProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -405,6 +406,43 @@ export const GlassDock = React.forwardRef<HTMLDivElement, GlassDockProps>(
 
                         const type = el.title.toLowerCase();
                         const isAnimated = ['home', 'blog', 'marker', 'email', 'linkedin', 'x', 'github'].includes(type);
+
+                        if (el.highlight) {
+                            return (
+                                <div
+                                    key={el.title}
+                                    onMouseEnter={() => handleMouseEnter(index)}
+                                    onClick={handleClick}
+                                    className="relative h-10 flex items-center justify-center cursor-pointer"
+                                    role="button"
+                                    tabIndex={0}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            handleClick();
+                                        }
+                                    }}
+                                >
+                                    <motion.div
+                                        whileTap={{ scale: 0.95 }}
+                                        animate={{
+                                            scale: isHovered ? 1.05 : 1,
+                                            y: isHovered ? -3 : 0,
+                                        }}
+                                        transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+                                        className={cn(
+                                            "flex h-10 items-center gap-2 px-4 rounded-full font-bold shadow-md transition-all",
+                                            "bg-primary text-primary-foreground shadow-primary/25 hover:bg-primary/90 hover:shadow-primary/40"
+                                        )}
+                                        style={{ background: "var(--gradient-primary)" }}
+                                    >
+                                        <Icon className="h-[18px] w-[18px] shrink-0 text-primary-foreground" />
+                                        <span className="text-[13.5px] font-bold whitespace-nowrap tracking-wide text-primary-foreground">
+                                            {el.title}
+                                        </span>
+                                    </motion.div>
+                                </div>
+                            );
+                        }
 
                         return (
                             <div
