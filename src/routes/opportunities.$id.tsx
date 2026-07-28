@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useRouter, useNavigate } from "@tanstack/react-router";
 import { fetchOpportunities, isFullyFunded, statusLabel, parseLinks, fundingProgress, getRiskLevel, resolveImageUrl, resolveImageUrls, getStatusConfig, fetchOpportunitySubsections, type Opportunity, type OpportunityRisk, type OpportunityPayout, type OpportunityLegalCheck, parseRoi } from "@/lib/projects";
 import { Slider } from "@/components/ui/slider";
 import { motion } from "framer-motion";
@@ -56,22 +56,53 @@ function OpportunityDetailsPage() {
   const { project, risks, payouts, legalChecks } = Route.useLoaderData();
   const funded = isFullyFunded(project);
   const links = parseLinks(project.website_url);
+  const router = useRouter();
+  const navigate = useNavigate();
+
+  const handleBack = (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+    const hasRouterHistory = typeof window !== "undefined" && window.history.state && typeof window.history.state.idx === "number" && window.history.state.idx > 0;
+    const hasReferrer = typeof document !== "undefined" && document.referrer && document.referrer.includes(window.location.host);
+
+    if (hasRouterHistory || (typeof window !== "undefined" && window.history.length > 1 && hasReferrer)) {
+      if (typeof router.history?.back === "function") {
+        router.history.back();
+      } else {
+        window.history.back();
+      }
+    } else {
+      navigate({ to: "/opportunities" });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-20 border-b border-border/70 bg-background/85 backdrop-blur">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-5 py-4 sm:px-8">
-          <Link to="/" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary">
+          <button onClick={handleBack} className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors cursor-pointer">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
             সব সুযোগ
-          </Link>
+          </button>
           <img src="/logo.png" alt="সমৃদ্ধি" className="h-6 w-auto" />
         </div>
       </header>
 
       <main className="mx-auto max-w-4xl px-5 py-10 sm:px-8 sm:py-14">
+        {/* Back navigation button above image/title */}
+        <div className="mb-6 flex items-center justify-between">
+          <button
+            onClick={handleBack}
+            className="group inline-flex items-center gap-2 rounded-xl bg-card border border-border px-4 py-2.5 text-sm font-semibold text-foreground shadow-sm transition-all hover:bg-muted/80 hover:border-primary/40 hover:-translate-x-0.5 cursor-pointer"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-primary transition-transform group-hover:-translate-x-1" aria-hidden="true">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            <span>সব সুযোগ</span>
+          </button>
+        </div>
+
         {/* Banner Images */}
         <div className="mb-10 w-full overflow-hidden rounded-2xl border border-border bg-muted">
           {resolveImageUrls(project).length > 1 ? (

@@ -20,10 +20,10 @@ import {
   uniqueCategories,
   getRiskLevel,
   statusLabel,
+  resolveImageUrl,
 } from "@/lib/projects";
 import type { Opportunity } from "@/lib/projects";
 import { OpportunityQuickView } from "@/components/OpportunityQuickView";
-import { OpportunityCompareModal } from "@/components/OpportunityCompareModal";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Slider } from "@/components/ui/slider";
@@ -73,25 +73,15 @@ function OpportunitiesPage() {
   const statusFilters = searchParams.status ? searchParams.status.split(",") : [];
 
   const { bookmarks } = useBookmarks();
-  const [selectedForCompare, setSelectedForCompare] = useState<string[]>([]);
   const [quickViewProject, setQuickViewProject] = useState<Opportunity | null>(null);
-  const [showCompareModal, setShowCompareModal] = useState(false);
-
-  const toggleCompare = (id: string) => {
-    setSelectedForCompare((prev) => {
-      if (prev.includes(id)) return prev.filter((pid) => pid !== id);
-      if (prev.length >= 3) return prev;
-      return [...prev, id];
-    });
-  };
-
-  const compareProjects = useMemo(() => {
-    return projects.filter((p) => selectedForCompare.includes(p.id));
-  }, [projects, selectedForCompare]);
 
   // Local state for debounced search
   const [searchQuery, setSearchQuery] = useState(searchParams.q || "");
   const [isFiltersVisible, setIsFiltersVisible] = useState(false);
+
+  useEffect(() => {
+    setSearchQuery(searchParams.q || "");
+  }, [searchParams.q]);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -502,9 +492,6 @@ function OpportunitiesPage() {
                       key={p.id} 
                       project={p} 
                       index={idx} 
-                      isSelectedForCompare={selectedForCompare.includes(p.id)}
-                      onToggleCompare={() => toggleCompare(p.id)}
-                      isCompareDisabled={selectedForCompare.length >= 3}
                       onQuickView={() => setQuickViewProject(p)}
                     />
                   ) : (
@@ -512,9 +499,6 @@ function OpportunitiesPage() {
                       key={p.id} 
                       project={p} 
                       index={idx} 
-                      isSelectedForCompare={selectedForCompare.includes(p.id)}
-                      onToggleCompare={() => toggleCompare(p.id)}
-                      isCompareDisabled={selectedForCompare.length >= 3}
                       onQuickView={() => setQuickViewProject(p)}
                     />
                   )
@@ -525,60 +509,10 @@ function OpportunitiesPage() {
         </div>
       </div>
 
-      {/* Floating Compare Bar */}
-      <AnimatePresence>
-        {selectedForCompare.length > 0 && (
-          <motion.div
-            initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 100, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 200, damping: 20 }}
-            className="fixed bottom-0 left-0 right-0 z-40 p-4 pointer-events-none"
-          >
-            <div className="mx-auto max-w-4xl bg-card border border-border shadow-2xl rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 pointer-events-auto">
-              <div className="flex items-center gap-4">
-                <div className="font-bold text-sm text-muted-foreground">
-                  তুলনা করার জন্য নির্বাচিত: <span className="text-foreground">{selectedForCompare.length}/3</span>
-                </div>
-                <div className="flex gap-2">
-                  {compareProjects.map((p) => (
-                    <div key={p.id} className="relative h-10 w-10 rounded-full border-2 border-primary overflow-hidden group">
-                      <img src={resolveImageUrl(p)} alt="" className="h-full w-full object-cover" />
-                      <button onClick={() => toggleCompare(p.id)} className="absolute inset-0 bg-black/60 items-center justify-center text-white hidden group-hover:flex">
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="flex gap-3 w-full sm:w-auto">
-                <Button variant="outline" onClick={() => setSelectedForCompare([])} className="rounded-full flex-1 sm:flex-none">
-                  সব মুছুন
-                </Button>
-                <Button 
-                  disabled={selectedForCompare.length < 2} 
-                  onClick={() => setShowCompareModal(true)}
-                  className="rounded-full flex-1 sm:flex-none shadow-md"
-                >
-                  তুলনা করুন
-                </Button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <OpportunityQuickView 
         project={quickViewProject} 
         isOpen={!!quickViewProject} 
         onClose={() => setQuickViewProject(null)} 
-      />
-
-      <OpportunityCompareModal
-        projects={compareProjects}
-        isOpen={showCompareModal}
-        onClose={() => setShowCompareModal(false)}
-        onRemove={toggleCompare}
       />
     </div>
   );

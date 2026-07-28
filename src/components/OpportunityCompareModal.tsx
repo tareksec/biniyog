@@ -75,7 +75,7 @@ export function OpportunityCompareModal({
               </div>
 
               {/* Row: Expected Profit */}
-              <div className="font-semibold text-sm text-muted-foreground flex items-center border-t border-border/50 pt-4">প্রত্যাশিত মুনাফা</div>
+              <div className="font-semibold text-sm text-muted-foreground flex items-center border-t border-border/50 pt-4">প্রত্যাশিত লাভ</div>
               <div className={`grid gap-4 border-t border-border/50 pt-4 ${projects.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
                 {projects.map((p) => {
                   const data = formatProfit(p.expected_profit || "");

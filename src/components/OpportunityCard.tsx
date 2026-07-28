@@ -1,7 +1,6 @@
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Heart } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import {
   type Opportunity,
@@ -190,16 +189,10 @@ export function CircularProgress({
 export function OpportunityCard({
   project,
   index,
-  isSelectedForCompare,
-  onToggleCompare,
-  isCompareDisabled,
   onQuickView,
 }: {
   project: Opportunity;
   index: number;
-  isSelectedForCompare?: boolean;
-  onToggleCompare?: () => void;
-  isCompareDisabled?: boolean;
   onQuickView?: () => void;
 }) {
   const { isBookmarked, toggleBookmark } = useBookmarks();
@@ -235,17 +228,6 @@ export function OpportunityCard({
         }`}
         style={{ boxShadow: "0 8px 30px rgba(0,0,0,0.06)" }}
       >
-        {onToggleCompare && (
-          <div className="absolute top-4 left-4 z-10" onClick={(e) => e.stopPropagation()}>
-            <Checkbox 
-              checked={isSelectedForCompare} 
-              onCheckedChange={onToggleCompare} 
-              disabled={isCompareDisabled && !isSelectedForCompare}
-              className="h-5 w-5 rounded border-2 border-border/80 bg-background/80 backdrop-blur-sm data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-            />
-          </div>
-        )}
-
         <button
           onClick={(e) => { e.stopPropagation(); toggleBookmark(project.id); }}
           className="absolute top-4 right-4 z-10 p-2 rounded-full bg-background/80 backdrop-blur-sm border border-border/60 hover:bg-background transition-colors shadow-sm"

@@ -35,33 +35,6 @@ export const Route = createFileRoute("/")({
 });
 
 function LandingPage() {
-  // ─── SCROLL RESTORATION ───
-  useEffect(() => {
-    // Restore scroll position on mount
-    const savedScroll = sessionStorage.getItem("landing_scroll_pos");
-    if (savedScroll) {
-      // Small timeout to allow the page and dynamic data to render
-      setTimeout(() => {
-        window.scrollTo({ top: parseInt(savedScroll, 10), behavior: "instant" });
-      }, 150);
-    }
-
-    // Save scroll position on scroll (debounced)
-    let timeoutId: ReturnType<typeof setTimeout>;
-    const handleScroll = () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        sessionStorage.setItem("landing_scroll_pos", window.scrollY.toString());
-      }, 150);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      clearTimeout(timeoutId);
-    };
-  }, []);
-
   return (
     <div className="min-h-screen bg-background text-foreground antialiased">
       <Hero />

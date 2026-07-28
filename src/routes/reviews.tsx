@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
@@ -6,7 +6,18 @@ import type { Testimonial } from "@/lib/database.types";
 import { Loader2, Star, Search, CheckCircle2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
+interface ReviewsSearch {
+  q?: string;
+  rating?: number;
+}
+
 export const Route = createFileRoute("/reviews")({
+  validateSearch: (search: Record<string, unknown>): ReviewsSearch => {
+    return {
+      q: typeof search.q === "string" ? search.q : undefined,
+      rating: typeof search.rating === "number" ? search.rating : typeof search.rating === "string" ? parseInt(search.rating, 10) : undefined,
+    };
+  },
   head: () => ({
     meta: [
       { title: "গ্রাহকদের মতামত ও অভিজ্ঞতা · সমৃদ্ধি" },
@@ -100,14 +111,34 @@ function ReviewGridCard({ item }: { item: Testimonial }) {
 }
 
 function ReviewsPage() {
+  const searchParams = Route.useSearch();
+  const navigate = Route.useNavigate();
+
   const { data: testimonials = [], isLoading } = useQuery({
     queryKey: ["testimonials-all"],
     queryFn: fetchAllTestimonials,
     staleTime: 1000 * 60 * 5, // 5 min
   });
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedRating, setSelectedRating] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState(searchParams.q || "");
+  const [selectedRating, setSelectedRating] = useState<number | null>(searchParams.rating || null);
+
+  useEffect(() => {
+    setSearchQuery(searchParams.q || "");
+    setSelectedRating(searchParams.rating || null);
+  }, [searchParams.q, searchParams.rating]);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      navigate({ search: (prev) => ({ ...prev, q: searchQuery || undefined }), replace: true });
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchQuery, navigate]);
+
+  const handleRatingChange = (rating: number | null) => {
+    setSelectedRating(rating);
+    navigate({ search: (prev) => ({ ...prev, rating: rating || undefined }), replace: true });
+  };
 
   // Statistics
   const stats = useMemo(() => {
@@ -118,10 +149,10 @@ function ReviewsPage() {
         ? (
             ratedList.reduce((sum, t) => sum + (t.rating || 5), 0) /
             ratedList.length
-          ).toFixed(১ as any) // Note: using 1 in toFixed
+          ).toFixed(1)
         : "৫.০";
     const verifiedCount = testimonials.filter((t) => t.investment_amount).length;
-    return { total, avg: ratedList.length > 0 ? (ratedList.reduce((s, t) => s + (t.rating || 5), 0) / ratedList.length).toFixed(1) : "৫.০", verifiedCount };
+    return { total, avg, verifiedCount };
   }, [testimonials]);
 
   // Filtered List
@@ -235,7 +266,7 @@ function ReviewsPage() {
           {/* Star Rating Tabs */}
           <div className="flex items-center gap-1.5 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
             <button
-              onClick={() => setSelectedRating(null)}
+              onClick={() => handleRatingChange(null)}
               className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors shrink-0 ${
                 selectedRating === null
                   ? "bg-primary text-primary-foreground shadow-sm"
@@ -245,7 +276,7 @@ function ReviewsPage() {
               সকল মতামত ({testimonials.length})
             </button>
             <button
-              onClick={() => setSelectedRating(5)}
+              onClick={() => handleRatingChange(5)}
               className={`inline-flex items-center gap-1 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors shrink-0 ${
                 selectedRating === 5
                   ? "bg-amber-500 text-white shadow-sm"
@@ -256,7 +287,7 @@ function ReviewsPage() {
               <Star className="h-3.5 w-3.5 fill-current" />
             </button>
             <button
-              onClick={() => setSelectedRating(4)}
+              onClick={() => handleRatingChange(4)}
               className={`inline-flex items-center gap-1 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors shrink-0 ${
                 selectedRating === 4
                   ? "bg-amber-500 text-white shadow-sm"
@@ -287,7 +318,7 @@ function ReviewsPage() {
               <button
                 onClick={() => {
                   setSearchQuery("");
-                  setSelectedRating(null);
+                  handleRatingChange(null);
                 }}
                 className="mt-4 inline-flex items-center gap-2 rounded-xl bg-primary/10 px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/20"
               >

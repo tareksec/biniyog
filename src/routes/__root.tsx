@@ -6,7 +6,6 @@ import {
   useRouter,
   HeadContent,
   Scripts,
-  ScrollRestoration,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
@@ -133,12 +132,64 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+function GlobalScrollRestoration() {
+  const router = useRouter();
+  const location = router.state.location;
+
+  // Restore scroll position on pathname change / mount
+  useEffect(() => {
+    if (location.pathname.startsWith("/admin")) return;
+
+    const key = `scroll:${location.pathname}`;
+    const savedScroll = sessionStorage.getItem(key);
+    if (savedScroll !== null) {
+      const targetScroll = parseInt(savedScroll, 10);
+      if (!isNaN(targetScroll)) {
+        window.scrollTo({ top: targetScroll, behavior: "instant" });
+        const t1 = setTimeout(() => {
+          window.scrollTo({ top: targetScroll, behavior: "instant" });
+        }, 100);
+        const t2 = setTimeout(() => {
+          window.scrollTo({ top: targetScroll, behavior: "instant" });
+        }, 250);
+        return () => {
+          clearTimeout(t1);
+          clearTimeout(t2);
+        };
+      }
+    } else {
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }
+  }, [location.pathname]);
+
+  // Save scroll position on scroll
+  useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>;
+    const handleScroll = () => {
+      const currentPath = router.state.location.pathname;
+      if (currentPath.startsWith("/admin")) return;
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        sessionStorage.setItem(`scroll:${currentPath}`, window.scrollY.toString());
+      }, 100);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      clearTimeout(timeoutId);
+    };
+  }, [router]);
+
+  return null;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ScrollRestoration />
+      <GlobalScrollRestoration />
       <div className="flex flex-col min-h-screen">
         <div className="flex-grow">
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
