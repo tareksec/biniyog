@@ -114,10 +114,11 @@ function run() {
     const estimated_capital = row[15] ? row[15].trim() : null;
     const website_url = row[16] ? row[16].trim() : null;
     const image_url = row[17] ? row[17].trim() : null;
+    const image_urls_sql = image_url ? `ARRAY[${escapeSql(image_url)}]` : 'NULL';
     
-    const values = `(${escapeSql(slug)}, ${escapeSql(name)}, ${escapeSql(owner_name)}, ${escapeSql(owner_phone)}, ${escapeSql(cfa_comment)}, ${escapeSql(guarantee)}, ${escapeSql(category)}, ${escapeSql(bank_details)}, ${escapeSql(investment_type)}, ${escapeSql(investment_amount)}, ${escapeSql(expected_profit)}, ${escapeSql(profit_period)}, ${escapeSql(status)}, ${escapeSql(description)}, ${escapeSql(address)}, ${escapeSql(organization_type)}, ${escapeSql(estimated_capital)}, ${escapeSql(website_url)}, ${escapeSql(image_url)})`;
+    const values = `(${escapeSql(slug)}, ${escapeSql(name)}, ${escapeSql(owner_name)}, ${escapeSql(owner_phone)}, ${escapeSql(cfa_comment)}, ${escapeSql(guarantee)}, ${escapeSql(category)}, ${escapeSql(bank_details)}, ${escapeSql(investment_type)}, ${escapeSql(investment_amount)}, ${escapeSql(expected_profit)}, ${escapeSql(profit_period)}, ${escapeSql(status)}, ${escapeSql(description)}, ${escapeSql(address)}, ${escapeSql(organization_type)}, ${escapeSql(estimated_capital)}, ${escapeSql(website_url)}, ${image_urls_sql})`;
     
-    sql += `INSERT INTO public.opportunities (slug, name, owner_name, owner_phone, cfa_comment, guarantee, category, bank_details, investment_type, investment_amount, expected_profit, profit_period, status, description, address, organization_type, estimated_capital, website_url, image_url) VALUES ${values};\n\n`;
+    sql += `INSERT INTO public.opportunities (slug, name, owner_name, owner_phone, cfa_comment, guarantee, category, bank_details, investment_type, investment_amount, expected_profit, profit_period, status, description, address, organization_type, estimated_capital, website_url, image_urls) VALUES ${values};\n\n`;
   }
   
   fs.writeFileSync('seed.sql', sql, 'utf-8');

@@ -4,13 +4,16 @@ import { motion } from "framer-motion";
 export function InvestmentCalculator() {
   const [amount, setAmount] = useState(100000);
   const [roi, setRoi] = useState(20); // 20% annual return
+  const [years, setYears] = useState(1); // 1 to 10 years
 
-  const monthlyReturn = Math.round((amount * (roi / 100)) / 12);
   const yearlyReturn = Math.round(amount * (roi / 100));
+  const monthlyReturn = Math.round(yearlyReturn / 12);
+  const totalReturn = Math.round(yearlyReturn * years);
   
   // Calculate percentages for slider tracks
-  const amountPercent = ((amount - 10000) / (1000000 - 10000)) * 100;
+  const amountPercent = ((amount - 100000) / (1000000 - 100000)) * 100;
   const roiPercent = ((roi - 10) / (35 - 10)) * 100;
+  const yearsPercent = ((years - 1) / (10 - 1)) * 100;
 
   return (
     <section className="mx-auto max-w-4xl px-5 py-12 sm:px-8">
@@ -25,10 +28,10 @@ export function InvestmentCalculator() {
           {/* Input Section */}
           <div className="bg-surface p-8 sm:p-10">
             <h3 className="font-display text-2xl font-bold text-foreground">
-              আপনার সম্ভাব্য মুনাফা হিসাব করুন
+              আপনার সম্ভাব্য লাভ হিসাব করুন
             </h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              বিনিয়োগের পরিমাণ এবং প্রত্যাশিত রিটার্ন নির্বাচন করে আপনার সম্ভাব্য আয় সম্পর্কে ধারণা নিন।
+              বিনিয়োগের পরিমাণ, প্রত্যাশিত রিটার্ন এবং মেয়াদ নির্বাচন করে আপনার সম্ভাব্য আয় সম্পর্কে ধারণা নিন।
             </p>
 
             <div className="mt-8 space-y-8">
@@ -44,7 +47,7 @@ export function InvestmentCalculator() {
                 <input
                   id="invest-amount"
                   type="range"
-                  min="10000"
+                  min="100000"
                   max="1000000"
                   step="10000"
                   value={amount}
@@ -55,7 +58,7 @@ export function InvestmentCalculator() {
                   }}
                 />
                 <div className="mt-2 flex justify-between text-xs text-muted-foreground">
-                  <span>১০ হাজার</span>
+                  <span>১ লক্ষ</span>
                   <span>১০ লাখ+</span>
                 </div>
               </div>
@@ -63,7 +66,7 @@ export function InvestmentCalculator() {
               <div>
                 <div className="flex items-center justify-between">
                   <label htmlFor="invest-roi" className="text-sm font-semibold text-foreground">
-                    প্রত্যাশিত বার্ষিক মুনাফা (%)
+                    প্রত্যাশিত বার্ষিক লাভ (%)
                   </label>
                   <span className="num rounded-lg bg-background px-3 py-1 font-bold text-primary shadow-sm border border-border">
                     {roi}%
@@ -87,6 +90,34 @@ export function InvestmentCalculator() {
                   <span>৩৫%</span>
                 </div>
               </div>
+
+              <div>
+                <div className="flex items-center justify-between">
+                  <label htmlFor="invest-years" className="text-sm font-semibold text-foreground">
+                    বিনিয়োগের মেয়াদ (বছর)
+                  </label>
+                  <span className="num rounded-lg bg-background px-3 py-1 font-bold text-primary shadow-sm border border-border">
+                    {years} বছর
+                  </span>
+                </div>
+                <input
+                  id="invest-years"
+                  type="range"
+                  min="1"
+                  max="10"
+                  step="1"
+                  value={years}
+                  onChange={(e) => setYears(Number(e.target.value))}
+                  className="custom-slider mt-4 w-full"
+                  style={{
+                    background: `linear-gradient(to right, var(--primary) ${yearsPercent}%, #e5e7eb ${yearsPercent}%)`
+                  }}
+                />
+                <div className="mt-2 flex justify-between text-xs text-muted-foreground">
+                  <span>১ বছর</span>
+                  <span>১০ বছর</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -104,13 +135,13 @@ export function InvestmentCalculator() {
                 <div>
                   <div className="flex items-end justify-between">
                     <div>
-                      <div className="text-sm font-medium uppercase tracking-wide text-white/90">প্রত্যাশিত বার্ষিক মুনাফা</div>
+                      <div className="text-sm font-medium uppercase tracking-wide text-white/90">প্রত্যাশিত বার্ষিক লাভ</div>
                       <div className="num mt-2 flex items-baseline gap-1">
-                        <span className="text-5xl font-bold tracking-tight text-white">৳{yearlyReturn.toLocaleString("en-IN")}</span>
+                        <span className="text-4xl font-bold tracking-tight text-white sm:text-5xl">৳{yearlyReturn.toLocaleString("en-IN")}</span>
                       </div>
                     </div>
                     {/* Mini Sparkline Chart */}
-                    <svg className="h-10 w-20 text-white/40 mb-1" viewBox="0 0 100 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg className="h-10 w-20 text-white/40 mb-1 shrink-0" viewBox="0 0 100 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M0 35 Q 20 30, 40 20 T 80 5 L 100 0" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
                       <path d="M90 0 L 100 0 L 100 10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
@@ -119,10 +150,19 @@ export function InvestmentCalculator() {
 
                 <div className="h-px w-full bg-white/20" />
 
-                <div>
-                  <div className="text-sm text-white/80">প্রত্যাশিত মাসিক মুনাফা</div>
-                  <div className="num mt-1 flex items-baseline gap-1">
-                    <span className="text-2xl font-semibold tracking-tight text-white/90">৳{monthlyReturn.toLocaleString("en-IN")}</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-sm text-white/80">প্রত্যাশিত মাসিক লাভ</div>
+                    <div className="num mt-1 flex items-baseline gap-1">
+                      <span className="text-2xl font-semibold tracking-tight text-white/90">৳{monthlyReturn.toLocaleString("en-IN")}</span>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl bg-white/10 p-3.5 border border-white/15">
+                    <div className="text-sm font-medium text-white">প্রত্যাশিত মোট লাভ ({years} বছরে)</div>
+                    <div className="num mt-1 flex items-baseline gap-1">
+                      <span className="text-2xl font-bold tracking-tight text-white sm:text-3xl">৳{totalReturn.toLocaleString("en-IN")}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -134,8 +174,8 @@ export function InvestmentCalculator() {
                 >
                   বিনিয়োগ শুরু করুন
                 </a>
-                <p className="mt-4 text-center text-xs font-medium text-white/80">
-                  * এটি একটি আনুমানিক হিসাব। প্রকৃত মুনাফা ব্যবসার ফলাফলের উপর নির্ভরশীল।
+                <p className="mt-4 text-center text-xs font-medium text-white/80 leading-relaxed">
+                  * এটি একটি আনুমানিক হিসাব। একাধিক বছরের সম্ভাব্য লাভ একই হারে হিসাব করা হয়েছে; প্রকৃত লাভ ব্যবসার বাস্তব ফলাফলের উপর নির্ভরশীল এবং এটি কোনো নিশ্চিত গ্যারান্টি নয়।
                 </p>
               </div>
             </div>

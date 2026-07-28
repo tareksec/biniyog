@@ -82,12 +82,7 @@ export function Footer() {
                   সাধারণ জিজ্ঞাসা (FAQ)
                 </a>
               </li>
-              <li>
-                <a href="https://docs.google.com/forms/d/e/1FAIpQLSeylFDvEddVWDTgO9l6PqBqz0hSk0izOtr0IzRo_eyg-4QIZw/viewform" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary/40"></span>
-                  সাহায্য কেন্দ্র
-                </a>
-              </li>
+
               <li>
                 <a href="/#policy" className="text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-primary/40"></span>

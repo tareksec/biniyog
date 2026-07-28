@@ -202,6 +202,12 @@ export type Database = {
           location: string | null;
           quote: string;
           created_at: string;
+          brand_name: string | null;
+          related_opportunity_id: string | null;
+          role_title: string | null;
+          rating: number | null;
+          avatar_url: string | null;
+          investment_amount: string | null;
         };
         Insert: {
           id?: string;
@@ -209,6 +215,12 @@ export type Database = {
           location?: string | null;
           quote: string;
           created_at?: string;
+          brand_name?: string | null;
+          related_opportunity_id?: string | null;
+          role_title?: string | null;
+          rating?: number | null;
+          avatar_url?: string | null;
+          investment_amount?: string | null;
         };
         Update: {
           id?: string;
@@ -216,8 +228,22 @@ export type Database = {
           location?: string | null;
           quote?: string;
           created_at?: string;
+          brand_name?: string | null;
+          related_opportunity_id?: string | null;
+          role_title?: string | null;
+          rating?: number | null;
+          avatar_url?: string | null;
+          investment_amount?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "testimonials_related_opportunity_id_fkey";
+            columns: ["related_opportunity_id"];
+            isOneToOne: false;
+            referencedRelation: "opportunities";
+            referencedColumns: ["id"];
+          }
+        ];
       };
     };
     Views: {

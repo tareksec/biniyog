@@ -114,7 +114,7 @@ function Hero() {
           </h1>
 
           <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            যাচাইকৃত SME এবং জাচাইকৃত ব্যবসা প্রতিষ্ঠানে স্বচ্ছ উপায়ে আকর্ষণীয় মুনাফা অর্জন করুন।
+            যাচাইকৃত SME এবং যাচাইকৃত ব্যবসা প্রতিষ্ঠানে স্বচ্ছ উপায়ে আকর্ষণীয় লাভ অর্জন করুন।
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-4">
@@ -139,12 +139,12 @@ function Hero() {
               <span className="grid h-11 w-11 place-items-center rounded-full border border-border bg-card shadow-sm transition group-hover:border-primary/40 group-hover:text-primary">
                 <CalendarCheck className="h-5 w-5" />
               </span>
-              Book consultation service
+              Book one to one consultation service with Mohaimin Patwary
             </a>
           </div>
 
           <div className="mt-12 grid max-w-lg grid-cols-3 gap-6 border-t border-border/70 pt-7 text-left">
-            <Stat value="১৮%–২৫%" label="বার্ষিক মুনাফা" />
+            <Stat value="১৮%–২৫%" label="বার্ষিক লাভ" />
             <Stat value="১৫+" label="যাচাইকৃত প্রজেক্ট" />
             <Stat value="১০০%" label="সুদ এবং ঘুরিয়ে সুদ মুক্ত" />
           </div>
@@ -242,8 +242,8 @@ const WHY = [
     ),
   },
   {
-    label: "আকর্ষণীয় মুনাফা",
-    desc: "১৮%–২৫% পর্যন্ত সম্ভাব্য বার্ষিক মুনাফার সম্ভাবনা।",
+    label: "আকর্ষণীয় লাভ",
+    desc: "১৮%–২৫% পর্যন্ত সম্ভাব্য বার্ষিক লাভের সম্ভাবনা।",
     icon: <path d="M3 17l6-6 4 4 8-8M14 7h7v7" />,
   },
   {
@@ -258,8 +258,7 @@ function WhyChoose() {
     <section id="why" className="border-t border-border bg-background">
       <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-28">
         <SectionHeader
-          eyebrow="কেন আমরা"
-          title="বিশ্বস্ত বিনিয়োগের জন্য"
+          title="কেন আমরা"
         />
         <div className="mt-10 grid gap-5 sm:mt-14 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {WHY.map((w, i) => (
@@ -320,7 +319,7 @@ const STEPS = [
     desc: "লিগ্যাল ডকুমেন্টে চুক্তি করুন এবং চেক বুঝে নিন।",
   },
   {
-    title: "সময় মত মুনাফা নিন",
+    title: "সময় মত লাভ নিন",
     desc: "নির্দিষ্ট সময় অন্তর ব্যবসার লাভ লোকসানের উপর ভিত্তি করে নিজের ভাগ বুঝে নিন।",
   },
 ];
@@ -462,17 +461,19 @@ function SectionHeader({
   title,
   align = "center",
 }: {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   align?: "center" | "left";
 }) {
   const cls = align === "center" ? "text-center mx-auto" : "text-left";
   return (
     <div className={`${cls} max-w-2xl`}>
-      <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-        <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-        {eyebrow}
-      </span>
+      {eyebrow && (
+        <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+          <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+          {eyebrow}
+        </span>
+      )}
       <h2 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl md:text-[2.5rem]">
         {title}
       </h2>

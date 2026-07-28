@@ -343,7 +343,7 @@ function AdminDashboard() {
                           বিনিয়োগ
                         </TableHead>
                         <TableHead className="min-w-[100px]">
-                          মুনাফা
+                          লাভ
                         </TableHead>
                         <TableHead className="min-w-[120px]">
                           স্ট্যাটাস
@@ -460,15 +460,26 @@ function AdminDashboard() {
                       <p className="text-sm leading-relaxed text-foreground">
                         "{t.quote}"
                       </p>
-                      <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                      <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                         <span className="font-medium text-foreground">
                           {t.name}
                         </span>
+                        {t.role_title && (
+                          <>
+                            <span>•</span>
+                            <span>{t.role_title}</span>
+                          </>
+                        )}
                         {t.location && (
                           <>
                             <span>•</span>
                             <span>{t.location}</span>
                           </>
+                        )}
+                        {t.brand_name && (
+                          <span className="ml-1 rounded-full bg-primary/10 px-2 py-0.5 font-semibold text-primary">
+                            {t.brand_name}
+                          </span>
                         )}
                       </div>
                     </div>
@@ -515,6 +526,7 @@ function AdminDashboard() {
         onOpenChange={setTestFormOpen}
         testimonial={editingTest}
         onSuccess={fetchTestimonials}
+        opportunities={opportunities}
       />
 
       {/* ─── Delete Opportunity Confirmation ──────────────────────── */}

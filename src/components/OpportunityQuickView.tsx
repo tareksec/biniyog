@@ -73,7 +73,7 @@ export function OpportunityQuickView({
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="rounded-xl bg-surface p-4 border border-border/50">
               <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-                বিনিয়োগ প্রয়োজন
+                নুন্যতম বিনিয়োগ
               </div>
               <div className="text-lg font-bold text-foreground">
                 {project.investment_amount || "—"}
@@ -81,7 +81,7 @@ export function OpportunityQuickView({
             </div>
             <div className="rounded-xl bg-surface p-4 border border-border/50">
               <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-                প্রত্যাশিত মুনাফা
+                প্রত্যাশিত লাভ
               </div>
               <div className="flex items-baseline gap-1">
                 <span className="text-lg font-bold text-primary">

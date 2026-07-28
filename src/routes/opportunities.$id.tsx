@@ -136,17 +136,20 @@ function OpportunityDetailsPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 text-sm font-medium">
-            {project.owner_phone && (
-              <a
-                href={`tel:${project.owner_phone}`}
-                className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-primary hover:bg-primary hover:text-primary-foreground transition shadow-2xs"
-              >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                </svg>
-                <span>{project.owner_phone}</span>
-              </a>
-            )}
+            <a
+              href="https://docs.google.com/spreadsheets/d/1HsSR7t_2zZaNbvqmbhWiuYikfYsF8rfzcQK2gmfIB4U/edit?gid=0#gid=0"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-primary hover:bg-primary hover:text-primary-foreground transition shadow-2xs"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+              </svg>
+              <span>যোগাযোগের তথ্য দেখুন (গুগল শিট)</span>
+            </a>
 
             <div className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3.5 py-2 text-muted-foreground">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
@@ -170,9 +173,9 @@ function OpportunityDetailsPage() {
         <FundingProgress project={project} />
 
         <div className="mt-8 grid grid-cols-2 gap-4 rounded-2xl border border-border/80 bg-card/60 p-5 shadow-sm sm:grid-cols-3 sm:gap-6 sm:p-7">
-          <Field label="বিনিয়োগ প্রয়োজন" value={project.investment_amount || ""} num highlight />
+          <Field label="নুন্যতম বিনিয়োগ" value={project.investment_amount || ""} num highlight />
           <Field label="সম্ভাব্য লাভ" value={project.expected_profit || ""} num highlight accent />
-          <Field label="মুনাফা প্রদান" value={project.profit_period || ""} />
+          <Field label="লাভ প্রদান" value={project.profit_period || ""} />
           <Field label="বিনিয়োগ মডেল" value={project.investment_type || ""} />
           <Field label="যাচাইকরণ" value={project.guarantee || ""} />
           <Field label="টার্নওভার" value={project.estimated_capital || ""} num />
@@ -223,15 +226,25 @@ function OpportunityDetailsPage() {
           </p>
           
           <div className="mt-6">
-            {project.bank_details ? (
-              <div className="rounded-xl bg-background p-4 text-sm leading-relaxed text-foreground whitespace-pre-wrap font-medium border border-border shadow-inner">
-                {project.bank_details}
-              </div>
-            ) : (
-              <div className="rounded-xl bg-background p-4 text-sm leading-relaxed text-muted-foreground italic border border-border shadow-inner">
-                বর্তমানে কোনো ব্যাংক তথ্য দেওয়া হয়নি। বিস্তারিত জানতে কর্তৃপক্ষের সাথে যোগাযোগ করুন।
-              </div>
-            )}
+            <a
+              href="https://docs.google.com/spreadsheets/d/1HsSR7t_2zZaNbvqmbhWiuYikfYsF8rfzcQK2gmfIB4U/edit?gid=0#gid=0"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group inline-flex items-center gap-3 rounded-xl px-6 py-4 text-base font-semibold text-primary-foreground shadow-[var(--shadow-elevated)] transition hover:scale-[1.02]"
+              style={{ background: "var(--gradient-primary)" }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+                <polyline points="10 9 9 9 8 9" />
+              </svg>
+              <span>সকল প্রজেক্টের যোগাযোগ ও ব্যাংক তথ্য দেখুন (গুগল শিট)</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="transition-transform group-hover:translate-x-1">
+                <path d="M5 12h14M13 5l7 7-7 7" />
+              </svg>
+            </a>
           </div>
         </section>
 
@@ -319,7 +332,7 @@ function InvestmentCalculator({ project }: { project: Opportunity }) {
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-muted-foreground">প্রত্যাশিত মুনাফা (বার্ষিক)</span>
+              <span className="text-sm font-semibold text-muted-foreground">প্রত্যাশিত লাভ (বার্ষিক)</span>
               <span className="text-lg font-bold text-foreground num">{roi}%</span>
             </div>
             <Slider
@@ -340,7 +353,7 @@ function InvestmentCalculator({ project }: { project: Opportunity }) {
               <span className="text-base font-bold text-foreground num">৳ {(amount).toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center border-b border-primary/10 pb-3">
-              <span className="text-sm font-medium text-primary">সম্ভাব্য মুনাফা</span>
+              <span className="text-sm font-medium text-primary">সম্ভাব্য লাভ</span>
               <span className="text-base font-bold text-primary num">+ ৳ {(estimatedProfit).toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center pt-1">
@@ -349,7 +362,7 @@ function InvestmentCalculator({ project }: { project: Opportunity }) {
             </div>
           </div>
           <p className="mt-4 text-[11px] text-muted-foreground text-center italic">
-            * এটি একটি সম্ভাব্য হিসাব। প্রকৃত মুনাফা ব্যবসার বাস্তব অবস্থার উপর নির্ভর করবে।
+            * এটি একটি সম্ভাব্য হিসাব। প্রকৃত লাভ ব্যবসার বাস্তব অবস্থার উপর নির্ভর করবে।
           </p>
         </div>
       </div>
@@ -461,8 +474,8 @@ function PayoutTrackRecord({ records = [] }: { records?: OpportunityPayout[] }) 
             <thead className="bg-primary/10 text-left text-xs uppercase tracking-wider text-foreground font-bold border-b-2 border-primary/20">
               <tr>
                 <th className="px-4 py-3.5 font-bold">সাইকেল</th>
-                <th className="px-4 py-3.5 font-bold">টার্গেট মুনাফা</th>
-                <th className="px-4 py-3.5 font-bold">প্রকৃত মুনাফা</th>
+                <th className="px-4 py-3.5 font-bold">টার্গেট লাভ</th>
+                <th className="px-4 py-3.5 font-bold">প্রকৃত লাভ</th>
                 <th className="px-4 py-3.5 font-bold">স্ট্যাটাস</th>
               </tr>
             </thead>

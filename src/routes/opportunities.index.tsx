@@ -251,7 +251,7 @@ function OpportunitiesPage() {
       </div>
 
       <div className="space-y-4">
-        <h4 className="text-sm font-semibold text-muted-foreground">সম্ভাব্য মুনাফা (%)</h4>
+        <h4 className="text-sm font-semibold text-muted-foreground">সম্ভাব্য লাভ (%)</h4>
         <Slider
           defaultValue={[searchParams.minRoi || 0, searchParams.maxRoi || 40]}
           max={40}

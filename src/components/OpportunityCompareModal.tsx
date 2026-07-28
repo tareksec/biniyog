@@ -67,7 +67,7 @@ export function OpportunityCompareModal({
               </div>
 
               {/* Row: Investment Amount */}
-              <div className="font-semibold text-sm text-muted-foreground flex items-center border-t border-border/50 pt-4">বিনিয়োগ প্রয়োজন</div>
+              <div className="font-semibold text-sm text-muted-foreground flex items-center border-t border-border/50 pt-4">নুন্যতম বিনিয়োগ</div>
               <div className={`grid gap-4 border-t border-border/50 pt-4 ${projects.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
                 {projects.map((p) => (
                   <div key={p.id} className="text-[15px] font-bold text-foreground num">{p.investment_amount || "—"}</div>

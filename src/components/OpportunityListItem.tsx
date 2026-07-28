@@ -138,7 +138,7 @@ export function OpportunityListItem({
         <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-4 sm:gap-2 w-full sm:w-auto mt-2 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-t-0 border-border/50">
           <div className="text-left sm:text-right">
             <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70 mb-0.5">
-              প্রত্যাশিত মুনাফা
+              প্রত্যাশিত লাভ
             </div>
             <div className="flex items-baseline gap-1">
               <span className="font-display text-lg font-bold text-primary">

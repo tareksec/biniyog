@@ -1,6 +1,8 @@
 import cfaImage from "../hero/cfa.jpg";
 
 const STATS = [
+  { value: "৫০০+", label: "কন্স্যাল্ট্যান্সি ক্লায়েন্ট" },
+  { value: "২০+", label: "ব্যবসা বিনিয়োগ চুক্তি" },
   { value: "১০টি", label: "বেস্টসেলার বই" },
   { value: "CFA", label: "চার্টারহোল্ডার" },
   { value: "৩টি", label: "বিশ্ববিদ্যালয়" },

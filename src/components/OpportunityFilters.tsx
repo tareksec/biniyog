@@ -60,7 +60,7 @@ export function OpportunityFilters({
           <option value="default">ডিফল্ট</option>
           <option value="investment_asc">বিনিয়োগ: কম → বেশি</option>
           <option value="investment_desc">বিনিয়োগ: বেশি → কম</option>
-          <option value="roi_desc">সম্ভাব্য মুনাফা: বেশি → কম</option>
+          <option value="roi_desc">সম্ভাব্য লাভ: বেশি → কম</option>
         </select>
       </div>
     </div>
