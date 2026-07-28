@@ -8,7 +8,7 @@ export function InvestmentCalculator() {
 
   const yearlyReturn = Math.round(amount * (roi / 100));
   const monthlyReturn = Math.round(yearlyReturn / 12);
-  const totalReturn = Math.round(yearlyReturn * years);
+  const totalReturn = Math.round(amount * Math.pow(1 + roi / 100, years) - amount);
   
   // Calculate percentages for slider tracks
   const amountPercent = ((amount - 100000) / (1000000 - 100000)) * 100;
@@ -175,7 +175,7 @@ export function InvestmentCalculator() {
                   বিনিয়োগ শুরু করুন
                 </a>
                 <p className="mt-4 text-center text-xs font-medium text-white/80 leading-relaxed">
-                  * এটি একটি আনুমানিক হিসাব। একাধিক বছরের সম্ভাব্য লাভ একই হারে হিসাব করা হয়েছে; প্রকৃত লাভ ব্যবসার বাস্তব ফলাফলের উপর নির্ভরশীল এবং এটি কোনো নিশ্চিত গ্যারান্টি নয়।
+                  * এটি একটি আনুমানিক হিসাব। একাধিক বছরের সম্ভাব্য লাভ চক্রবৃদ্ধি হারে (প্রতি বছর পুনঃবিনিয়োগ ধরে) হিসাব করা হয়েছে; প্রকৃত লাভ ব্যবসার বাস্তব ফলাফলের উপর নির্ভরশীল এবং এটি কোনো নিশ্চিত গ্যারান্টি নয়।
                 </p>
               </div>
             </div>
