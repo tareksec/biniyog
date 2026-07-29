@@ -4,16 +4,29 @@ import { motion } from "framer-motion";
 export function InvestmentCalculator() {
   const [amount, setAmount] = useState(100000);
   const [roi, setRoi] = useState(20); // 20% annual return
-  const [years, setYears] = useState(1); // 1 to 10 years
+  const [durationUnit, setDurationUnit] = useState<"year" | "month">("year");
+  const [years, setYears] = useState(1);
+  const [months, setMonths] = useState(12);
 
   const yearlyReturn = Math.round(amount * (roi / 100));
   const monthlyReturn = Math.round(yearlyReturn / 12);
-  const totalReturn = Math.round(amount * Math.pow(1 + roi / 100, years) - amount);
+  
+  let totalReturn = 0;
+  if (durationUnit === "year") {
+    totalReturn = Math.round(amount * Math.pow(1 + roi / 100, years) - amount);
+  } else {
+    const monthlyRate = (roi / 100) / 12;
+    totalReturn = Math.round(amount * Math.pow(1 + monthlyRate, months) - amount);
+  }
   
   // Calculate percentages for slider tracks
   const amountPercent = ((amount - 100000) / (1000000 - 100000)) * 100;
   const roiPercent = ((roi - 10) / (35 - 10)) * 100;
-  const yearsPercent = ((years - 1) / (10 - 1)) * 100;
+  
+  const currentDuration = durationUnit === "year" ? years : months;
+  const maxDuration = durationUnit === "year" ? 40 : 480;
+  const minDuration = 1;
+  const durationPercent = ((currentDuration - minDuration) / (maxDuration - minDuration)) * 100;
 
   return (
     <section className="mx-auto max-w-4xl px-5 py-12 sm:px-8">
@@ -92,30 +105,58 @@ export function InvestmentCalculator() {
               </div>
 
               <div>
-                <div className="flex items-center justify-between">
-                  <label htmlFor="invest-years" className="text-sm font-semibold text-foreground">
-                    বিনিয়োগের মেয়াদ (বছর)
-                  </label>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-3">
+                    <label htmlFor="invest-duration" className="text-sm font-semibold text-foreground">
+                      বিনিয়োগের মেয়াদ {durationUnit === "year" ? "(বছর)" : "(মাস)"}
+                    </label>
+                    <div className="flex bg-muted rounded-lg p-0.5 border border-border">
+                      <button
+                        onClick={() => setDurationUnit("year")}
+                        className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
+                          durationUnit === "year" 
+                            ? "bg-card text-foreground shadow-sm" 
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        বছর
+                      </button>
+                      <button
+                        onClick={() => setDurationUnit("month")}
+                        className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
+                          durationUnit === "month" 
+                            ? "bg-card text-foreground shadow-sm" 
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        মাস
+                      </button>
+                    </div>
+                  </div>
                   <span className="num rounded-lg bg-background px-3 py-1 font-bold text-primary shadow-sm border border-border">
-                    {years} বছর
+                    {currentDuration} {durationUnit === "year" ? "বছর" : "মাস"}
                   </span>
                 </div>
                 <input
-                  id="invest-years"
+                  id="invest-duration"
                   type="range"
-                  min="1"
-                  max="10"
+                  min={minDuration}
+                  max={maxDuration}
                   step="1"
-                  value={years}
-                  onChange={(e) => setYears(Number(e.target.value))}
+                  value={currentDuration}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    if (durationUnit === "year") setYears(val);
+                    else setMonths(val);
+                  }}
                   className="custom-slider mt-4 w-full"
                   style={{
-                    background: `linear-gradient(to right, var(--primary) ${yearsPercent}%, #e5e7eb ${yearsPercent}%)`
+                    background: `linear-gradient(to right, var(--primary) ${durationPercent}%, #e5e7eb ${durationPercent}%)`
                   }}
                 />
                 <div className="mt-2 flex justify-between text-xs text-muted-foreground">
-                  <span>১ বছর</span>
-                  <span>১০ বছর</span>
+                  <span>{minDuration} {durationUnit === "year" ? "বছর" : "মাস"}</span>
+                  <span>{maxDuration} {durationUnit === "year" ? "বছর" : "মাস"}</span>
                 </div>
               </div>
             </div>
@@ -159,7 +200,7 @@ export function InvestmentCalculator() {
                   </div>
 
                   <div className="rounded-xl bg-white/10 p-3.5 border border-white/15">
-                    <div className="text-sm font-medium text-white">প্রত্যাশিত মোট লাভ ({years} বছরে)</div>
+                    <div className="text-sm font-medium text-white">সকল লাভ পুনরায় বিনিয়োগ করলে প্রত্যাশিত মোট লাভ ({currentDuration} {durationUnit === "year" ? "বছরে" : "মাসে"})</div>
                     <div className="num mt-1 flex items-baseline gap-1">
                       <span className="text-2xl font-bold tracking-tight text-white sm:text-3xl">৳{totalReturn.toLocaleString("en-IN")}</span>
                     </div>
@@ -175,7 +216,7 @@ export function InvestmentCalculator() {
                   বিনিয়োগ শুরু করুন
                 </a>
                 <p className="mt-4 text-center text-xs font-medium text-white/80 leading-relaxed">
-                  * এটি একটি আনুমানিক হিসাব। একাধিক বছরের সম্ভাব্য লাভ চক্রবৃদ্ধি হারে (প্রতি বছর পুনঃবিনিয়োগ ধরে) হিসাব করা হয়েছে; প্রকৃত লাভ ব্যবসার বাস্তব ফলাফলের উপর নির্ভরশীল এবং এটি কোনো নিশ্চিত গ্যারান্টি নয়।
+                  * এটি একটি আনুমানিক হিসাব। {durationUnit === "year" ? "একাধিক বছরের সম্ভাব্য লাভ চক্রবৃদ্ধি হারে (প্রতি বছর পুনঃবিনিয়োগ ধরে) হিসাব করা হয়েছে" : "একাধিক মাসের সম্ভাব্য লাভ চক্রবৃদ্ধি হারে (প্রতি মাসে পুনঃবিনিয়োগ ধরে) হিসাব করা হয়েছে"}; প্রকৃত লাভ ব্যবসার বাস্তব ফলাফলের উপর নির্ভরশীল এবং এটি কোনো নিশ্চিত গ্যারান্টি নয়।
                 </p>
               </div>
             </div>
