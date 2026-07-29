@@ -211,7 +211,7 @@ export function OpportunityCard({
   const percent = fundingProgress(project);
   const risk = getRiskLevel(project);
   const catIcon = getCategoryIcon(project.category);
-  const profitData = formatProfit(project.expected_profit || "");
+  const profitData = formatProfit(project.expected_profit || "", project.profit_period);
 
   return (
     <motion.div
@@ -369,16 +369,19 @@ export function OpportunityCard({
 
 /* ──── Helpers ──── */
 
-export function formatProfit(profitStr: string) {
-  if (!profitStr) return { percentage: "—", freq: "বার্ষিক" };
+export function formatProfit(profitStr: string, profitPeriod?: string | null) {
+  if (!profitStr) return { percentage: "—", freq: profitPeriod || "বার্ষিক" };
 
   const match = profitStr.match(/([\d०-९০-৯\-–\s]+%)/);
   const percentage = match ? match[1].trim() : profitStr.replace(/^বছরে\s*সম্ভাব্য\s*লাভ\s*/, "");
 
-  let freq = "বার্ষিক";
-  if (profitStr.includes("মাসিক")) freq = "মাসিক";
-  else if (profitStr.includes("ত্রৈমাসিক")) freq = "ত্রৈমাসিক";
-  else if (profitStr.includes("ষাণ্মাসিক") || profitStr.includes("ষান্মাসিক")) freq = "ষাণ্মাসিক";
+  let freq = profitPeriod;
+  if (!freq) {
+    freq = "বার্ষিক";
+    if (profitStr.includes("মাসিক")) freq = "মাসিক";
+    else if (profitStr.includes("ত্রৈমাসিক")) freq = "ত্রৈমাসিক";
+    else if (profitStr.includes("ষাণ্মাসিক") || profitStr.includes("ষান্মাসিক")) freq = "ষাণ্মাসিক";
+  }
 
   return { percentage, freq };
 }

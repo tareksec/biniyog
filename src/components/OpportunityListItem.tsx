@@ -45,7 +45,7 @@ export function OpportunityListItem({
   const percent = fundingProgress(project);
   const risk = getRiskLevel(project);
   const catIcon = getCategoryIcon(project.category);
-  const profitData = formatProfit(project.expected_profit || "");
+  const profitData = formatProfit(project.expected_profit || "", project.profit_period);
 
   return (
     <motion.div

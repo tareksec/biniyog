@@ -1,4 +1,5 @@
 import cfaImage from "../hero/cfa.jpg";
+import { GraduationCap } from "lucide-react";
 
 const STATS = [
   { value: "৫০০+", label: "কন্স্যাল্ট্যান্সি ক্লায়েন্ট" },
@@ -101,6 +102,16 @@ export function InstructorSection() {
                 style={{ background: "var(--gradient-primary)" }}
               >
                 📋 কনসালট্যান্সি বুক করুন
+              </a>
+              <a
+                href="https://mohaimin.techvrs.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-elevated)] transition hover:scale-[1.02]"
+                style={{ background: "var(--gradient-primary)" }}
+              >
+                <GraduationCap className="h-4 w-4" />
+                ক্লাসে জয়েন হতে চাইলে
               </a>
               <a
                 href={LINKEDIN_URL}

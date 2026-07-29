@@ -25,7 +25,7 @@ export function OpportunityQuickView({
 
   const risk = getRiskLevel(project);
   const catIcon = getCategoryIcon(project.category);
-  const profitData = formatProfit(project.expected_profit || "");
+  const profitData = formatProfit(project.expected_profit || "", project.profit_period);
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>

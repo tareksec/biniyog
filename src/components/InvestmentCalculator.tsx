@@ -8,58 +8,29 @@ export function InvestmentCalculator() {
   const [years, setYears] = useState(1);
   const [months, setMonths] = useState(12);
 
-  let yearlyReturn = Math.round(amount * (roi / 100));
-  let monthlyReturn = Math.round(yearlyReturn / 12);
+  const annual_rate = roi / 100;
+  const monthly_rate = Math.pow(1 + annual_rate, 1 / 12) - 1;
+
+  const yearlyReturn = Math.round(amount * annual_rate);
+  const monthlyReturn = Math.round(yearlyReturn / 12);
   
   let totalReturn = 0;
   if (durationUnit === "year") {
-    totalReturn = Math.round(amount * Math.pow(1 + roi / 100, years) - amount);
+    const totalValue = amount * Math.pow(1 + monthly_rate, years * 12);
+    totalReturn = Math.round(totalValue - amount);
   } else {
-    const monthlyRate = (roi / 100) / 12;
-    const effectiveAnnualProfit = amount * (Math.pow(1 + monthlyRate, 12) - 1);
-    
-    yearlyReturn = Math.round(effectiveAnnualProfit);
-    monthlyReturn = Math.round(effectiveAnnualProfit / 12);
-    
-    totalReturn = Math.round(amount * Math.pow(1 + monthlyRate, months) - amount);
+    const totalValue = amount * Math.pow(1 + monthly_rate, months);
+    totalReturn = Math.round(totalValue - amount);
   }
   
   // Calculate percentages for slider tracks
   const amountPercent = ((amount - 100000) / (1000000 - 100000)) * 100;
   const roiPercent = ((roi - 10) / (35 - 10)) * 100;
-  
-  const currentDuration = durationUnit === "year" ? years : months;
-  const maxDuration = durationUnit === "year" ? 40 : 480;
-  const minDuration = 1;
-  const durationPercent = ((currentDuration - minDuration) / (maxDuration - minDuration)) * 100;
+  const yearsPercent = ((years - 1) / (40 - 1)) * 100;
+  const monthsPercent = ((months - 1) / (200 - 1)) * 100;
 
   return (
     <section className="mx-auto max-w-4xl px-5 py-12 sm:px-8">
-      <div className="mb-8 flex justify-center">
-        <div className="inline-flex rounded-full border border-border bg-card p-1 shadow-sm">
-          <button
-            onClick={() => setDurationUnit("year")}
-            className={`rounded-full px-8 py-2.5 text-sm font-bold transition-all ${
-              durationUnit === "year"
-                ? "bg-primary text-primary-foreground shadow-md"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            বছর হিসেবে
-          </button>
-          <button
-            onClick={() => setDurationUnit("month")}
-            className={`rounded-full px-8 py-2.5 text-sm font-bold transition-all ${
-              durationUnit === "month"
-                ? "bg-primary text-primary-foreground shadow-md"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            মাস হিসেবে
-          </button>
-        </div>
-      </div>
-
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -138,34 +109,76 @@ export function InvestmentCalculator() {
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-3">
                     <label htmlFor="invest-duration" className="text-sm font-semibold text-foreground">
-                      বিনিয়োগের মেয়াদ {durationUnit === "year" ? "(বছর)" : "(মাস)"}
+                      বিনিয়োগের মেয়াদ
                     </label>
+                    <div className="inline-flex rounded-md border border-border bg-card p-0.5 shadow-sm">
+                      <button
+                        onClick={() => setDurationUnit("year")}
+                        className={`rounded-md px-3 py-1 text-xs font-bold transition-all ${
+                          durationUnit === "year"
+                            ? "bg-primary text-primary-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        বছর
+                      </button>
+                      <button
+                        onClick={() => setDurationUnit("month")}
+                        className={`rounded-md px-3 py-1 text-xs font-bold transition-all ${
+                          durationUnit === "month"
+                            ? "bg-primary text-primary-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        মাস
+                      </button>
+                    </div>
                   </div>
                   <span className="num rounded-lg bg-background px-3 py-1 font-bold text-primary shadow-sm border border-border">
-                    {currentDuration} {durationUnit === "year" ? "বছর" : "মাস"}
+                    {durationUnit === "year" ? `${years} বছর` : `${months} মাস`}
                   </span>
                 </div>
-                <input
-                  id="invest-duration"
-                  type="range"
-                  min={minDuration}
-                  max={maxDuration}
-                  step="1"
-                  value={currentDuration}
-                  onChange={(e) => {
-                    const val = Number(e.target.value);
-                    if (durationUnit === "year") setYears(val);
-                    else setMonths(val);
-                  }}
-                  className="custom-slider mt-4 w-full"
-                  style={{
-                    background: `linear-gradient(to right, var(--primary) ${durationPercent}%, #e5e7eb ${durationPercent}%)`
-                  }}
-                />
-                <div className="mt-2 flex justify-between text-xs text-muted-foreground">
-                  <span>{minDuration} {durationUnit === "year" ? "বছর" : "মাস"}</span>
-                  <span>{maxDuration} {durationUnit === "year" ? "বছর" : "মাস"}</span>
-                </div>
+                {durationUnit === "year" ? (
+                  <>
+                    <input
+                      id="invest-duration"
+                      type="range"
+                      min="1"
+                      max="40"
+                      step="1"
+                      value={years}
+                      onChange={(e) => setYears(Number(e.target.value))}
+                      className="custom-slider mt-4 w-full"
+                      style={{
+                        background: `linear-gradient(to right, var(--primary) ${yearsPercent}%, #e5e7eb ${yearsPercent}%)`
+                      }}
+                    />
+                    <div className="mt-2 flex justify-between text-xs text-muted-foreground">
+                      <span>১ বছর</span>
+                      <span>৪০ বছর</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <input
+                      id="invest-duration"
+                      type="range"
+                      min="1"
+                      max="200"
+                      step="1"
+                      value={months}
+                      onChange={(e) => setMonths(Number(e.target.value))}
+                      className="custom-slider mt-4 w-full"
+                      style={{
+                        background: `linear-gradient(to right, var(--primary) ${monthsPercent}%, #e5e7eb ${monthsPercent}%)`
+                      }}
+                    />
+                    <div className="mt-2 flex justify-between text-xs text-muted-foreground">
+                      <span>১ মাস</span>
+                      <span>২০০ মাস</span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -208,7 +221,7 @@ export function InvestmentCalculator() {
                   </div>
 
                   <div className="rounded-xl bg-white/10 p-3.5 border border-white/15">
-                    <div className="text-sm font-medium text-white">সকল লাভ পুনরায় বিনিয়োগ করলে প্রত্যাশিত মোট লাভ ({currentDuration} {durationUnit === "year" ? "বছরে" : "মাসে"})</div>
+                    <div className="text-sm font-medium text-white">সকল লাভ পুনরায় বিনিয়োগ করলে প্রত্যাশিত মোট লাভ ({durationUnit === "year" ? `${years} বছরে` : `${months} মাসে`})</div>
                     <div className="num mt-1 flex items-baseline gap-1">
                       <span className="text-2xl font-bold tracking-tight text-white sm:text-3xl">৳{totalReturn.toLocaleString("en-IN")}</span>
                     </div>
@@ -234,3 +247,4 @@ export function InvestmentCalculator() {
     </section>
   );
 }
+

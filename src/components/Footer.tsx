@@ -139,12 +139,12 @@ export function Footer() {
           <p className="text-sm text-muted-foreground text-center md:text-left">
             © {currentYear} সমৃদ্ধি (Samriddhi). সর্বস্বত্ব সংরক্ষিত।
           </p>
-          <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 text-sm text-muted-foreground font-medium mt-4 md:mt-0">
+          <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 text-sm text-muted-foreground font-medium mt-4 md:mt-0 relative z-20">
             <span>প্রকৃত ব্যবসা বিনিয়োগ</span>
             <span className="hidden md:inline">·</span>
             <span className="flex items-center gap-1.5">
-              Developed by <a href="https://artx.techvrs.com/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors underline underline-offset-4">ArtX TechVRS</a>
-              <a href="https://www.linkedin.com/in/mdtarek404/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors inline-flex ml-1" aria-label="Developer LinkedIn">
+              Developed by <a href="https://artx.techvrs.com/" target="_blank" rel="noopener noreferrer" className="relative z-50 hover:text-primary transition-colors underline underline-offset-4">ArtX TechVRS</a>
+              <a href="https://www.linkedin.com/in/mdtarek404/" target="_blank" rel="noopener noreferrer" className="relative z-50 text-muted-foreground hover:text-primary transition-colors inline-flex ml-1 p-1 -m-1" aria-label="Developer LinkedIn">
                 <Linkedin className="h-4 w-4" />
               </a>
             </span>

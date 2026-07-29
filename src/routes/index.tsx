@@ -117,7 +117,7 @@ function Hero() {
           </div>
 
           <div className="mt-12 grid max-w-lg grid-cols-3 gap-6 border-t border-border/70 pt-7 text-left">
-            <Stat value="২৫+%" label="বার্ষিক লাভ" />
+            <Stat value="১৮-২৫+%" label="বার্ষিক লাভ" />
             <Stat value="১৫+" label="যাচাইকৃত প্রজেক্ট" />
             <Stat value="১০০%" label="সুদ এবং ঘুরিয়ে সুদ মুক্ত" />
           </div>
