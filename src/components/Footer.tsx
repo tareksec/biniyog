@@ -140,7 +140,7 @@ export function Footer() {
             © {currentYear} সমৃদ্ধি (Samriddhi). সর্বস্বত্ব সংরক্ষিত।
           </p>
           <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 text-sm text-muted-foreground font-medium mt-4 md:mt-0">
-            <span>হালাল বিনিয়োগ</span>
+            <span>প্রকৃত ব্যবসা বিনিয়োগ</span>
             <span className="hidden md:inline">·</span>
             <span className="flex items-center gap-1.5">
               Developed by <a href="https://artx.techvrs.com/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors underline underline-offset-4">ArtX TechVRS</a>
