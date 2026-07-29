@@ -12,7 +12,7 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts";
-import { fetchOpportunities, parseAmount, parseRoi, statusLabel } from "@/lib/projects";
+import { fetchOpportunities, parseAmount, parseRoi, statusLabel, isOpen } from "@/lib/projects";
 import { getCategoryIcon } from "@/components/OpportunityCard";
 import { ArrowRight, Briefcase, Activity, TrendingUp, PiggyBank, Sparkles } from "lucide-react";
 
@@ -75,11 +75,13 @@ function DashboardPage() {
 
     opportunities.forEach((p) => {
       // Basic counts
-      if (p.status?.includes("চলমান-সুযোগ আছে")) active++;
+      if (isOpen(p)) {
+        active++;
+        // Amount for active opportunities only
+        totalAmount += parseAmount(p.investment_amount);
+      }
 
-      // Amount
       const amt = parseAmount(p.investment_amount);
-      totalAmount += amt;
 
       if (amt < 100000) rangeMap["< ১ লক্ষ"]++;
       else if (amt <= 500000) rangeMap["১ - ৫ লক্ষ"]++;
@@ -186,7 +188,7 @@ function DashboardPage() {
             </div>
             <div className="relative z-10 mt-6 flex justify-between items-end">
               <p className="text-sm font-medium text-white/70 max-w-[200px]">
-                প্ল্যাটফর্মে থাকা সকল সুযোগের মোট মূলধন।
+                প্ল্যাটফর্মে থাকা বর্তমান সক্রিয় সুযোগের মোট মূলধন।
               </p>
               <div className="h-12 w-12 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-md">
                 <TrendingUp className="h-6 w-6 text-white" />

@@ -17,7 +17,9 @@ export function Footer() {
               </Link>
             </div>
             <p className="text-muted-foreground text-[15px] leading-relaxed">
-              স্বচ্ছ, হালাল এবং নিরাপদ SME বিনিয়োগ প্ল্যাটফর্ম। আমাদের সাথে যুক্ত হয়ে আপনার হালাল ব্যবসার স্বপ্ন পূরণ করুন এবং নিরাপদ বিনিয়োগ নিশ্চিত করুন।
+              আমরা একটি স্বচ্ছ বিনিয়োগ প্লাটফর্ম। 
+              <br />
+              আমাদের সাথে যুক্ত হয়ে আপনার বিনিয়োগ স্বপ্ন পূরণ করুন এবং ব্যবসা ঝুঁকি গ্রহণ করে আর্থিক স্বাবলম্বী হবার যাত্রা শুরু করুন
             </p>
             <div className="flex items-center gap-4">
               <a href="https://www.facebook.com/mohaimin1" target="_blank" rel="noopener noreferrer" className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-colors">
