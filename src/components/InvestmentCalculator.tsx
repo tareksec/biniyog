@@ -8,14 +8,19 @@ export function InvestmentCalculator() {
   const [years, setYears] = useState(1);
   const [months, setMonths] = useState(12);
 
-  const yearlyReturn = Math.round(amount * (roi / 100));
-  const monthlyReturn = Math.round(yearlyReturn / 12);
+  let yearlyReturn = Math.round(amount * (roi / 100));
+  let monthlyReturn = Math.round(yearlyReturn / 12);
   
   let totalReturn = 0;
   if (durationUnit === "year") {
     totalReturn = Math.round(amount * Math.pow(1 + roi / 100, years) - amount);
   } else {
     const monthlyRate = (roi / 100) / 12;
+    const effectiveAnnualProfit = amount * (Math.pow(1 + monthlyRate, 12) - 1);
+    
+    yearlyReturn = Math.round(effectiveAnnualProfit);
+    monthlyReturn = Math.round(effectiveAnnualProfit / 12);
+    
     totalReturn = Math.round(amount * Math.pow(1 + monthlyRate, months) - amount);
   }
   
@@ -30,6 +35,31 @@ export function InvestmentCalculator() {
 
   return (
     <section className="mx-auto max-w-4xl px-5 py-12 sm:px-8">
+      <div className="mb-8 flex justify-center">
+        <div className="inline-flex rounded-full border border-border bg-card p-1 shadow-sm">
+          <button
+            onClick={() => setDurationUnit("year")}
+            className={`rounded-full px-8 py-2.5 text-sm font-bold transition-all ${
+              durationUnit === "year"
+                ? "bg-primary text-primary-foreground shadow-md"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            বছর হিসেবে
+          </button>
+          <button
+            onClick={() => setDurationUnit("month")}
+            className={`rounded-full px-8 py-2.5 text-sm font-bold transition-all ${
+              durationUnit === "month"
+                ? "bg-primary text-primary-foreground shadow-md"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            মাস হিসেবে
+          </button>
+        </div>
+      </div>
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -110,28 +140,6 @@ export function InvestmentCalculator() {
                     <label htmlFor="invest-duration" className="text-sm font-semibold text-foreground">
                       বিনিয়োগের মেয়াদ {durationUnit === "year" ? "(বছর)" : "(মাস)"}
                     </label>
-                    <div className="flex bg-muted rounded-lg p-0.5 border border-border">
-                      <button
-                        onClick={() => setDurationUnit("year")}
-                        className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
-                          durationUnit === "year" 
-                            ? "bg-card text-foreground shadow-sm" 
-                            : "text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        বছর
-                      </button>
-                      <button
-                        onClick={() => setDurationUnit("month")}
-                        className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
-                          durationUnit === "month" 
-                            ? "bg-card text-foreground shadow-sm" 
-                            : "text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        মাস
-                      </button>
-                    </div>
                   </div>
                   <span className="num rounded-lg bg-background px-3 py-1 font-bold text-primary shadow-sm border border-border">
                     {currentDuration} {durationUnit === "year" ? "বছর" : "মাস"}
