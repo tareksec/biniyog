@@ -1,12 +1,18 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { createFileRoute, useNavigate, Link, redirect } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
+import { useAuth, getAuthSnapshot } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Lock, Mail, Eye, EyeOff, Loader2, Home } from "lucide-react";
 
 export const Route = createFileRoute("/admin/login")({
+  beforeLoad: () => {
+    const { user, loading } = getAuthSnapshot();
+    if (!loading && user) {
+      throw redirect({ to: "/admin/dashboard" });
+    }
+  },
   component: AdminLoginPage,
 });
 
@@ -21,10 +27,11 @@ function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
 
   // If already logged in, redirect to dashboard
-  if (!authLoading && user) {
-    navigate({ to: "/admin/dashboard" });
-    return null;
-  }
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate({ to: "/admin/dashboard" });
+    }
+  }, [authLoading, user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +52,7 @@ function AdminLoginPage() {
     }
   };
 
-  if (authLoading) {
+  if (authLoading || user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#f8faf8]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

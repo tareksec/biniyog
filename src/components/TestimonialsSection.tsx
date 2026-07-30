@@ -28,7 +28,7 @@ function getMarqueeItems(list: Testimonial[], minCount = 6): Testimonial[] {
   return [...result, ...result];
 }
 
-function TestimonialCard({ item }: { item: Testimonial }) {
+export function TestimonialCard({ item }: { item: Testimonial }) {
   const brandContent = item.brand_name ? (
     <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold text-primary w-fit mb-3 transition-colors hover:bg-primary/15">
       <span className="w-1.5 h-1.5 rounded-full bg-primary" />
@@ -175,7 +175,7 @@ export function TestimonialsSection() {
               to="/reviews"
               className="group inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 hover:scale-105 active:scale-95"
             >
-              <span>সকল মতামত দেখুন</span>
+              <span>সব রিভিউ দেখুন</span>
               <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
               </svg>

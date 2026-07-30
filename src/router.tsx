@@ -9,7 +9,13 @@ export const getRouter = () => {
     routeTree,
     context: { queryClient },
     scrollRestoration: true,
-    defaultPreloadStaleTime: 0,
+    // Cache preloaded route data for 30 seconds so in-session navigation
+    // between already-visited routes is instant (no refetch / server roundtrip).
+    defaultPreloadStaleTime: 30_000,
+    // When a route transition IS pending (async loader running),
+    // show the pending component immediately — no delay.
+    defaultPendingMs: 0,
+    defaultPendingMinMs: 0,
   });
 
   return router;

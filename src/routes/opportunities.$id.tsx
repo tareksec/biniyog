@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { createFileRoute, Link, notFound, useRouter, useNavigate } from "@tanstack/react-router";
-import { fetchOpportunities, isFullyFunded, statusLabel, parseLinks, fundingProgress, getRiskLevel, resolveImageUrl, resolveImageUrls, getStatusConfig, fetchOpportunitySubsections, type Opportunity, type OpportunityRisk, type OpportunityPayout, type OpportunityLegalCheck, parseRoi } from "@/lib/projects";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import type { Testimonial } from "@/lib/database.types";
+import { TestimonialCard } from "@/components/TestimonialsSection";
+import { fetchOpportunities, isFullyFunded, statusLabel, parseLinks, fundingProgress, getRiskLevel, resolveImageUrl, resolveImageUrls, getStatusConfig, fetchOpportunitySubsections, type Opportunity, type OpportunityRisk, type OpportunityPayout, type OpportunityLegalCheck } from "@/lib/projects";
+import { InvestmentCalculator } from "@/components/InvestmentCalculator";
 import { Slider } from "@/components/ui/slider";
 import { motion } from "framer-motion";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
@@ -30,6 +35,11 @@ export const Route = createFileRoute("/opportunities/$id")({
     };
   },
   component: OpportunityDetailsPage,
+  pendingComponent: () => (
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+    </div>
+  ),
   notFoundComponent: NotFoundView,
   errorComponent: ({ error }) => (
     <div className="mx-auto max-w-2xl px-5 py-24 text-center">
@@ -244,7 +254,9 @@ function OpportunityDetailsPage() {
           </section>
         )}
 
-        <InvestmentCalculator project={project} />
+        <InvestmentCalculator />
+
+        <OpportunityTestimonials project={project} />
 
         <section className="mt-12 border-t border-border/80 pt-10 rounded-2xl border border-dashed border-border bg-surface/70 p-6 sm:p-8">
           <div className="flex items-center gap-3 border-l-4 border-primary pl-3.5">
@@ -330,76 +342,7 @@ function FundingProgress({ project }: { project: Opportunity }) {
   );
 }
 
-function InvestmentCalculator({ project }: { project: Opportunity }) {
-  const defaultRoi = parseRoi(project.expected_profit) || 15;
-  const [amount, setAmount] = useState(100000);
-  const [roi, setRoi] = useState(defaultRoi);
 
-  const estimatedProfit = Math.round((amount * roi) / 100);
-  const totalReturn = amount + estimatedProfit;
-
-  return (
-    <section className="mt-12 border-t border-border/80 pt-10">
-      <div className="flex items-center gap-3 border-l-4 border-primary pl-3.5 mb-6">
-        <h3 className="font-display text-xl font-bold text-foreground sm:text-2xl">রিটার্ন ক্যালকুলেটর</h3>
-      </div>
-      
-      <div className="grid gap-8 md:grid-cols-2 rounded-2xl border border-border bg-card p-6 shadow-sm">
-        <div className="space-y-6">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-muted-foreground">বিনিয়োগের পরিমাণ</span>
-              <span className="text-lg font-bold text-foreground num">৳ {(amount).toLocaleString()}</span>
-            </div>
-            <Slider
-              value={[amount]}
-              min={10000}
-              max={1000000}
-              step={10000}
-              onValueChange={([val]) => setAmount(val)}
-              className="py-2"
-            />
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-muted-foreground">প্রত্যাশিত লাভ (বার্ষিক)</span>
-              <span className="text-lg font-bold text-foreground num">{roi}%</span>
-            </div>
-            <Slider
-              value={[roi]}
-              min={5}
-              max={40}
-              step={1}
-              onValueChange={([val]) => setRoi(val)}
-              className="py-2"
-            />
-          </div>
-        </div>
-
-        <div className="flex flex-col justify-center rounded-xl bg-primary/5 p-6 border border-primary/10">
-          <div className="space-y-4">
-            <div className="flex justify-between items-center border-b border-primary/10 pb-3">
-              <span className="text-sm font-medium text-muted-foreground">মূলধন</span>
-              <span className="text-base font-bold text-foreground num">৳ {(amount).toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between items-center border-b border-primary/10 pb-3">
-              <span className="text-sm font-medium text-primary">সম্ভাব্য লাভ</span>
-              <span className="text-base font-bold text-primary num">+ ৳ {(estimatedProfit).toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between items-center pt-1">
-              <span className="text-base font-bold text-foreground">মোট সম্ভাব্য প্রাপ্তি</span>
-              <span className="text-xl font-extrabold text-foreground num">৳ {(totalReturn).toLocaleString()}</span>
-            </div>
-          </div>
-          <p className="mt-4 text-[11px] text-muted-foreground text-center italic">
-            * এটি একটি সম্ভাব্য হিসাব। প্রকৃত লাভ ব্যবসার বাস্তব অবস্থার উপর নির্ভর করবে।
-          </p>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 function BusinessBackground({ project }: { project: any }) {
   return (
@@ -535,6 +478,56 @@ function PayoutTrackRecord({ records = [] }: { records?: OpportunityPayout[] }) 
             </tbody>
           </table>
         </div>
+      </div>
+    </section>
+  );
+}
+
+function OpportunityTestimonials({ project }: { project: Opportunity }) {
+  const { data: testimonials = [], isLoading } = useQuery({
+    queryKey: ["testimonials-opp", project.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("testimonials")
+        .select("*")
+        .eq("related_opportunity_id", project.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+    staleTime: 1000 * 60 * 5, // 5 min
+  });
+
+  if (isLoading || testimonials.length === 0) return null;
+
+  return (
+    <section className="mt-12 border-t border-border/80 pt-10">
+      <div className="flex items-center gap-3 border-l-4 border-primary pl-3.5 mb-2">
+        <h3 className="font-display text-xl font-bold text-foreground sm:text-2xl">
+          {project.name} নিয়ে বিনিয়োগকারীদের মতামত
+        </h3>
+      </div>
+      
+      <div className="mb-6" />
+
+      <div className="flex flex-nowrap overflow-x-auto gap-5 pb-6 snap-x" style={{ scrollbarWidth: 'thin' }}>
+        {testimonials.map(t => (
+          <div key={t.id} className="snap-start shrink-0">
+            <TestimonialCard item={t} />
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-4 flex justify-center border-t border-border/50 pt-8">
+        <a 
+          href="mailto:contact@biniyog.com" 
+          className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-6 py-2.5 text-sm font-semibold text-primary hover:bg-primary hover:text-primary-foreground transition-colors shadow-sm"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+          রিভিউ দিন
+        </a>
       </div>
     </section>
   );

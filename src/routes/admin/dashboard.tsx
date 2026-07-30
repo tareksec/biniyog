@@ -1,6 +1,6 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link, redirect } from "@tanstack/react-router";
 import { useState, useEffect, useCallback } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth, getAuthSnapshot } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
 import type { Opportunity, Testimonial } from "@/lib/database.types";
 import { OpportunityForm } from "@/components/admin/OpportunityForm";
@@ -43,6 +43,16 @@ import {
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/dashboard")({
+  beforeLoad: () => {
+    // Synchronous auth check using the singleton cache.
+    // After initial app load, this reads from memory instantly (0ms).
+    // On hard refresh while auth is still loading, we let the component
+    // handle it (show spinner) rather than redirecting prematurely.
+    const { user, loading } = getAuthSnapshot();
+    if (!loading && !user) {
+      throw redirect({ to: "/admin/login" });
+    }
+  },
   component: AdminDashboard,
 });
 
@@ -73,7 +83,7 @@ function AdminDashboard() {
   const { user, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect if not logged in
+  // Redirect if not logged in (safety net — beforeLoad handles most cases)
   useEffect(() => {
     if (!authLoading && !user) {
       navigate({ to: "/admin/login" });
@@ -184,15 +194,13 @@ function AdminDashboard() {
   };
 
   // ─── Loading / Auth guard ──────────────────────────────────────
-  if (authLoading) {
+  if (authLoading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#f8faf8]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
-
-  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-[#f8faf8]">
