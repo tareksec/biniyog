@@ -18,6 +18,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      homepage_reviews: {
+        Row: {
+          id: string;
+          name: string;
+          location: string | null;
+          quote: string;
+          rating: number | null;
+          avatar_url: string | null;
+          sort_order: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name?: string;
+          location?: string | null;
+          quote: string;
+          rating?: number | null;
+          avatar_url?: string | null;
+          sort_order?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          location?: string | null;
+          quote?: string;
+          rating?: number | null;
+          avatar_url?: string | null;
+          sort_order?: number;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       opportunities: {
         Row: {
           id: string;

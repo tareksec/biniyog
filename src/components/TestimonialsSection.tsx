@@ -5,20 +5,10 @@ import { supabase } from "@/lib/supabase";
 import type { Testimonial } from "@/lib/database.types";
 import { Loader2, Star } from "lucide-react";
 
-async function fetchTestimonials() {
-  const { data, error } = await supabase
-    .from("testimonials")
-    .select("*")
-    .order("created_at", { ascending: false });
+import { fetchHomepageReviews } from "@/lib/homepage_reviews";
+import type { HomepageReview } from "@/lib/database.types";
 
-  if (error) {
-    console.error("Error fetching testimonials:", error);
-    return [];
-  }
-  return data || [];
-}
-
-function getMarqueeItems(list: Testimonial[], minCount = 6): Testimonial[] {
+function getMarqueeItems<T>(list: T[], minCount = 6): T[] {
   if (!list || list.length === 0) return [];
   let result = [...list];
   while (result.length < minCount) {
@@ -98,10 +88,54 @@ export function TestimonialCard({ item }: { item: Testimonial }) {
   );
 }
 
+export function HomepageReviewCard({ item }: { item: HomepageReview }) {
+  return (
+    <div className="w-[300px] sm:w-[380px] shrink-0 rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-[var(--shadow-card)] flex flex-col justify-between transition-transform duration-300 hover:scale-[1.02]">
+      <div>
+        {/* Star Rating */}
+        {item.rating && item.rating > 0 ? (
+          <div className="flex items-center gap-1 mb-3">
+            {Array.from({ length: item.rating }).map((_, i) => (
+              <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+            ))}
+          </div>
+        ) : null}
+
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" className="text-primary/40">
+          <path d="M7.17 6C4.87 6 3 7.87 3 10.17V18h7v-7.83H6.5C6.5 8.7 7.7 7.5 9.17 7.5V6h-2zM17.17 6c-2.3 0-4.17 1.87-4.17 4.17V18h7v-7.83h-3.5c0-1.47 1.2-2.67 2.67-2.67V6h-2z"/>
+        </svg>
+        <p className="mt-3 text-base leading-relaxed text-foreground sm:text-lg">
+          {item.quote}
+        </p>
+      </div>
+
+      <footer className="mt-6 flex items-center gap-3 pt-4 border-t border-border/60">
+        {item.avatar_url ? (
+          <img
+            src={item.avatar_url}
+            alt={item.name}
+            className="h-11 w-11 shrink-0 rounded-full object-cover border border-border"
+          />
+        ) : (
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary/10 text-sm font-bold text-primary">
+            {item.name.substring(0, 2)}
+          </span>
+        )}
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-sm font-semibold text-foreground">{item.name}</div>
+          <div className="truncate text-xs text-muted-foreground">
+            {item.location || "বিনিয়োগকারী"}
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
 export function TestimonialsSection() {
   const { data: testimonials = [], isLoading } = useQuery({
-    queryKey: ["testimonials"],
-    queryFn: fetchTestimonials,
+    queryKey: ["homepage_reviews"],
+    queryFn: fetchHomepageReviews,
     staleTime: 1000 * 60 * 5, // 5 min
   });
 
@@ -152,7 +186,7 @@ export function TestimonialsSection() {
               style={{ animationPlayState: isTouching ? "paused" : undefined }}
             >
               {row1Items.map((item, idx) => (
-                <TestimonialCard key={`r1-${item.id || idx}-${idx}`} item={item} />
+                <HomepageReviewCard key={`r1-${item.id || idx}-${idx}`} item={item} />
               ))}
             </div>
           </div>
@@ -164,7 +198,7 @@ export function TestimonialsSection() {
               style={{ animationPlayState: isTouching ? "paused" : undefined }}
             >
               {row2Items.map((item, idx) => (
-                <TestimonialCard key={`r2-${item.id || idx}-${idx}`} item={item} />
+                <HomepageReviewCard key={`r2-${item.id || idx}-${idx}`} item={item} />
               ))}
             </div>
           </div>

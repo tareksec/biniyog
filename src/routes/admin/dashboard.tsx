@@ -2,9 +2,10 @@ import { createFileRoute, useNavigate, Link, redirect } from "@tanstack/react-ro
 import { useState, useEffect, useCallback } from "react";
 import { useAuth, getAuthSnapshot } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
-import type { Opportunity, Testimonial } from "@/lib/database.types";
+import type { Opportunity, Testimonial, HomepageReview } from "@/lib/database.types";
 import { OpportunityForm } from "@/components/admin/OpportunityForm";
 import { TestimonialForm } from "@/components/admin/TestimonialForm";
+import { HomepageReviewForm } from "@/components/admin/HomepageReviewForm";
 
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -109,6 +110,14 @@ function AdminDashboard() {
   const [deletingTest, setDeletingTest] = useState<Testimonial | null>(null);
   const [deletingTestLoading, setDeletingTestLoading] = useState(false);
 
+  // ─── Homepage Reviews state ───────────────────────────────────────
+  const [homepageReviews, setHomepageReviews] = useState<HomepageReview[]>([]);
+  const [homeRevLoading, setHomeRevLoading] = useState(true);
+  const [homeRevFormOpen, setHomeRevFormOpen] = useState(false);
+  const [editingHomeRev, setEditingHomeRev] = useState<HomepageReview | null>(null);
+  const [deletingHomeRev, setDeletingHomeRev] = useState<HomepageReview | null>(null);
+  const [deletingHomeRevLoading, setDeletingHomeRevLoading] = useState(false);
+
   // ─── Fetch functions ────────────────────────────────────────────
   const fetchOpportunities = useCallback(async () => {
     setOppLoading(true);
@@ -142,12 +151,30 @@ function AdminDashboard() {
     setTestLoading(false);
   }, []);
 
+  const fetchHomepageReviews = useCallback(async () => {
+    setHomeRevLoading(true);
+    const { data, error } = await supabase
+      .from("homepage_reviews")
+      .select("*")
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching homepage reviews:", error);
+      toast.error("হোমপেজ রিভিউ লোড করতে সমস্যা হয়েছে");
+    } else {
+      setHomepageReviews(data || []);
+    }
+    setHomeRevLoading(false);
+  }, []);
+
   useEffect(() => {
     if (user) {
       fetchOpportunities();
       fetchTestimonials();
+      fetchHomepageReviews();
     }
-  }, [user, fetchOpportunities, fetchTestimonials]);
+  }, [user, fetchOpportunities, fetchTestimonials, fetchHomepageReviews]);
 
   // ─── Delete handlers ────────────────────────────────────────────
   const handleDeleteOpp = async () => {
@@ -185,6 +212,25 @@ function AdminDashboard() {
       toast.error(err?.message || "মুছতে সমস্যা হয়েছে");
     } finally {
       setDeletingTestLoading(false);
+    }
+  };
+
+  const handleDeleteHomeRev = async () => {
+    if (!deletingHomeRev) return;
+    setDeletingHomeRevLoading(true);
+    try {
+      const { error } = await supabase
+        .from("homepage_reviews")
+        .delete()
+        .eq("id", deletingHomeRev.id);
+      if (error) throw error;
+      toast.success("রিভিউ মুছে ফেলা হয়েছে");
+      setDeletingHomeRev(null);
+      fetchHomepageReviews();
+    } catch (err: any) {
+      toast.error(err?.message || "মুছতে সমস্যা হয়েছে");
+    } finally {
+      setDeletingHomeRevLoading(false);
     }
   };
 
@@ -251,6 +297,15 @@ function AdminDashboard() {
                     </span>
                   </>
                )}
+
+               {activeTab === 'homepage_reviews' && homeRevFormOpen && (
+                  <>
+                    <ChevronRight className="h-4 w-4 mx-1 opacity-50 shrink-0" />
+                    <span className="text-foreground font-semibold">
+                      {editingHomeRev ? 'Edit' : 'Add New'}
+                    </span>
+                  </>
+               )}
             </nav>
           </div>
           
@@ -290,6 +345,17 @@ function AdminDashboard() {
                 className="ml-1 h-5 min-w-5 rounded-full px-1.5 text-xs"
               >
                 {testimonials.length}
+              </Badge>
+            </TabsTrigger>
+            <TabsTrigger value="homepage_reviews" className="gap-2 px-4">
+              <Home className="h-4 w-4" />
+              <span className="hidden sm:inline">হোমপেজ রিভিউ</span>
+              <span className="sm:hidden">রিভিউ</span>
+              <Badge
+                variant="secondary"
+                className="ml-1 h-5 min-w-5 rounded-full px-1.5 text-xs"
+              >
+                {homepageReviews.length}
               </Badge>
             </TabsTrigger>
           </TabsList>
@@ -517,6 +583,100 @@ function AdminDashboard() {
               )}
             </div>
           </TabsContent>
+
+          {/* ═══════════ HOMEPAGE REVIEWS TAB ═══════════ */}
+          <TabsContent value="homepage_reviews" className="space-y-4">
+            {/* Actions bar */}
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold tracking-tight text-foreground">
+                হোমপেজ রিভিউ
+              </h2>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={fetchHomepageReviews}
+                  disabled={homeRevLoading}
+                  className="h-10 w-10 shrink-0"
+                >
+                  <RefreshCw
+                    className={`h-4 w-4 ${homeRevLoading ? "animate-spin" : ""}`}
+                  />
+                </Button>
+                <Button
+                  onClick={() => {
+                    setEditingHomeRev(null);
+                    setHomeRevFormOpen(true);
+                  }}
+                  className="gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  নতুন যোগ করুন
+                </Button>
+              </div>
+            </div>
+
+            {/* Cards list */}
+            <div className="space-y-3">
+              {homeRevLoading ? (
+                <div className="flex items-center justify-center py-16">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : homepageReviews.length === 0 ? (
+                <div className="rounded-xl border border-border bg-white py-16 text-center text-sm text-muted-foreground shadow-sm">
+                  কোনো হোমপেজ রিভিউ পাওয়া যায়নি।
+                </div>
+              ) : (
+                homepageReviews.map((r) => (
+                  <div
+                    key={r.id}
+                    className="flex items-start justify-between rounded-xl border border-border bg-white p-5 shadow-sm"
+                  >
+                    <div className="flex-1 pr-4">
+                      <p className="text-sm leading-relaxed text-foreground">
+                        "{r.quote}"
+                      </p>
+                      <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                        <span className="font-medium text-foreground">
+                          {r.name}
+                        </span>
+                        {r.location && (
+                          <>
+                            <span>•</span>
+                            <span>{r.location}</span>
+                          </>
+                        )}
+                        <span className="ml-1 rounded-full bg-primary/10 px-2 py-0.5 font-semibold text-primary">
+                          Order: {r.sort_order}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setEditingHomeRev(r);
+                          setHomeRevFormOpen(true);
+                        }}
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setDeletingHomeRev(r)}
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </TabsContent>
         </Tabs>
       </main>
 
@@ -593,6 +753,49 @@ function AdminDashboard() {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {deletingTestLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  মুছা হচ্ছে...
+                </>
+              ) : (
+                "হ্যাঁ, মুছে ফেলুন"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* ─── Homepage Review Form Dialog ──────────────────────────── */}
+      <HomepageReviewForm
+        open={homeRevFormOpen}
+        onOpenChange={setHomeRevFormOpen}
+        review={editingHomeRev}
+        onSuccess={fetchHomepageReviews}
+      />
+
+      {/* ─── Delete Homepage Review Confirmation ──────────────────── */}
+      <AlertDialog
+        open={!!deletingHomeRev}
+        onOpenChange={(open) => !open && setDeletingHomeRev(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>রিভিউ মুছে ফেলতে চান?</AlertDialogTitle>
+            <AlertDialogDescription>
+              <strong>{deletingHomeRev?.name}</strong>-এর রিভিউ মুছে ফেললে
+              ফেরানো যাবে না। আপনি কি নিশ্চিত?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingHomeRevLoading}>
+              বাতিল
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteHomeRev}
+              disabled={deletingHomeRevLoading}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deletingHomeRevLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
                   মুছা হচ্ছে...
