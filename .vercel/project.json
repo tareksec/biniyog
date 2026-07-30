@@ -1,0 +1,14 @@
+{
+  "projectId": "prj_jrGPC1uWaNHbMCehnLyAzvUFwkQb",
+  "orgId": "team_UQOGAjUxuZ844QWEXPaWHBYr",
+  "settings": {
+    "createdAt": 1784577679038,
+    "installCommand": null,
+    "buildCommand": null,
+    "devCommand": null,
+    "outputDirectory": null,
+    "rootDirectory": null,
+    "framework": "tanstack-start-lovable",
+    "nodeVersion": "24.x"
+  }
+}
