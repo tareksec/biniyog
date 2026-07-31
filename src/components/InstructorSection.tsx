@@ -1,5 +1,7 @@
 import cfaImage from "../hero/cfa.jpg";
 import { GraduationCap } from "lucide-react";
+import { motion } from "framer-motion";
+import { usePrefersReducedMotion, scaleIn } from "@/lib/animations";
 
 const STATS = [
   { value: "৫০০+", label: "কন্স্যাল্ট্যান্সি ক্লায়েন্ট" },
@@ -25,6 +27,7 @@ export const LINKEDIN_URL =
   "https://www.linkedin.com/in/mohaimin-patwary-cfa-a8416aab/";
 
 export function InstructorSection() {
+  const prefersReduced = usePrefersReducedMotion();
   return (
     <section id="expert" className="border-t border-border bg-background" aria-label="এক্সপার্টের কথা">
       <div className="mx-auto max-w-6xl px-5 py-24 sm:px-8 sm:py-28">
@@ -35,13 +38,19 @@ export function InstructorSection() {
               <span className="text-muted-foreground">এক্সপার্টের কথা</span>
             </div>
             <div className="mt-6 rounded-3xl border border-border bg-card p-8 shadow-[var(--shadow-card)]">
-              <div className="h-24 w-24 overflow-hidden rounded-2xl shadow-sm border border-border">
+              <motion.div 
+                initial={prefersReduced ? "show" : "hidden"}
+                whileInView="show"
+                viewport={{ once: true, amount: 0.5 }}
+                variants={scaleIn}
+                className="h-24 w-24 overflow-hidden rounded-2xl shadow-sm border border-border"
+              >
                 <img 
                   src={cfaImage} 
                   alt="মোহাইমিন পাটোয়ারী" 
                   className="h-full w-full object-cover"
                 />
-              </div>
+              </motion.div>
               <h3 className="mt-6 text-2xl font-bold leading-tight text-foreground">
                 মোহাইমিন পাটোয়ারী, CFA
               </h3>

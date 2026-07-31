@@ -19,7 +19,7 @@ import { FaqSection } from "@/components/FaqSection";
 import heroImage from "@/hero/hero.png";
 import { PolicySection } from "@/components/PolicySection";
 import { Loader2, CalendarCheck } from "lucide-react";
-import { revealVariants, staggerContainer } from "@/lib/animations";
+import { usePrefersReducedMotion, revealVariants, staggerContainer, scaleIn } from "@/lib/animations";
 
 type OpportunitiesSearch = {
   category?: string;
@@ -46,18 +46,16 @@ function LandingPage() {
       .map((p) => parseRoi(p.expected_profit))
       .filter((v): v is number => !isNaN(v) && v > 0);
 
-    let profitRange = "১৮-২৫+%";
+    let profitMin = 18;
+    let profitMax = 25;
     if (profits.length > 0) {
-      const min = Math.floor(Math.min(...profits));
-      const max = Math.ceil(Math.max(...profits));
-      profitRange = `${min}-${max}+%`;
-      if (min === max) profitRange = `${min}%`;
+      profitMin = Math.floor(Math.min(...profits));
+      profitMax = Math.ceil(Math.max(...profits));
     }
 
     const verifiedCount = opportunities.length;
-    const verifiedLabel = verifiedCount >= 10 ? `${verifiedCount}+` : `${verifiedCount}`;
 
-    return { profitRange, verifiedLabel, verifiedCount };
+    return { profitMin, profitMax, verifiedCount };
   }, [opportunities]);
 
   return (
@@ -80,7 +78,8 @@ function LandingPage() {
 
 const revealItem = revealVariants;
 
-function Hero({ stats }: { stats: { profitRange: string; verifiedLabel: string; verifiedCount: number } }) {
+function Hero({ stats }: { stats: { profitMin: number; profitMax: number; verifiedCount: number } }) {
+  const prefersReduced = usePrefersReducedMotion();
   return (
     <section id="top" className="relative overflow-hidden bg-surface dot-pattern">
       <div
@@ -94,9 +93,9 @@ function Hero({ stats }: { stats: { profitRange: string; verifiedLabel: string; 
       />
       <div className="relative z-10 mx-auto grid max-w-7xl gap-12 px-5 pt-20 pb-16 sm:px-8 sm:pt-24 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-12 lg:pt-28 lg:pb-24">
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          initial={prefersReduced ? "show" : "hidden"}
+          animate="show"
+          variants={revealVariants}
         >
           <span className="pill">
             <span className="grid h-4 w-4 place-items-center rounded-full bg-primary text-primary-foreground">
@@ -143,34 +142,47 @@ function Hero({ stats }: { stats: { profitRange: string; verifiedLabel: string; 
           </div>
 
           <div className="mt-12 grid max-w-lg grid-cols-3 gap-6 border-t border-border/70 pt-7 text-left">
-            <Stat value={stats.profitRange} label="বার্ষিক লাভ" />
-            <Stat value={stats.verifiedLabel} label="যাচাইকৃত প্রজেক্ট" />
-            <Stat value="১০০%" label="সুদ এবং ঘুরিয়ে সুদ মুক্ত" />
+            <Stat 
+              value={
+                stats.profitMin === stats.profitMax 
+                  ? <><CountUp to={stats.profitMin} suffix="%" duration={1.2} /></>
+                  : <><CountUp to={stats.profitMin} duration={1.2} />-<CountUp to={stats.profitMax} suffix="+%" duration={1.2} /></>
+              } 
+              label="বার্ষিক লাভ" 
+            />
+            <Stat 
+              value={<CountUp to={stats.verifiedCount} suffix={stats.verifiedCount >= 10 ? "+" : ""} duration={1.2} />} 
+              label="যাচাইকৃত প্রজেক্ট" 
+            />
+            <Stat 
+              value={<CountUp to={100} suffix="%" duration={1.2} />} 
+              label="সুদ এবং ঘুরিয়ে সুদ মুক্ত" 
+            />
           </div>
         </motion.div>
 
         <div data-hero-art className="relative mx-auto w-full max-w-[620px] lg:max-w-[720px] flex items-center justify-center py-2 lg:-mr-6 scale-105 sm:scale-110 lg:scale-115 transition-all">
           {/* Vibrant ambient glow behind the hero image */}
           <motion.div 
-            animate={{ opacity: [0.4, 0.7, 0.4], scale: [0.95, 1.05, 0.95] }}
+            animate={prefersReduced ? {} : { opacity: [0.4, 0.7, 0.4], scale: [0.95, 1.05, 0.95] }}
             transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
             className="absolute -inset-4 bg-gradient-to-tr from-primary/30 via-emerald-500/20 to-teal-400/20 blur-[70px] rounded-full pointer-events-none -z-10" 
           />
           <motion.div 
-            animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.1, 1] }}
+            animate={prefersReduced ? {} : { opacity: [0.3, 0.6, 0.3], scale: [1, 1.1, 1] }}
             transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
             className="absolute inset-8 bg-primary/25 blur-[50px] rounded-full pointer-events-none -z-10" 
           />
           
           <motion.div
-            initial={{ opacity: 0, scale: 0.92, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
+            initial={prefersReduced ? "show" : "hidden"}
+            animate="show"
+            variants={scaleIn}
             className="relative z-10 w-full flex items-center justify-center"
           >
             <motion.img 
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+              animate={prefersReduced ? {} : { y: [-8, 8] }}
+              transition={{ duration: 3.5, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
               src={heroImage} 
               alt="Business Investment Growth" 
               className="w-full h-auto object-contain drop-shadow-[0_25px_60px_rgba(0,0,0,0.2)] transition-transform duration-500 hover:scale-[1.03]"
@@ -263,6 +275,7 @@ const WHY = [
 ];
 
 function WhyChoose() {
+  const prefersReduced = usePrefersReducedMotion();
   return (
     <section id="why" className="border-t border-border bg-background">
       <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-28">
@@ -271,7 +284,7 @@ function WhyChoose() {
         />
         <motion.div
           variants={staggerContainer}
-          initial="hidden"
+          initial={prefersReduced ? "show" : "hidden"}
           whileInView="show"
           viewport={{ once: true, amount: 0.1 }}
           className="mt-10 grid gap-5 sm:mt-14 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4"
@@ -279,8 +292,7 @@ function WhyChoose() {
           {WHY.map((w, i) => (
             <motion.div
               key={w.label}
-              variants={revealItem}
-              transition={{ delay: i * 0.06 }}
+              variants={revealVariants}
               className="group relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)] card-hover sm:p-7 flex flex-col justify-between"
             >
               <div>
@@ -337,13 +349,14 @@ const STEPS = [
 ];
 
 function HowItWorks() {
+  const prefersReduced = usePrefersReducedMotion();
   return (
     <section id="how" className="relative overflow-hidden border-t border-border bg-surface">
       <div className="relative mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-28">
         <SectionHeader eyebrow="কীভাবে কাজ করে" title="তিন ধাপে বিনিয়োগ শুরু করুন" />
         <motion.div
           variants={staggerContainer}
-          initial="hidden"
+          initial={prefersReduced ? "show" : "hidden"}
           whileInView="show"
           viewport={{ once: true, amount: 0.1 }}
           className="mt-10 grid gap-5 sm:mt-14 sm:gap-6 md:grid-cols-3"
@@ -351,8 +364,7 @@ function HowItWorks() {
           {STEPS.map((s, i) => (
             <motion.div
               key={s.title}
-              variants={revealItem}
-              transition={{ delay: i * 0.06 }}
+              variants={revealVariants}
               className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)] card-hover sm:p-8"
             >
               <div className="grid h-10 w-10 place-items-center rounded-full bg-primary/10 text-sm font-bold text-primary num">
@@ -373,6 +385,7 @@ function HowItWorks() {
 }
 
 function Opportunities({ opportunities }: { opportunities: Opportunity[] }) {
+  const prefersReduced = usePrefersReducedMotion();
   const isLoading = opportunities.length === 0;
   
   const previewList = useMemo(() => {
@@ -415,13 +428,13 @@ function Opportunities({ opportunities }: { opportunities: Opportunity[] }) {
           <>
             <motion.div
               variants={staggerContainer}
-              initial="hidden"
+              initial={prefersReduced ? "show" : "hidden"}
               whileInView="show"
               viewport={{ once: true, amount: 0.05 }}
               className="mt-12 grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3"
             >
               {previewList.map((p, i) => (
-                <motion.div key={p.id} variants={revealItem} transition={{ delay: i * 0.05 }}>
+                <motion.div key={p.id} variants={revealVariants}>
                   <OpportunityCard project={p} index={i} />
                 </motion.div>
               ))}

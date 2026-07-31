@@ -8,6 +8,8 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, Suspense, type ReactNode } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { usePrefersReducedMotion, pageTransition } from "@/lib/animations";
 
 import { GlobalNav } from "@/components/GlobalNav";
 import { Footer } from "@/components/Footer";
@@ -192,22 +194,32 @@ function GlobalScrollRestoration() {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
+  const prefersReduced = usePrefersReducedMotion();
   const locationKey = router.state.location.pathname + (router.state.location.searchStr || "");
 
   return (
     <QueryClientProvider client={queryClient}>
       <GlobalScrollRestoration />
       <div className="flex flex-col min-h-screen">
-        <div key={locationKey} className="flex-grow page-enter">
-          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-          <Suspense fallback={
-            <div className="flex min-h-screen items-center justify-center bg-background">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-            </div>
-          }>
-            <Outlet />
-          </Suspense>
-        </div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={locationKey}
+            initial={prefersReduced ? "animate" : "initial"}
+            animate="animate"
+            exit={prefersReduced ? "animate" : "exit"}
+            variants={pageTransition}
+            className="flex-grow"
+          >
+            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+            <Suspense fallback={
+              <div className="flex min-h-screen items-center justify-center bg-background">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+              </div>
+            }>
+              <Outlet />
+            </Suspense>
+          </motion.div>
+        </AnimatePresence>
         <Footer />
       </div>
       

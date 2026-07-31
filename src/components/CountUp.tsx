@@ -9,8 +9,8 @@ if (typeof window !== "undefined") {
 
 // Bengali digit map
 const BN = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
-function toBengali(n: number): string {
-  return String(Math.round(n))
+function toBengali(n: number | string): string {
+  return String(n)
     .split("")
     .map((d) => (/\d/.test(d) ? BN[Number(d)] : d))
     .join("");
@@ -33,34 +33,52 @@ export function CountUp({
   const [val, setVal] = useState(to); // Start at final value for reduced-motion
   const prefersReduced = usePrefersReducedMotion();
 
+  const valRef = useRef(0);
+  const [hasEntered, setHasEntered] = useState(false);
+
+  useEffect(() => {
+    if (prefersReduced || !ref.current) return;
+    const st = ScrollTrigger.create({
+      trigger: ref.current,
+      start: "top 85%",
+      once: true,
+      onEnter: () => setHasEntered(true),
+    });
+    return () => {
+      st.kill();
+    };
+  }, [prefersReduced]);
+
   useEffect(() => {
     if (prefersReduced) {
       setVal(to);
+      valRef.current = to;
       return;
     }
-    if (!ref.current) return;
-    const obj = { v: 0 };
+    
+    if (!hasEntered) return;
+
+    const obj = { v: valRef.current };
     const tw = gsap.to(obj, {
       v: to,
       duration,
       ease: "power2.out",
-      scrollTrigger: {
-        trigger: ref.current,
-        start: "top 85%",
-        once: true,
+      onUpdate: () => {
+        setVal(obj.v);
+        valRef.current = obj.v;
       },
-      onUpdate: () => setVal(obj.v),
     });
     return () => {
-      tw.scrollTrigger?.kill();
       tw.kill();
     };
-  }, [to, duration, prefersReduced]);
+  }, [to, duration, prefersReduced, hasEntered]);
 
+  const formattedVal = Math.round(val).toLocaleString("en-IN");
+  
   return (
     <span ref={ref}>
       {prefix}
-      {bengali ? toBengali(val) : Math.round(val)}
+      {bengali ? toBengali(formattedVal) : formattedVal}
       {suffix}
     </span>
   );

@@ -38,10 +38,16 @@
   --color-ring: var(--ring);
   --color-grid: var(--grid);
   --color-surface: var(--surface);
+  
+  --ease-smooth-out: var(--ease-smooth-out);
+  --ease-smooth-in-out: var(--ease-smooth-in-out);
 }
 
 :root {
   --radius: 1.25rem;
+  
+  --ease-smooth-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-smooth-in-out: ease-in-out;
 
   /* Brand palette - Dark to Light */
   --biniyog-darkest: #051F20;
@@ -106,6 +112,30 @@
   .num, .tabular {
     font-variant-numeric: tabular-nums;
     font-family: var(--font-mono);
+  }
+}
+
+@utility btn-hover {
+  transition-property: transform, box-shadow;
+  transition-duration: 200ms;
+  transition-timing-function: var(--ease-smooth-out);
+  &:hover {
+    transform: scale(1.02);
+    box-shadow: var(--shadow-elevated);
+  }
+  &:active {
+    transform: scale(0.98);
+    transition-duration: 150ms;
+  }
+}
+
+@utility card-hover {
+  transition-property: transform, box-shadow;
+  transition-duration: 200ms;
+  transition-timing-function: var(--ease-smooth-out);
+  &:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: var(--shadow-elevated);
   }
 }
 
