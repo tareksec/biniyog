@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { usePrefersReducedMotion } from "@/lib/animations";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -20,7 +21,7 @@ export function CountUp({
   suffix = "",
   prefix = "",
   bengali = true,
-  duration = 1.6,
+  duration = 1.0,
 }: {
   to: number;
   suffix?: string;
@@ -29,9 +30,14 @@ export function CountUp({
   duration?: number;
 }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const [val, setVal] = useState(0);
+  const [val, setVal] = useState(to); // Start at final value for reduced-motion
+  const prefersReduced = usePrefersReducedMotion();
 
   useEffect(() => {
+    if (prefersReduced) {
+      setVal(to);
+      return;
+    }
     if (!ref.current) return;
     const obj = { v: 0 };
     const tw = gsap.to(obj, {
@@ -49,7 +55,7 @@ export function CountUp({
       tw.scrollTrigger?.kill();
       tw.kill();
     };
-  }, [to, duration]);
+  }, [to, duration, prefersReduced]);
 
   return (
     <span ref={ref}>

@@ -19,6 +19,7 @@ import { FaqSection } from "@/components/FaqSection";
 import heroImage from "@/hero/hero.png";
 import { PolicySection } from "@/components/PolicySection";
 import { Loader2, CalendarCheck } from "lucide-react";
+import { revealVariants, staggerContainer } from "@/lib/animations";
 
 type OpportunitiesSearch = {
   category?: string;
@@ -77,10 +78,7 @@ function LandingPage() {
   );
 }
 
-const revealItem = {
-  hidden: { opacity: 0, y: 24 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: "easeOut" } },
-} as const;
+const revealItem = revealVariants;
 
 function Hero({ stats }: { stats: { profitRange: string; verifiedLabel: string; verifiedCount: number } }) {
   return (
@@ -95,7 +93,11 @@ function Hero({ stats }: { stats: { profitRange: string; verifiedLabel: string; 
         aria-hidden
       />
       <div className="relative z-10 mx-auto grid max-w-7xl gap-12 px-5 pt-20 pb-16 sm:px-8 sm:pt-24 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-12 lg:pt-28 lg:pb-24">
-        <div>
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        >
           <span className="pill">
             <span className="grid h-4 w-4 place-items-center rounded-full bg-primary text-primary-foreground">
               <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4">
@@ -117,7 +119,7 @@ function Hero({ stats }: { stats: { profitRange: string; verifiedLabel: string; 
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <Link
               to="/opportunities"
-              className="group inline-flex items-center gap-3 rounded-full px-6 py-3.5 text-[15px] font-semibold text-primary-foreground shadow-[var(--shadow-elevated)] transition hover:scale-[1.03]"
+              className="group inline-flex items-center gap-3 rounded-full px-6 py-3.5 text-[15px] font-semibold text-primary-foreground shadow-[var(--shadow-elevated)] btn-hover"
               style={{ background: "var(--gradient-primary)" }}
             >
               বিনিয়োগের সুযোগ দেখুন
@@ -145,7 +147,7 @@ function Hero({ stats }: { stats: { profitRange: string; verifiedLabel: string; 
             <Stat value={stats.verifiedLabel} label="যাচাইকৃত প্রজেক্ট" />
             <Stat value="১০০%" label="সুদ এবং ঘুরিয়ে সুদ মুক্ত" />
           </div>
-        </div>
+        </motion.div>
 
         <div data-hero-art className="relative mx-auto w-full max-w-[620px] lg:max-w-[720px] flex items-center justify-center py-2 lg:-mr-6 scale-105 sm:scale-110 lg:scale-115 transition-all">
           {/* Vibrant ambient glow behind the hero image */}
@@ -267,16 +269,19 @@ function WhyChoose() {
         <SectionHeader
           title="কেন আমরা"
         />
-        <div className="mt-10 grid gap-5 sm:mt-14 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.1 }}
+          className="mt-10 grid gap-5 sm:mt-14 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4"
+        >
           {WHY.map((w, i) => (
             <motion.div
               key={w.label}
               variants={revealItem}
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ delay: i * 0.1 }}
-              className="group relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)] transition duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] sm:p-7 flex flex-col justify-between"
+              transition={{ delay: i * 0.06 }}
+              className="group relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)] card-hover sm:p-7 flex flex-col justify-between"
             >
               <div>
                 <span
@@ -310,7 +315,7 @@ function WhyChoose() {
               </span>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
@@ -336,16 +341,19 @@ function HowItWorks() {
     <section id="how" className="relative overflow-hidden border-t border-border bg-surface">
       <div className="relative mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-28">
         <SectionHeader eyebrow="কীভাবে কাজ করে" title="তিন ধাপে বিনিয়োগ শুরু করুন" />
-        <div className="mt-10 grid gap-5 sm:mt-14 sm:gap-6 md:grid-cols-3">
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.1 }}
+          className="mt-10 grid gap-5 sm:mt-14 sm:gap-6 md:grid-cols-3"
+        >
           {STEPS.map((s, i) => (
             <motion.div
               key={s.title}
               variants={revealItem}
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ delay: i * 0.1 }}
-              className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)] transition duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] sm:p-8"
+              transition={{ delay: i * 0.06 }}
+              className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)] card-hover sm:p-8"
             >
               <div className="grid h-10 w-10 place-items-center rounded-full bg-primary/10 text-sm font-bold text-primary num">
                 {String(i + 1).padStart(2, "0")}
@@ -358,7 +366,7 @@ function HowItWorks() {
               </p>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
@@ -405,18 +413,24 @@ function Opportunities({ opportunities }: { opportunities: Opportunity[] }) {
           </div>
         ) : (
           <>
-            <div className="mt-12 grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.05 }}
+              className="mt-12 grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3"
+            >
               {previewList.map((p, i) => (
-                <div key={p.id}>
+                <motion.div key={p.id} variants={revealItem} transition={{ delay: i * 0.05 }}>
                   <OpportunityCard project={p} index={i} />
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
             
             <div className="mt-16 flex justify-center">
               <Link
                 to="/opportunities"
-                className="inline-flex items-center gap-2 rounded-full border-2 border-primary bg-background px-8 py-3.5 text-[15px] font-bold text-primary shadow-sm transition-all hover:bg-primary hover:text-primary-foreground hover:scale-[1.02]"
+                className="inline-flex items-center gap-2 rounded-full border-2 border-primary bg-background px-8 py-3.5 text-[15px] font-bold text-primary shadow-sm btn-hover hover:bg-primary hover:text-primary-foreground"
               >
                 সব সুযোগ দেখুন
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -439,7 +453,13 @@ function FinalCTA() {
         style={{ background: "var(--gradient-hero)" }}
         aria-hidden
       />
-      <div className="relative mx-auto max-w-4xl px-5 py-24 text-center sm:px-8 sm:py-28">
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.45, ease: "easeOut" }}
+        className="relative mx-auto max-w-4xl px-5 py-24 text-center sm:px-8 sm:py-28"
+      >
         <h2 className="text-3xl font-bold leading-tight sm:text-5xl text-white">
           আজই <span className="gradient-text">অংশীদার</span> হোন
         </h2>
@@ -448,7 +468,7 @@ function FinalCTA() {
         </p>
         <Link
           to="/opportunities"
-          className="mt-8 inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-[15px] font-semibold text-primary-foreground shadow-[var(--shadow-elevated)] transition hover:scale-[1.03]"
+          className="mt-8 inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-[15px] font-semibold text-primary-foreground shadow-[var(--shadow-elevated)] btn-hover"
           style={{ background: "var(--gradient-primary)" }}
         >
           বিনিয়োগ শুরু করুন
@@ -456,7 +476,7 @@ function FinalCTA() {
             <path d="M5 12h14M13 5l7 7-7 7" />
           </svg>
         </Link>
-      </div>
+      </motion.div>
     </section>
   );
 }

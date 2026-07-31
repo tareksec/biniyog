@@ -191,12 +191,14 @@ function GlobalScrollRestoration() {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const router = useRouter();
+  const locationKey = router.state.location.pathname + (router.state.location.searchStr || "");
 
   return (
     <QueryClientProvider client={queryClient}>
       <GlobalScrollRestoration />
       <div className="flex flex-col min-h-screen">
-        <div className="flex-grow">
+        <div key={locationKey} className="flex-grow page-enter">
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Suspense fallback={
             <div className="flex min-h-screen items-center justify-center bg-background">

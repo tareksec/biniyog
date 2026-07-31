@@ -1,5 +1,16 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, useSpring, useTransform } from "framer-motion";
+
+function AnimatedCalcValue({ value }: { value: number }) {
+  const spring = useSpring(0, { stiffness: 120, damping: 18 });
+  const rounded = useTransform(spring, (v) => Math.round(v));
+
+  useEffect(() => {
+    spring.set(value);
+  }, [value, spring]);
+
+  return <motion.span>{rounded}</motion.span>;
+}
 
 export function InvestmentCalculator() {
   const [amount, setAmount] = useState(100000);
@@ -204,7 +215,7 @@ export function InvestmentCalculator() {
                     <div>
                       <div className="text-sm font-medium uppercase tracking-wide text-white/90">প্রত্যাশিত বার্ষিক লাভ</div>
                       <div className="num mt-2 flex items-baseline gap-1">
-                        <span className="text-4xl font-bold tracking-tight text-white sm:text-5xl">৳{yearlyReturn.toLocaleString("en-IN")}</span>
+                        <span className="text-4xl font-bold tracking-tight text-white sm:text-5xl">৳<AnimatedCalcValue value={yearlyReturn} /></span>
                       </div>
                     </div>
                     {/* Mini Sparkline Chart */}
@@ -221,14 +232,14 @@ export function InvestmentCalculator() {
                   <div>
                     <div className="text-sm text-white/80">প্রত্যাশিত মাসিক লাভ</div>
                     <div className="num mt-1 flex items-baseline gap-1">
-                      <span className="text-2xl font-semibold tracking-tight text-white/90">৳{monthlyReturn.toLocaleString("en-IN")}</span>
+                      <span className="text-2xl font-semibold tracking-tight text-white/90">৳<AnimatedCalcValue value={monthlyReturn} /></span>
                     </div>
                   </div>
 
                   <div className="rounded-xl bg-white/10 p-3.5 border border-white/15">
                     <div className="text-sm font-medium text-white">সকল লাভ পুনরায় বিনিয়োগ করলে প্রত্যাশিত মোট লাভ ({durationUnit === "year" ? `${years} বছরে` : `${months} মাসে`})</div>
                     <div className="num mt-1 flex items-baseline gap-1">
-                      <span className="text-2xl font-bold tracking-tight text-white sm:text-3xl">৳{totalReturn.toLocaleString("en-IN")}</span>
+                      <span className="text-2xl font-bold tracking-tight text-white sm:text-3xl">৳<AnimatedCalcValue value={totalReturn} /></span>
                     </div>
                   </div>
                 </div>

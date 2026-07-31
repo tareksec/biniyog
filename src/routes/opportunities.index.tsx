@@ -30,6 +30,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
+import { listItem } from "@/lib/animations";
 
 interface OpportunitiesSearch {
   q?: string;
@@ -457,7 +458,7 @@ function OpportunitiesPage() {
                     <button
                       key={c}
                       onClick={() => handleUpdateFilter("category", c === "all" ? undefined : c)}
-                      className={`shrink-0 rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
+                      className={`shrink-0 rounded-full border px-4 py-1.5 text-sm font-medium btn-hover-sm ${
                         active
                           ? "bg-primary border-primary text-primary-foreground"
                           : "bg-card border-border text-muted-foreground hover:bg-muted"
@@ -473,7 +474,7 @@ function OpportunitiesPage() {
               <div className="px-4 sm:px-0 pb-4 sm:pb-0 shrink-0">
                 <button
                   onClick={() => handleUpdateFilter("saved", searchParams.saved ? undefined : true)}
-                  className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-bold transition-all ${
+                  className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-bold btn-hover-sm ${
                     searchParams.saved
                       ? "bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-900/30 dark:border-rose-800"
                       : "bg-card border-border text-muted-foreground hover:bg-muted"
@@ -489,7 +490,7 @@ function OpportunitiesPage() {
             {showLoading ? (
               <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" : "flex flex-col gap-4"}>
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className={`animate-pulse bg-card rounded-[1.75rem] border border-border/50 ${viewMode === "grid" ? "h-[360px]" : "h-[120px]"}`} />
+                  <div key={i} className={`skeleton-shimmer bg-card rounded-[1.75rem] border border-border/50 ${viewMode === "grid" ? "h-[360px]" : "h-[120px]"}`} />
                 ))}
               </div>
             ) : sortedProjects.length === 0 ? (
@@ -507,10 +508,18 @@ function OpportunitiesPage() {
               </div>
             ) : (
               <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" : "flex flex-col gap-4"}>
+                <AnimatePresence mode="popLayout">
                 {sortedProjects.map((p, idx) => (
-                  viewMode === "grid" ? (
+                  <motion.div
+                    key={p.id}
+                    layout
+                    variants={listItem}
+                    initial="hidden"
+                    animate="show"
+                    exit="exit"
+                  >
+                  {viewMode === "grid" ? (
                     <OpportunityCard 
-                      key={p.id} 
                       project={p} 
                       index={idx} 
                       onQuickView={() => setQuickViewProject(p)}
@@ -519,15 +528,16 @@ function OpportunitiesPage() {
                     />
                   ) : (
                     <OpportunityListItem 
-                      key={p.id} 
                       project={p} 
                       index={idx} 
                       onQuickView={() => setQuickViewProject(p)}
                       isComparing={compareIds.includes(p.id)}
                       onCompareToggle={() => handleCompareToggle(p.id)}
                     />
-                  )
+                  )}
+                  </motion.div>
                 ))}
+                </AnimatePresence>
               </div>
             )}
           </div>

@@ -4,6 +4,8 @@ import { Link } from "@tanstack/react-router";
 import { supabase } from "@/lib/supabase";
 import type { Testimonial } from "@/lib/database.types";
 import { Loader2, Star } from "lucide-react";
+import { motion } from "framer-motion";
+import { revealVariants } from "@/lib/animations";
 
 import { fetchHomepageReviews } from "@/lib/homepage_reviews";
 import type { HomepageReview } from "@/lib/database.types";
@@ -27,7 +29,7 @@ export function TestimonialCard({ item }: { item: Testimonial }) {
   ) : null;
 
   return (
-    <div className="w-[300px] sm:w-[380px] shrink-0 rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-[var(--shadow-card)] flex flex-col justify-between transition-transform duration-300 hover:scale-[1.02]">
+    <div className="w-[300px] sm:w-[380px] shrink-0 rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-[var(--shadow-card)] flex flex-col justify-between card-hover">
       <div>
         {/* Brand Badge */}
         {item.related_opportunity_id ? (
@@ -90,7 +92,7 @@ export function TestimonialCard({ item }: { item: Testimonial }) {
 
 export function HomepageReviewCard({ item }: { item: HomepageReview }) {
   return (
-    <div className="w-[300px] sm:w-[380px] shrink-0 rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-[var(--shadow-card)] flex flex-col justify-between transition-transform duration-300 hover:scale-[1.02]">
+    <div className="w-[300px] sm:w-[380px] shrink-0 rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-[var(--shadow-card)] flex flex-col justify-between card-hover">
       <div>
         {/* Star Rating */}
         {item.rating && item.rating > 0 ? (
@@ -161,7 +163,13 @@ export function TestimonialsSection() {
       onTouchEnd={() => setIsTouching(false)}
       onTouchCancel={() => setIsTouching(false)}
     >
-      <div className="mx-auto max-w-7xl px-5 sm:px-8 mb-12">
+      <motion.div
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true }}
+        variants={revealVariants}
+        className="mx-auto max-w-7xl px-5 sm:px-8 mb-12"
+      >
         <div className="text-center">
           <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
             <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
@@ -171,7 +179,7 @@ export function TestimonialsSection() {
             বিনিয়োগকারীদের অভিজ্ঞতা
           </h2>
         </div>
-      </div>
+      </motion.div>
 
       {isLoading ? (
         <div className="flex min-h-[300px] items-center justify-center">

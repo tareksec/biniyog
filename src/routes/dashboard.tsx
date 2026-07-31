@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
+import { motion } from "framer-motion";
 import {
   PieChart,
   Pie,
@@ -15,6 +16,7 @@ import {
 import { fetchOpportunities, parseAmount, parseRoi, statusLabel, isOpen } from "@/lib/projects";
 import { getCategoryIcon } from "@/components/OpportunityCard";
 import { ArrowRight, Briefcase, Activity, TrendingUp, PiggyBank, Sparkles } from "lucide-react";
+import { revealVariants, staggerContainer } from "@/lib/animations";
 
 export const Route = createFileRoute("/dashboard")({
   loader: async () => {
@@ -180,7 +182,7 @@ function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           {/* Highlight Card */}
-          <div className="lg:col-span-1 rounded-[2rem] bg-gradient-to-br from-primary via-[#0f5434] to-[#0a3621] p-8 text-primary-foreground shadow-xl relative overflow-hidden flex flex-col justify-between min-h-[220px] transition-transform hover:scale-[1.01] duration-300">
+          <div className="lg:col-span-1 rounded-[2rem] bg-gradient-to-br from-primary via-[#0f5434] to-[#0a3621] p-8 text-primary-foreground shadow-xl relative overflow-hidden flex flex-col justify-between min-h-[220px] card-hover">
             <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
             <div className="relative z-10">
               <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-bold backdrop-blur-sm text-white/90 mb-4">
@@ -202,7 +204,13 @@ function DashboardPage() {
           </div>
 
           {/* 3 KPIs */}
-          <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.1 }}
+            className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-6"
+          >
             <KpiCard 
               label="মোট সুযোগ" 
               value={metrics.total.toString()} 
@@ -221,14 +229,14 @@ function DashboardPage() {
               icon={<PiggyBank className="h-5 w-5" />} 
               color="#0ea5e9"
             />
-          </div>
+          </motion.div>
         </div>
 
         {/* Charts Grid Row 1 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           
           {/* Category Breakdown */}
-          <div className="rounded-[1.5rem] bg-card p-6 shadow-sm border border-border transition-shadow hover:shadow-md duration-300">
+          <div className="rounded-[1.5rem] bg-card p-6 shadow-sm border border-border card-hover">
             <h3 className="text-base font-bold text-foreground mb-6">ক্যাটাগরি অনুযায়ী সুযোগ</h3>
             <div className="h-[280px] w-full">
               <ResponsiveContainer width="100%" height="100%">
@@ -244,7 +252,7 @@ function DashboardPage() {
           </div>
 
           {/* Status Distribution */}
-          <div className="rounded-[1.5rem] bg-card p-6 shadow-sm border border-border transition-shadow hover:shadow-md duration-300">
+          <div className="rounded-[1.5rem] bg-card p-6 shadow-sm border border-border card-hover">
             <h3 className="text-base font-bold text-foreground mb-6">স্ট্যাটাস ডিস্ট্রিবিউশন</h3>
             <div className="h-[280px] w-full flex flex-col sm:flex-row items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
@@ -345,7 +353,10 @@ function DashboardPage() {
 
 function KpiCard({ label, value, icon, color }: { label: string, value: string, icon: React.ReactNode, color: string }) {
   return (
-    <div className="rounded-[1.5rem] bg-card p-6 shadow-sm border border-border relative overflow-hidden flex flex-col justify-between transition-transform hover:scale-[1.02] duration-300 cursor-default min-h-[160px]">
+    <motion.div
+      variants={revealVariants}
+      className="rounded-[1.5rem] bg-card p-6 shadow-sm border border-border relative overflow-hidden flex flex-col justify-between card-hover cursor-default min-h-[160px]"
+    >
       <div className="flex justify-between items-start mb-4 relative z-10">
         <div className="text-[13px] font-bold text-muted-foreground uppercase tracking-wide">{label}</div>
         <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0" style={{ color }}>
@@ -360,6 +371,6 @@ function KpiCard({ label, value, icon, color }: { label: string, value: string, 
       <div className="absolute -bottom-3 -right-4 pointer-events-none">
         <MiniSparkline color={color} />
       </div>
-    </div>
+    </motion.div>
   );
 }

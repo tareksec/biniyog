@@ -4,6 +4,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { motion } from "framer-motion";
+import { revealVariants, staggerContainer } from "@/lib/animations";
 
 const FAQS = [
   {
@@ -50,11 +52,21 @@ export function FaqSection() {
         </div>
 
         <Accordion type="single" collapsible className="mt-10 space-y-3">
-          {FAQS.map((f) => (
-            <AccordionItem
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.05 }}
+          >
+          {FAQS.map((f, i) => (
+            <motion.div
               key={f.q}
+              variants={revealVariants}
+              transition={{ delay: i * 0.06 }}
+            >
+            <AccordionItem
               value={f.q}
-              className="rounded-2xl border border-border bg-card px-5 shadow-[var(--shadow-card)] data-[state=open]:border-primary/40"
+              className="rounded-2xl border border-border bg-card px-5 shadow-[var(--shadow-card)] data-[state=open]:border-primary/40 card-hover"
             >
               <AccordionTrigger className="py-5 text-left text-base font-semibold hover:no-underline sm:text-lg">
                 {f.q}
@@ -63,7 +75,9 @@ export function FaqSection() {
                 {f.a}
               </AccordionContent>
             </AccordionItem>
+            </motion.div>
           ))}
+          </motion.div>
         </Accordion>
       </div>
     </section>

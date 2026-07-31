@@ -227,7 +227,7 @@ export function OpportunityCard({
     >
       <div
         onClick={handleCardClick}
-        className={`group relative flex h-full flex-col overflow-hidden rounded-[1.75rem] bg-muted/40 p-2 transition-all duration-300 ease-out cursor-pointer hover:-translate-y-1.5 ${
+        className={`group relative flex h-full flex-col overflow-hidden rounded-[1.75rem] bg-muted/40 p-2 card-hover cursor-pointer ${
           funded ? "opacity-75 hover:opacity-100" : ""
         } ${isComparing ? "ring-2 ring-primary bg-primary/5" : ""}`}
         style={{ boxShadow: "0 8px 30px rgba(0,0,0,0.06)" }}
@@ -235,7 +235,7 @@ export function OpportunityCard({
         <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
           <button
             onClick={(e) => { e.stopPropagation(); toggleBookmark(project.id); }}
-            className="p-2 rounded-full bg-background/80 backdrop-blur-sm border border-border/60 hover:bg-background transition-colors shadow-sm"
+            className="p-2 rounded-full bg-background/80 backdrop-blur-sm border border-border/60 btn-hover-sm shadow-sm"
           >
             <Heart className={`h-4 w-4 ${saved ? "fill-primary text-primary" : "text-muted-foreground hover:text-foreground"}`} />
           </button>
@@ -243,7 +243,7 @@ export function OpportunityCard({
           {onCompareToggle && (
             <button
               onClick={(e) => { e.stopPropagation(); onCompareToggle(); }}
-              className={`p-2 rounded-full backdrop-blur-sm border transition-colors shadow-sm ${
+              className={`p-2 rounded-full backdrop-blur-sm border btn-hover-sm shadow-sm ${
                 isComparing 
                   ? "bg-primary text-primary-foreground border-primary" 
                   : "bg-background/80 border-border/60 text-muted-foreground hover:bg-background hover:text-foreground"
