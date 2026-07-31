@@ -255,18 +255,21 @@ const WHY = [
       </>
     ),
     colorIndex: 0,
+    hash: "connect",
   },
   {
     label: "সুদ মুক্ত আয়",
     desc: "সকল প্রকার আয় সুদ মুক্ত। কোন প্রকার বাহানা ও ঘুরিয়ে সুদ খাওয়ার সুযোগ নেই।",
     iconPath: <path d="M9 12l2 2 4-4M12 3l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V7l8-4z" />,
     colorIndex: 1,
+    hash: "interest-free",
   },
   {
     label: "আইনি সুরক্ষা",
     desc: "প্রতিটি বিনিয়োগ লিগ্যাল ডকুমেন্ট ও সিকিউরিটি চেক নিশ্চিত করে করবেন।",
     iconPath: <path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z" />,
     colorIndex: 2,
+    hash: "legal",
   },
   {
     label: "স্বচ্ছ চুক্তি",
@@ -281,18 +284,21 @@ const WHY = [
       </>
     ),
     colorIndex: 3,
+    hash: "transparent",
   },
   {
     label: "আকর্ষণীয় লাভ",
     desc: "অনেক ভালো লাভ পাবার সম্ভাবনা",
     iconPath: <path d="M3 17l6-6 4 4 8-8M14 7h7v7" />,
     colorIndex: 0,
+    hash: "returns",
   },
   {
     label: "বিনিয়োগের আগে ও পরে সরেজমিনে যাচাইয়ের সুযোগ",
     desc: "বিনিয়োগকারী যেকোনো সময় ব্যবসাপ্রতিষ্ঠান ও হিসাব সরাসরি নিজে গিয়ে যাচাই করতে পারবেন।",
     iconPath: <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />,
     colorIndex: 1,
+    hash: "verify",
   },
   {
     label: "সমাজের জন্য কল্যাণকর ব্যবসা",
@@ -303,6 +309,7 @@ const WHY = [
       </>
     ),
     colorIndex: 2,
+    hash: "social",
   },
   {
     label: "স্বাধীন সিদ্ধান্ত",
@@ -314,6 +321,7 @@ const WHY = [
       </>
     ),
     colorIndex: 3,
+    hash: "connect",
   },
 ];
 
@@ -338,7 +346,10 @@ function WhyChoose() {
               <motion.div
                 key={w.label}
                 variants={revealVariants}
-                className="why-card group relative overflow-hidden rounded-2xl p-5 sm:p-6 flex flex-col justify-between"
+                onClick={() => {
+                  window.location.href = `/insights/keno-somriddhite-biniyog#${w.hash}`;
+                }}
+                className="why-card group relative overflow-hidden rounded-2xl p-5 sm:p-6 flex flex-col justify-between cursor-pointer"
                 style={{
                   backgroundColor: c.tint,
                   borderWidth: 1,
@@ -366,16 +377,15 @@ function WhyChoose() {
                     {w.desc}
                   </p>
                 </div>
-                <Link
-                  to="/opportunities"
-                  className="mt-5 inline-flex items-center gap-1.5 text-[13px] font-semibold transition-all duration-200 hover:gap-2.5 sm:mt-6"
+                <div
+                  className="mt-5 inline-flex items-center gap-1.5 text-[13px] font-semibold transition-all duration-200 group-hover:gap-2.5 sm:mt-6"
                   style={{ color: c.text }}
                 >
                   আরও জানুন
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                     <path d="M5 12h14M13 5l7 7-7 7" />
                   </svg>
-                </Link>
+                </div>
                 <span
                   aria-hidden
                   className="num pointer-events-none absolute -bottom-3 right-4 text-[56px] font-bold select-none"
@@ -387,6 +397,18 @@ function WhyChoose() {
             );
           })}
         </motion.div>
+
+        <div className="mt-10 text-center sm:mt-12">
+          <Link
+            to="/insights/keno-somriddhite-biniyog"
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-6 py-3 text-[15px] font-semibold text-foreground shadow-sm transition-all duration-200 hover:border-primary/40 hover:text-primary hover:shadow-[var(--shadow-elevated)]"
+          >
+            বিস্তারিত পড়ুন
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <path d="M5 12h14M13 5l7 7-7 7" />
+            </svg>
+          </Link>
+        </div>
       </div>
     </section>
   );

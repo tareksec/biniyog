@@ -16,6 +16,11 @@ import { Route as ReviewsRouteImport } from './routes/reviews'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
+import { Route as InsightsIndexRouteImport } from './routes/insights/index'
+import { Route as InsightsInflationPortfolioRouteImport } from './routes/insights/inflation-portfolio'
+import { Route as InsightsKenoSomriddhiteBiniyogRouteImport } from './routes/insights/keno-somriddhite-biniyog'
+import { Route as InsightsKrishiKhateBiniyogRouteImport } from './routes/insights/krishi-khate-biniyog'
+import { Route as InsightsSmeHalalBiniyogRouteImport } from './routes/insights/sme-halal-biniyog'
 import { Route as OpportunitiesIndexRouteImport } from './routes/opportunities.index'
 import { Route as OpportunitiesIdRouteImport } from './routes/opportunities.$id'
 import { Route as ApiPublicRevealDetailsRouteImport } from './routes/api/public/reveal-details'
@@ -55,6 +60,34 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
   path: '/admin/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InsightsIndexRoute = InsightsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => InsightsRoute,
+} as any)
+const InsightsInflationPortfolioRoute =
+  InsightsInflationPortfolioRouteImport.update({
+    id: '/inflation-portfolio',
+    path: '/inflation-portfolio',
+    getParentRoute: () => InsightsRoute,
+  } as any)
+const InsightsKenoSomriddhiteBiniyogRoute =
+  InsightsKenoSomriddhiteBiniyogRouteImport.update({
+    id: '/keno-somriddhite-biniyog',
+    path: '/keno-somriddhite-biniyog',
+    getParentRoute: () => InsightsRoute,
+  } as any)
+const InsightsKrishiKhateBiniyogRoute =
+  InsightsKrishiKhateBiniyogRouteImport.update({
+    id: '/krishi-khate-biniyog',
+    path: '/krishi-khate-biniyog',
+    getParentRoute: () => InsightsRoute,
+  } as any)
+const InsightsSmeHalalBiniyogRoute = InsightsSmeHalalBiniyogRouteImport.update({
+  id: '/sme-halal-biniyog',
+  path: '/sme-halal-biniyog',
+  getParentRoute: () => InsightsRoute,
+} as any)
 const OpportunitiesIndexRoute = OpportunitiesIndexRouteImport.update({
   id: '/opportunities/',
   path: '/opportunities/',
@@ -74,24 +107,33 @@ const ApiPublicRevealDetailsRoute = ApiPublicRevealDetailsRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
-  '/insights': typeof InsightsRoute
+  '/insights': typeof InsightsRouteWithChildren
   '/reviews': typeof ReviewsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/login': typeof AdminLoginRoute
+  '/insights/inflation-portfolio': typeof InsightsInflationPortfolioRoute
+  '/insights/keno-somriddhite-biniyog': typeof InsightsKenoSomriddhiteBiniyogRoute
+  '/insights/krishi-khate-biniyog': typeof InsightsKrishiKhateBiniyogRoute
+  '/insights/sme-halal-biniyog': typeof InsightsSmeHalalBiniyogRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
   '/admin/': typeof AdminIndexRoute
+  '/insights/': typeof InsightsIndexRoute
   '/opportunities/': typeof OpportunitiesIndexRoute
   '/api/public/reveal-details': typeof ApiPublicRevealDetailsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
-  '/insights': typeof InsightsRoute
   '/reviews': typeof ReviewsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/login': typeof AdminLoginRoute
+  '/insights/inflation-portfolio': typeof InsightsInflationPortfolioRoute
+  '/insights/keno-somriddhite-biniyog': typeof InsightsKenoSomriddhiteBiniyogRoute
+  '/insights/krishi-khate-biniyog': typeof InsightsKrishiKhateBiniyogRoute
+  '/insights/sme-halal-biniyog': typeof InsightsSmeHalalBiniyogRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
   '/admin': typeof AdminIndexRoute
+  '/insights': typeof InsightsIndexRoute
   '/opportunities': typeof OpportunitiesIndexRoute
   '/api/public/reveal-details': typeof ApiPublicRevealDetailsRoute
 }
@@ -99,12 +141,17 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
-  '/insights': typeof InsightsRoute
+  '/insights': typeof InsightsRouteWithChildren
   '/reviews': typeof ReviewsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/login': typeof AdminLoginRoute
+  '/insights/inflation-portfolio': typeof InsightsInflationPortfolioRoute
+  '/insights/keno-somriddhite-biniyog': typeof InsightsKenoSomriddhiteBiniyogRoute
+  '/insights/krishi-khate-biniyog': typeof InsightsKrishiKhateBiniyogRoute
+  '/insights/sme-halal-biniyog': typeof InsightsSmeHalalBiniyogRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
   '/admin/': typeof AdminIndexRoute
+  '/insights/': typeof InsightsIndexRoute
   '/opportunities/': typeof OpportunitiesIndexRoute
   '/api/public/reveal-details': typeof ApiPublicRevealDetailsRoute
 }
@@ -117,20 +164,29 @@ export interface FileRouteTypes {
     | '/reviews'
     | '/admin/dashboard'
     | '/admin/login'
+    | '/insights/inflation-portfolio'
+    | '/insights/keno-somriddhite-biniyog'
+    | '/insights/krishi-khate-biniyog'
+    | '/insights/sme-halal-biniyog'
     | '/opportunities/$id'
     | '/admin/'
+    | '/insights/'
     | '/opportunities/'
     | '/api/public/reveal-details'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/dashboard'
-    | '/insights'
     | '/reviews'
     | '/admin/dashboard'
     | '/admin/login'
+    | '/insights/inflation-portfolio'
+    | '/insights/keno-somriddhite-biniyog'
+    | '/insights/krishi-khate-biniyog'
+    | '/insights/sme-halal-biniyog'
     | '/opportunities/$id'
     | '/admin'
+    | '/insights'
     | '/opportunities'
     | '/api/public/reveal-details'
   id:
@@ -141,8 +197,13 @@ export interface FileRouteTypes {
     | '/reviews'
     | '/admin/dashboard'
     | '/admin/login'
+    | '/insights/inflation-portfolio'
+    | '/insights/keno-somriddhite-biniyog'
+    | '/insights/krishi-khate-biniyog'
+    | '/insights/sme-halal-biniyog'
     | '/opportunities/$id'
     | '/admin/'
+    | '/insights/'
     | '/opportunities/'
     | '/api/public/reveal-details'
   fileRoutesById: FileRoutesById
@@ -150,7 +211,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
-  InsightsRoute: typeof InsightsRoute
+  InsightsRoute: typeof InsightsRouteWithChildren
   ReviewsRoute: typeof ReviewsRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
   AdminLoginRoute: typeof AdminLoginRoute
@@ -211,6 +272,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/insights/': {
+      id: '/insights/'
+      path: '/'
+      fullPath: '/insights/'
+      preLoaderRoute: typeof InsightsIndexRouteImport
+      parentRoute: typeof InsightsRoute
+    }
+    '/insights/inflation-portfolio': {
+      id: '/insights/inflation-portfolio'
+      path: '/inflation-portfolio'
+      fullPath: '/insights/inflation-portfolio'
+      preLoaderRoute: typeof InsightsInflationPortfolioRouteImport
+      parentRoute: typeof InsightsRoute
+    }
+    '/insights/keno-somriddhite-biniyog': {
+      id: '/insights/keno-somriddhite-biniyog'
+      path: '/keno-somriddhite-biniyog'
+      fullPath: '/insights/keno-somriddhite-biniyog'
+      preLoaderRoute: typeof InsightsKenoSomriddhiteBiniyogRouteImport
+      parentRoute: typeof InsightsRoute
+    }
+    '/insights/krishi-khate-biniyog': {
+      id: '/insights/krishi-khate-biniyog'
+      path: '/krishi-khate-biniyog'
+      fullPath: '/insights/krishi-khate-biniyog'
+      preLoaderRoute: typeof InsightsKrishiKhateBiniyogRouteImport
+      parentRoute: typeof InsightsRoute
+    }
+    '/insights/sme-halal-biniyog': {
+      id: '/insights/sme-halal-biniyog'
+      path: '/sme-halal-biniyog'
+      fullPath: '/insights/sme-halal-biniyog'
+      preLoaderRoute: typeof InsightsSmeHalalBiniyogRouteImport
+      parentRoute: typeof InsightsRoute
+    }
     '/opportunities/': {
       id: '/opportunities/'
       path: '/opportunities'
@@ -235,10 +331,30 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface InsightsRouteChildren {
+  InsightsInflationPortfolioRoute: typeof InsightsInflationPortfolioRoute
+  InsightsKenoSomriddhiteBiniyogRoute: typeof InsightsKenoSomriddhiteBiniyogRoute
+  InsightsKrishiKhateBiniyogRoute: typeof InsightsKrishiKhateBiniyogRoute
+  InsightsSmeHalalBiniyogRoute: typeof InsightsSmeHalalBiniyogRoute
+  InsightsIndexRoute: typeof InsightsIndexRoute
+}
+
+const InsightsRouteChildren: InsightsRouteChildren = {
+  InsightsInflationPortfolioRoute: InsightsInflationPortfolioRoute,
+  InsightsKenoSomriddhiteBiniyogRoute: InsightsKenoSomriddhiteBiniyogRoute,
+  InsightsKrishiKhateBiniyogRoute: InsightsKrishiKhateBiniyogRoute,
+  InsightsSmeHalalBiniyogRoute: InsightsSmeHalalBiniyogRoute,
+  InsightsIndexRoute: InsightsIndexRoute,
+}
+
+const InsightsRouteWithChildren = InsightsRoute._addFileChildren(
+  InsightsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
-  InsightsRoute: InsightsRoute,
+  InsightsRoute: InsightsRouteWithChildren,
   ReviewsRoute: ReviewsRoute,
   AdminDashboardRoute: AdminDashboardRoute,
   AdminLoginRoute: AdminLoginRoute,
