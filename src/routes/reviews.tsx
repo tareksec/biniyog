@@ -210,7 +210,7 @@ function ReviewsPage() {
           <h1 className="font-display text-4xl sm:text-5xl font-bold tracking-tight">
             বিনিয়োগকারীদের বাস্তব অভিজ্ঞতা
           </h1>
-          <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="mt-4 text-lg leading-relaxed text-muted-foreground max-w-2xl mx-auto">
             সমৃদ্ধির সাথে হালাল ও নিরাপদ বিনিয়োগে যুক্ত আমাদের সম্মানিত গ্রাহক ও উদ্যোক্তাদের সত্য ও নির্ভরযোগ্য মতামত।
           </p>
 
@@ -311,7 +311,7 @@ function ReviewsPage() {
               <Search className="h-6 w-6" />
             </div>
             <h3 className="text-lg font-bold">কোনো মতামত পাওয়া যায়নি</h3>
-            <p className="mt-1 text-sm text-muted-foreground max-w-md mx-auto">
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground max-w-md mx-auto">
               আপনার অনুসন্ধানের সাথে মিল রয়েছে এমন কোনো প্রশংসাপত্র এই মুহূর্তে নেই। দয়া করে অন্য কিওয়ার্ড দিয়ে চেষ্টা করুন।
             </p>
             {(searchQuery || selectedRating !== null) && (

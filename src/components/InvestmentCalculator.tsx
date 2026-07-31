@@ -50,7 +50,7 @@ export function InvestmentCalculator() {
             <h3 className="font-display text-2xl font-bold text-foreground">
               আপনার সম্ভাব্য লাভ হিসাব করুন
             </h3>
-            <p className="mt-2 text-sm text-muted-foreground">
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
               বিনিয়োগের পরিমাণ, প্রত্যাশিত রিটার্ন এবং মেয়াদ নির্বাচন করে আপনার সম্ভাব্য আয় সম্পর্কে ধারণা নিন।
             </p>
 
@@ -156,7 +156,7 @@ export function InvestmentCalculator() {
                       onChange={(e) => setYears(Number(e.target.value))}
                       className="custom-slider mt-4 w-full"
                       style={{
-                        background: `linear-gradient(to right, var(--primary) ${yearsPercent}%, #e5e7eb ${yearsPercent}%)`
+                        backgroundImage: `linear-gradient(to right, var(--primary) ${yearsPercent}%, #e5e7eb ${yearsPercent}%)`
                       }}
                     />
                     <div className="mt-2 flex justify-between text-xs text-muted-foreground">
@@ -176,7 +176,7 @@ export function InvestmentCalculator() {
                       onChange={(e) => setMonths(Number(e.target.value))}
                       className="custom-slider mt-4 w-full"
                       style={{
-                        background: `linear-gradient(to right, var(--primary) ${monthsPercent}%, #e5e7eb ${monthsPercent}%)`
+                        backgroundImage: `linear-gradient(to right, var(--primary) ${monthsPercent}%, #e5e7eb ${monthsPercent}%)`
                       }}
                     />
                     <div className="mt-2 flex justify-between text-xs text-muted-foreground">

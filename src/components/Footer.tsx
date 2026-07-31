@@ -137,7 +137,7 @@ export function Footer() {
         {/* Bottom Bar */}
         {/* Bottom Bar */}
         <div className="mt-8 sm:mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-white/50 text-center md:text-left">
+          <p className="text-sm leading-relaxed text-white/50 text-center md:text-left">
             © {currentYear} সমৃদ্ধি (Samriddhi). সর্বস্বত্ব সংরক্ষিত।
           </p>
           <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 text-sm text-white/50 font-medium mt-4 md:mt-0 relative z-20">

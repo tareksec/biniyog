@@ -142,7 +142,7 @@ function StickyScrollCard({
               {policy.points.map((point, idx) => (
                 <li key={idx} className="flex items-start gap-3">
                   <div className="mt-2 shrink-0 h-1.5 w-1.5 rounded-full bg-primary/60" />
-                  <span className="text-[14px] sm:text-[15px] text-muted-foreground/90 leading-snug">
+                  <span className="text-[14px] sm:text-[15px] text-muted-foreground/90 leading-relaxed">
                     {point}
                   </span>
                 </li>
@@ -179,7 +179,7 @@ export function PolicySection() {
           <h2 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl md:text-[2.5rem]">
             চুম্বক অংশ
           </h2>
-          <p className="mt-4 text-base text-muted-foreground sm:text-lg">
+          <p className="mt-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
             স্বচ্ছতা ও নৈতিকতার সাথে বিনিয়োগ বৃদ্ধি পরিচালনায় আমাদের অনুসৃত ৫টি মূল ভিত্তি।
           </p>
         </div>

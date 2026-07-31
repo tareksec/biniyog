@@ -85,7 +85,7 @@ export function RevealFlow({ projectId, onRevealed }: Props) {
           {step === "captcha" && (
             <>
               <h3 className="font-display text-xl">নিরাপত্তা যাচাই</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                 সংবেদনশীল যোগাযোগ ও ব্যাংক তথ্য দেখতে অনুগ্রহ করে নিচের বক্সটি
                 চেক করুন।
               </p>
@@ -112,7 +112,7 @@ export function RevealFlow({ projectId, onRevealed }: Props) {
           {step === "confirm" && (
             <>
               <h3 className="font-display text-xl">আপনি কি নিশ্চিত?</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                 আপনি এই প্রজেক্টের ফোন নম্বর ও ব্যাংক তথ্য দেখতে চলেছেন। এই
                 তথ্য শুধু বিনিয়োগের জন্য যোগাযোগের উদ্দেশ্যে ব্যবহার করুন।
               </p>
@@ -138,7 +138,7 @@ export function RevealFlow({ projectId, onRevealed }: Props) {
           {step === "loading" && (
             <div className="flex flex-col items-center gap-3 py-6">
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-              <p className="text-sm text-muted-foreground">যাচাই করা হচ্ছে…</p>
+              <p className="text-sm leading-relaxed text-muted-foreground">যাচাই করা হচ্ছে…</p>
             </div>
           )}
 
@@ -147,7 +147,7 @@ export function RevealFlow({ projectId, onRevealed }: Props) {
               <h3 className="font-display text-xl text-destructive">
                 যাচাইকরণ ব্যর্থ
               </h3>
-              <p className="mt-2 text-sm text-muted-foreground">
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                 {error === "recaptcha_failed"
                   ? "reCAPTCHA যাচাই করা যায়নি। আবার চেষ্টা করুন।"
                   : "কিছু একটা ভুল হয়েছে। আবার চেষ্টা করুন।"}

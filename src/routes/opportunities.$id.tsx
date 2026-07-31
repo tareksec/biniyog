@@ -43,7 +43,7 @@ export const Route = createFileRoute("/opportunities/$id")({
   errorComponent: ({ error }) => (
     <div className="mx-auto max-w-2xl px-5 py-24 text-center">
       <h1 className="font-display text-2xl">কিছু ভুল হয়েছে</h1>
-      <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{error.message}</p>
       <Link to="/" className="mt-6 inline-block text-primary underline">হোমে ফিরে যান</Link>
     </div>
   ),
@@ -53,7 +53,7 @@ function NotFoundView() {
   return (
     <div className="mx-auto max-w-2xl px-5 py-24 text-center">
       <h1 className="font-display text-3xl">প্রজেক্ট পাওয়া যায়নি</h1>
-      <p className="mt-2 text-sm text-muted-foreground">এই বিনিয়োগ সুযোগটি আর সক্রিয় নেই বা লিংকটি ভুল।</p>
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">এই বিনিয়োগ সুযোগটি আর সক্রিয় নেই বা লিংকটি ভুল।</p>
       <Link to="/" className="mt-6 inline-flex items-center gap-1.5 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground">
         সব সুযোগ দেখুন
       </Link>
@@ -261,7 +261,7 @@ function OpportunityDetailsPage() {
           <div className="flex items-center gap-3 border-l-4 border-primary pl-3.5">
             <h3 className="font-display text-xl font-bold text-foreground sm:text-2xl">যোগাযোগ ও ব্যাংক তথ্য</h3>
           </div>
-          <p className="mt-3 text-base text-muted-foreground font-medium">
+          <p className="mt-3 text-base leading-relaxed text-muted-foreground font-medium">
             {funded
               ? "এই রাউন্ডের বিনিয়োগ সম্পন্ন।"
               : "ব্যাংক তথ্য ও বিনিয়োগের বিস্তারিত জানতে নিচের লিংকে ভিজিট করুন।"}
@@ -294,6 +294,24 @@ function OpportunityDetailsPage() {
           <Link to="/" className="text-sm text-muted-foreground hover:text-primary">← আরও বিনিয়োগ সুযোগ দেখুন</Link>
         </div>
       </main>
+      
+      {/* Sticky Mobile CTA */}
+      {!funded && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-background/80 backdrop-blur-md border-t border-border/50 md:hidden pb-[max(env(safe-area-inset-bottom),1rem)]">
+          <a
+            href="https://docs.google.com/spreadsheets/d/1HsSR7t_2zZaNbvqmbhWiuYikfYsF8rfzcQK2gmfIB4U/edit?gid=0#gid=0"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex w-full items-center justify-center gap-2 rounded-full px-6 py-3.5 text-[15px] font-semibold text-primary-foreground shadow-lg btn-hover"
+            style={{ background: "var(--gradient-primary)" }}
+          >
+            বিনিয়োগ শুরু করুন
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M5 12h14M13 5l7 7-7 7" />
+            </svg>
+          </a>
+        </div>
+      )}
     </div>
   );
 }
@@ -410,7 +428,7 @@ function PayoutTrackRecord({ records = [] }: { records?: OpportunityPayout[] }) 
       <div className="flex items-end justify-between">
         <div className="border-l-4 border-primary pl-3.5">
           <h3 className="font-display text-xl font-bold text-foreground sm:text-2xl">অতীত পেআউট পারফরম্যান্স</h3>
-          <p className="mt-1 text-sm font-medium text-muted-foreground">এই ব্যবসার পূর্ববর্তী ফান্ডিং সাইকেলের ডেটা</p>
+          <p className="mt-1 text-sm font-medium leading-relaxed text-muted-foreground">এই ব্যবসার পূর্ববর্তী ফান্ডিং সাইকেলের ডেটা</p>
         </div>
       </div>
       

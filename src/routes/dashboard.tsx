@@ -194,7 +194,7 @@ function DashboardPage() {
               </div>
             </div>
             <div className="relative z-10 mt-6 flex justify-between items-end">
-              <p className="text-sm font-medium text-white/70 max-w-[200px]">
+              <p className="text-sm font-medium leading-relaxed text-white/70 max-w-[200px]">
                 প্ল্যাটফর্মে থাকা বর্তমান সক্রিয় সুযোগের মোট মূলধন।
               </p>
               <div className="h-12 w-12 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-md">
