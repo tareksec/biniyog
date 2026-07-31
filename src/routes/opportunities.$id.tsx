@@ -490,10 +490,7 @@ function OpportunityTestimonials({ project }: { project: Opportunity }) {
 
   if (isError) {
     console.error("OpportunityTestimonials query failed:", error);
-    return null;
   }
-
-  if (isLoading || testimonials.length === 0) return null;
 
   return (
     <section className="mt-12 border-t border-border/80 pt-10">
@@ -505,13 +502,21 @@ function OpportunityTestimonials({ project }: { project: Opportunity }) {
       
       <div className="mb-6" />
 
-      <div className="flex flex-nowrap overflow-x-auto gap-5 pb-6 snap-x" style={{ scrollbarWidth: 'thin' }}>
-        {testimonials.map(t => (
-          <div key={t.id} className="snap-start shrink-0">
-            <TestimonialCard item={t} />
-          </div>
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="py-8 text-center text-sm text-muted-foreground">লোড হচ্ছে...</div>
+      ) : !isError && testimonials.length > 0 ? (
+        <div className="flex flex-nowrap overflow-x-auto gap-5 pb-6 snap-x" style={{ scrollbarWidth: 'thin' }}>
+          {testimonials.map(t => (
+            <div key={t.id} className="snap-start shrink-0">
+              <TestimonialCard item={t} />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="py-8 text-center text-sm text-muted-foreground">
+          এখনও কোনো মতামত যোগ করা হয়নি। প্রথম রিভিউটি আপনি দিন!
+        </div>
+      )}
 
       <div className="mt-4 flex justify-center border-t border-border/50 pt-8">
         <a 
