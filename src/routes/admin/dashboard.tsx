@@ -60,18 +60,35 @@ export const Route = createFileRoute("/admin/dashboard")({
 // ─── Status badge styling ───────────────────────────────────────────
 function statusBadge(status: string | null) {
   const s = (status || "").toLowerCase();
-  if (s.includes("fully funded") || s.includes("বিনিয়োগ হয়েছে"))
+  // "আমরা তাদের নিয়ে এখন আর কাজ করছি না" — red (discontinued)
+  if (s.includes("আর কাজ করছি না") || s.includes("করছি না"))
+    return (
+      <Badge variant="secondary" className="bg-red-100 text-red-800">
+        {status}
+      </Badge>
+    );
+  // "বিনিয়োগ নেওয়া শেষ-সহসা শুরু হবার সম্ভাবনা নেই।" — red/gray (ended, unlikely)
+  if (s.includes("সম্ভাবনা নেই"))
+    return (
+      <Badge variant="secondary" className="bg-gray-100 text-gray-700">
+        {status}
+      </Badge>
+    );
+  // "বিনিয়োগ নেওয়া শেষ-সামনে আবার শুরু হবে ইনশা আল্লাহ" — green (completed, restarting)
+  if (s.includes("আবার শুরু হবে"))
     return (
       <Badge variant="secondary" className="bg-green-100 text-green-800">
         {status}
       </Badge>
     );
+  // "বিনিয়োগ নেওয়া শেষের দিকে" — amber (ending soon)
   if (s.includes("শেষের দিকে"))
     return (
       <Badge variant="secondary" className="bg-amber-100 text-amber-800">
         {status}
       </Badge>
     );
+  // "বিনিয়োগ নেওয়া চলমান-সুযোগ আছে" — blue (active/running)
   return (
     <Badge variant="secondary" className="bg-blue-100 text-blue-800">
       {status || "—"}

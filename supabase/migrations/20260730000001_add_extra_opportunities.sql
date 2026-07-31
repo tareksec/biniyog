@@ -29,7 +29,7 @@ Routing No:170263706', 'ট্রডিং পার্টনার', '৩ ল�
 ON CONFLICT (slug) DO NOTHING;
 
 INSERT INTO public.opportunities (slug, name, owner_name, owner_phone, cfa_comment, guarantee, category, bank_details, investment_type, investment_amount, expected_profit, profit_period, status, description, address, organization_type) VALUES 
-('agro-desh', 'agro desh', 'রাইসুল  (Founder)', '01986545567', 'অত্যন্ত মেধাবী এবং ফোকাসড একজন ব্যক্তিত্ব ', 'check + Legal document', 'এগ্রো ', 'এই মুহূর্তে সুযোগ নাই ', 'ভাড়া বা লিজিং চুক্তি ', '১ লক্ষ টাকা ', ' বছরে সম্ভাব্য লাভ 30% (বছরে একবার) ', 'বছরে একবার ', 'বিনিয়োগ নেওয়া শেষ-সামনে আবার শুরু হবে', 'বিনিয়োগের পরিমাণের সাথে লাভ বাড়বে। মূল ব্যবসার মালিক আপনি হবেন না কারণ আপনি বাগান ভাড়া দিচ্ছেন। ', 'উত্তরা এড্রেস 
+('agro-desh', 'agro desh', 'রাইসুল  (Founder)', '01986545567', 'অত্যন্ত মেধাবী এবং ফোকাসড একজন ব্যক্তিত্ব ', 'check + Legal document', 'এগ্রো ', 'এই মুহূর্তে সুযোগ নাই ', 'ভাড়া বা লিজিং চুক্তি ', '১ লক্ষ টাকা ', ' বছরে সম্ভাব্য লাভ 30% (বছরে একবার) ', 'বছরে একবার ', 'বিনিয়োগ নেওয়া শেষ-সামনে আবার শুরু হবে ইনশা আল্লাহ', 'বিনিয়োগের পরিমাণের সাথে লাভ বাড়বে। মূল ব্যবসার মালিক আপনি হবেন না কারণ আপনি বাগান ভাড়া দিচ্ছেন। ', 'উত্তরা এড্রেস 
 Asses Tower, TIC Chapra Masjid Joynal Market, Faydabad Uttara 1230 Dhaka. 
 
 আম বাগান: https://maps.app.goo.gl/h9yfZX7C8rYGm11fA

@@ -24,10 +24,14 @@ export function OpportunityListItem({
   project,
   index,
   onQuickView,
+  isComparing = false,
+  onCompareToggle,
 }: {
   project: Opportunity;
   index: number;
   onQuickView?: () => void;
+  isComparing?: boolean;
+  onCompareToggle?: () => void;
 }) {
   const { isBookmarked, toggleBookmark } = useBookmarks();
   const saved = isBookmarked(project.id);
@@ -56,16 +60,38 @@ export function OpportunityListItem({
     >
       <div
         onClick={handleCardClick}
-        className={`group relative flex flex-col sm:flex-row items-center gap-4 sm:gap-6 overflow-hidden rounded-2xl bg-card p-4 sm:p-5 border border-border shadow-sm transition-all duration-300 ease-out cursor-pointer hover:shadow-md hover:border-primary/30 ${
+        className={`group relative flex flex-col sm:flex-row items-center gap-4 sm:gap-6 overflow-hidden rounded-2xl bg-card p-4 sm:p-5 border shadow-sm transition-all duration-300 ease-out cursor-pointer hover:shadow-md ${
           funded ? "opacity-75 hover:opacity-100" : ""
+        } ${
+          isComparing 
+            ? "border-primary bg-primary/5 shadow-primary/10" 
+            : "border-border hover:border-primary/30"
         }`}
       >
-        <button
-          onClick={(e) => { e.stopPropagation(); toggleBookmark(project.id); }}
-          className="absolute top-4 right-4 z-10 p-2 rounded-full bg-background/80 backdrop-blur-sm border border-border/60 hover:bg-background transition-colors shadow-sm"
-        >
-          <Heart className={`h-4 w-4 ${saved ? "fill-primary text-primary" : "text-muted-foreground hover:text-foreground"}`} />
-        </button>
+        <div className="absolute top-4 right-4 z-10 flex gap-2">
+          {onCompareToggle && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onCompareToggle(); }}
+              className={`p-2 rounded-full backdrop-blur-sm border transition-colors shadow-sm ${
+                isComparing 
+                  ? "bg-primary text-primary-foreground border-primary" 
+                  : "bg-background/80 border-border/60 text-muted-foreground hover:bg-background hover:text-foreground"
+              }`}
+              title={isComparing ? "তুলনা থেকে সরান" : "তুলনা করুন"}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5" />
+              </svg>
+            </button>
+          )}
+          
+          <button
+            onClick={(e) => { e.stopPropagation(); toggleBookmark(project.id); }}
+            className="p-2 rounded-full bg-background/80 backdrop-blur-sm border border-border/60 hover:bg-background transition-colors shadow-sm"
+          >
+            <Heart className={`h-4 w-4 ${saved ? "fill-primary text-primary" : "text-muted-foreground hover:text-foreground"}`} />
+          </button>
+        </div>
 
         {/* Left: Thumbnail and Progress Ring */}
         <div className="relative shrink-0 flex items-center justify-center mt-6 sm:mt-0">

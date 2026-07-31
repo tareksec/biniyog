@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { OpportunityCard } from "@/components/OpportunityCard";
 import { OpportunityListItem } from "@/components/OpportunityListItem";
+import { OpportunityCompareModal } from "@/components/OpportunityCompareModal";
 import {
   useOpportunities,
   isOpen,
@@ -66,7 +67,8 @@ export const Route = createFileRoute("/opportunities/")({
 function OpportunitiesPage() {
   const searchParams = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
-  const { data: projects = [], isLoading } = useOpportunities();
+  const { data: projects = [], isLoading, isFetching } = useOpportunities();
+  const showLoading = isLoading || (isFetching && projects.length === 0);
 
   // Parse arrays from comma-separated strings
   const riskFilters = searchParams.risk ? searchParams.risk.split(",") : [];
@@ -78,6 +80,25 @@ function OpportunitiesPage() {
   // Local state for debounced search
   const [searchQuery, setSearchQuery] = useState(searchParams.q || "");
   const [isFiltersVisible, setIsFiltersVisible] = useState(false);
+
+  // Compare feature state
+  const [compareIds, setCompareIds] = useState<string[]>([]);
+  const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
+
+  const handleCompareToggle = (id: string) => {
+    setCompareIds((prev) => {
+      if (prev.includes(id)) return prev.filter((i) => i !== id);
+      if (prev.length >= 3) {
+        alert("আপনি সর্বোচ্চ ৩টি সুযোগ তুলনা করতে পারবেন");
+        return prev;
+      }
+      return [...prev, id];
+    });
+  };
+
+  const compareProjects = useMemo(() => {
+    return projects.filter((p) => compareIds.includes(p.id));
+  }, [projects, compareIds]);
 
   useEffect(() => {
     setSearchQuery(searchParams.q || "");
@@ -465,7 +486,7 @@ function OpportunitiesPage() {
             </div>
 
             {/* Results */}
-            {isLoading ? (
+            {showLoading ? (
               <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" : "flex flex-col gap-4"}>
                 {Array.from({ length: 6 }).map((_, i) => (
                   <div key={i} className={`animate-pulse bg-card rounded-[1.75rem] border border-border/50 ${viewMode === "grid" ? "h-[360px]" : "h-[120px]"}`} />
@@ -493,6 +514,8 @@ function OpportunitiesPage() {
                       project={p} 
                       index={idx} 
                       onQuickView={() => setQuickViewProject(p)}
+                      isComparing={compareIds.includes(p.id)}
+                      onCompareToggle={() => handleCompareToggle(p.id)}
                     />
                   ) : (
                     <OpportunityListItem 
@@ -500,6 +523,8 @@ function OpportunitiesPage() {
                       project={p} 
                       index={idx} 
                       onQuickView={() => setQuickViewProject(p)}
+                      isComparing={compareIds.includes(p.id)}
+                      onCompareToggle={() => handleCompareToggle(p.id)}
                     />
                   )
                 ))}
@@ -514,6 +539,48 @@ function OpportunitiesPage() {
         isOpen={!!quickViewProject} 
         onClose={() => setQuickViewProject(null)} 
       />
+
+      <OpportunityCompareModal
+        projects={compareProjects}
+        isOpen={isCompareModalOpen}
+        onClose={() => setIsCompareModalOpen(false)}
+        onRemove={handleCompareToggle}
+      />
+
+      <AnimatePresence>
+        {compareIds.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="fixed bottom-24 sm:bottom-28 left-0 right-0 z-40 mx-auto w-[90%] max-w-sm rounded-full bg-foreground p-3 pl-6 text-background shadow-2xl flex items-center justify-between"
+          >
+            <div className="flex items-center gap-2">
+              <span className="grid h-6 w-6 place-items-center rounded-full bg-background/20 text-xs font-bold">
+                {compareIds.length}
+              </span>
+              <span className="text-sm font-semibold">টি সুযোগ নির্বাচিত</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                className="rounded-full h-8"
+                onClick={() => setIsCompareModalOpen(true)}
+              >
+                তুলনা করুন
+              </Button>
+              <button
+                onClick={() => setCompareIds([])}
+                className="grid h-8 w-8 place-items-center rounded-full bg-background/10 hover:bg-background/20 transition-colors"
+                title="মুছে ফেলুন"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

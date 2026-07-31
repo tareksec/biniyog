@@ -83,9 +83,9 @@ export function getCategoryIcon(category: string | null): { icon: JSX.Element; b
 export function getStatusRingColors(status: string | null): { stroke: string; trail: string } {
   switch (status) {
     case "বিনিয়োগ নেওয়া চলমান-সুযোগ আছে":
-      return { stroke: "url(#ringGradGreen)", trail: "stroke-emerald-100 dark:stroke-emerald-900/30" };
+      return { stroke: "url(#ringGradGreen)", trail: "stroke-[#DAF1DE]" };
     case "বিনিয়োগ নেওয়া শেষের দিকে":
-      return { stroke: "url(#ringGradAmber)", trail: "stroke-amber-100 dark:stroke-amber-900/30" };
+      return { stroke: "url(#ringGradAmber)", trail: "stroke-[#DAF1DE]" };
     case "বিনিয়োগ নেওয়া শেষ-সামনে আবার শুরু হবে ইনশা আল্লাহ":
       return { stroke: "url(#ringGradSlate)", trail: "stroke-slate-100 dark:stroke-slate-800/40" };
     case "বিনিয়োগ নেওয়া শেষ-সহসা শুরু হবার সম্ভাবনা নেই।":
@@ -93,7 +93,7 @@ export function getStatusRingColors(status: string | null): { stroke: string; tr
     case "আমরা তাদের নিয়ে এখন আর কাজ করছি না":
       return { stroke: "#71717a", trail: "stroke-zinc-200 dark:stroke-zinc-800/40" };
     default:
-      return { stroke: "url(#ringGradGreen)", trail: "stroke-emerald-100 dark:stroke-emerald-900/30" };
+      return { stroke: "url(#ringGradGreen)", trail: "stroke-[#DAF1DE]" };
   }
 }
 
@@ -101,7 +101,7 @@ export function getStatusRingColors(status: string | null): { stroke: string; tr
 export function riskChipStyle(level: "low" | "med" | "high"): { bg: string; text: string } {
   switch (level) {
     case "low":
-      return { bg: "bg-emerald-50 dark:bg-emerald-900/30", text: "text-emerald-700 dark:text-emerald-400" };
+      return { bg: "bg-[#DAF1DE]", text: "text-[#163832]" };
     case "med":
       return { bg: "bg-amber-50 dark:bg-amber-900/30", text: "text-amber-700 dark:text-amber-400" };
     case "high":
@@ -135,8 +135,8 @@ export function CircularProgress({
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
         <defs>
           <linearGradient id="ringGradGreen" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#34d399" />
-            <stop offset="100%" stopColor="#059669" />
+            <stop offset="0%" stopColor="#8EB69B" />
+            <stop offset="100%" stopColor="#235347" />
           </linearGradient>
           <linearGradient id="ringGradAmber" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#fbbf24" />
@@ -190,10 +190,14 @@ export function OpportunityCard({
   project,
   index,
   onQuickView,
+  isComparing = false,
+  onCompareToggle,
 }: {
   project: Opportunity;
   index: number;
   onQuickView?: () => void;
+  isComparing?: boolean;
+  onCompareToggle?: () => void;
 }) {
   const { isBookmarked, toggleBookmark } = useBookmarks();
   const saved = isBookmarked(project.id);
@@ -225,15 +229,33 @@ export function OpportunityCard({
         onClick={handleCardClick}
         className={`group relative flex h-full flex-col overflow-hidden rounded-[1.75rem] bg-muted/40 p-2 transition-all duration-300 ease-out cursor-pointer hover:-translate-y-1.5 ${
           funded ? "opacity-75 hover:opacity-100" : ""
-        }`}
+        } ${isComparing ? "ring-2 ring-primary bg-primary/5" : ""}`}
         style={{ boxShadow: "0 8px 30px rgba(0,0,0,0.06)" }}
       >
-        <button
-          onClick={(e) => { e.stopPropagation(); toggleBookmark(project.id); }}
-          className="absolute top-4 right-4 z-10 p-2 rounded-full bg-background/80 backdrop-blur-sm border border-border/60 hover:bg-background transition-colors shadow-sm"
-        >
-          <Heart className={`h-4 w-4 ${saved ? "fill-primary text-primary" : "text-muted-foreground hover:text-foreground"}`} />
-        </button>
+        <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
+          <button
+            onClick={(e) => { e.stopPropagation(); toggleBookmark(project.id); }}
+            className="p-2 rounded-full bg-background/80 backdrop-blur-sm border border-border/60 hover:bg-background transition-colors shadow-sm"
+          >
+            <Heart className={`h-4 w-4 ${saved ? "fill-primary text-primary" : "text-muted-foreground hover:text-foreground"}`} />
+          </button>
+          
+          {onCompareToggle && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onCompareToggle(); }}
+              className={`p-2 rounded-full backdrop-blur-sm border transition-colors shadow-sm ${
+                isComparing 
+                  ? "bg-primary text-primary-foreground border-primary" 
+                  : "bg-background/80 border-border/60 text-muted-foreground hover:bg-background hover:text-foreground"
+              }`}
+              title={isComparing ? "তুলনা থেকে সরান" : "তুলনা করুন"}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5" />
+              </svg>
+            </button>
+          )}
+        </div>
         {/* Inner card — the "card floating on card" effect */}
         <div
           className="flex flex-1 flex-col rounded-[1.35rem] bg-card p-5 sm:p-6"

@@ -9,17 +9,22 @@ export function InvestmentCalculator() {
   const [months, setMonths] = useState(12);
 
   const annual_rate = roi / 100;
-  const monthly_rate = Math.pow(1 + annual_rate, 1 / 12) - 1;
-
-  const yearlyReturn = Math.round(amount * annual_rate);
-  const monthlyReturn = Math.round(yearlyReturn / 12);
   
+  let yearlyReturn = 0;
+  let monthlyReturn = 0;
   let totalReturn = 0;
+
   if (durationUnit === "year") {
-    const totalValue = amount * Math.pow(1 + monthly_rate, years * 12);
+    yearlyReturn = Math.round(amount * annual_rate);
+    monthlyReturn = Math.round(yearlyReturn / 12);
+    const totalValue = amount * Math.pow(1 + annual_rate, years);
     totalReturn = Math.round(totalValue - amount);
   } else {
-    const totalValue = amount * Math.pow(1 + monthly_rate, months);
+    const monthlyRate = annual_rate / 12;
+    const effectiveAnnualProfit = amount * (Math.pow(1 + monthlyRate, 12) - 1);
+    yearlyReturn = Math.round(effectiveAnnualProfit);
+    monthlyReturn = Math.round(yearlyReturn / 12);
+    const totalValue = amount * Math.pow(1 + monthlyRate, months);
     totalReturn = Math.round(totalValue - amount);
   }
   
@@ -27,7 +32,7 @@ export function InvestmentCalculator() {
   const amountPercent = ((amount - 100000) / (1000000 - 100000)) * 100;
   const roiPercent = ((roi - 10) / (35 - 10)) * 100;
   const yearsPercent = ((years - 1) / (40 - 1)) * 100;
-  const monthsPercent = ((months - 1) / (200 - 1)) * 100;
+  const monthsPercent = ((months - 1) / (480 - 1)) * 100;
 
   return (
     <section className="mx-auto max-w-4xl px-5 py-12 sm:px-8">
@@ -164,7 +169,7 @@ export function InvestmentCalculator() {
                       id="invest-duration"
                       type="range"
                       min="1"
-                      max="200"
+                      max="480"
                       step="1"
                       value={months}
                       onChange={(e) => setMonths(Number(e.target.value))}
@@ -175,7 +180,7 @@ export function InvestmentCalculator() {
                     />
                     <div className="mt-2 flex justify-between text-xs text-muted-foreground">
                       <span>১ মাস</span>
-                      <span>২০০ মাস</span>
+                      <span>৪৮০ মাস</span>
                     </div>
                   </>
                 )}
@@ -184,7 +189,7 @@ export function InvestmentCalculator() {
           </div>
 
           {/* Result Section */}
-          <div className="flex flex-col justify-center bg-gradient-to-br from-[#0a4025] via-primary to-[#16804e] p-8 text-primary-foreground sm:p-10 relative overflow-hidden">
+          <div className="flex flex-col justify-center bg-gradient-to-br from-[#051F20] to-[#235347] p-8 text-primary-foreground sm:p-10 relative overflow-hidden">
             <div className="absolute -bottom-24 -right-24 h-64 w-64 rounded-full bg-white/10 blur-3xl mix-blend-overlay" />
             <div className="absolute -top-24 -left-24 h-64 w-64 rounded-full bg-white/10 blur-3xl mix-blend-overlay" />
             

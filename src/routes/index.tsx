@@ -4,6 +4,7 @@ import { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { OpportunityCard } from "@/components/OpportunityCard";
 import { useOpportunities, isFullyFunded, parseAmount, parseRoi } from "@/lib/projects";
+import type { Opportunity } from "@/lib/projects";
 import { HeroIllustration } from "@/components/HeroIllustration";
 import { CountUp } from "@/components/CountUp";
 import {
@@ -35,13 +36,36 @@ export const Route = createFileRoute("/")({
 });
 
 function LandingPage() {
+  const { data: opportunities = [] } = useOpportunities();
+
+  const heroStats = useMemo(() => {
+    // Filter to non-funded opportunities for stat computation
+    const active = opportunities.filter((p) => !isFullyFunded(p));
+    const profits = active
+      .map((p) => parseRoi(p.expected_profit))
+      .filter((v): v is number => !isNaN(v) && v > 0);
+
+    let profitRange = "১৮-২৫+%";
+    if (profits.length > 0) {
+      const min = Math.floor(Math.min(...profits));
+      const max = Math.ceil(Math.max(...profits));
+      profitRange = `${min}-${max}+%`;
+      if (min === max) profitRange = `${min}%`;
+    }
+
+    const verifiedCount = opportunities.length;
+    const verifiedLabel = verifiedCount >= 10 ? `${verifiedCount}+` : `${verifiedCount}`;
+
+    return { profitRange, verifiedLabel, verifiedCount };
+  }, [opportunities]);
+
   return (
     <div className="min-h-screen bg-background text-foreground antialiased">
-      <Hero />
+      <Hero stats={heroStats} />
       <WhyChoose />
       <PolicySection />
       <InstructorSection />
-      <Opportunities />
+      <Opportunities opportunities={opportunities} />
       <HowItWorks />
       <div className="bg-background">
         <InvestmentCalculator />
@@ -58,7 +82,7 @@ const revealItem = {
   show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: "easeOut" } },
 } as const;
 
-function Hero() {
+function Hero({ stats }: { stats: { profitRange: string; verifiedLabel: string; verifiedCount: number } }) {
   return (
     <section id="top" className="relative overflow-hidden bg-surface dot-pattern">
       <div
@@ -117,8 +141,8 @@ function Hero() {
           </div>
 
           <div className="mt-12 grid max-w-lg grid-cols-3 gap-6 border-t border-border/70 pt-7 text-left">
-            <Stat value="১৮-২৫+%" label="বার্ষিক লাভ" />
-            <Stat value="১৫+" label="যাচাইকৃত প্রজেক্ট" />
+            <Stat value={stats.profitRange} label="বার্ষিক লাভ" />
+            <Stat value={stats.verifiedLabel} label="যাচাইকৃত প্রজেক্ট" />
             <Stat value="১০০%" label="সুদ এবং ঘুরিয়ে সুদ মুক্ত" />
           </div>
         </div>
@@ -162,7 +186,7 @@ function Stat({ value, label }: { value: React.ReactNode; label: string }) {
       <div className="num text-2xl font-bold text-foreground sm:text-3xl">
         {value}
       </div>
-      <div className="mt-1 text-xs text-muted-foreground">
+      <div className="mt-1 text-[13px] font-semibold text-muted-foreground">
         {label}
       </div>
     </div>
@@ -340,14 +364,14 @@ function HowItWorks() {
   );
 }
 
-function Opportunities() {
-  const { data: projects, isLoading } = useOpportunities();
+function Opportunities({ opportunities }: { opportunities: Opportunity[] }) {
+  const isLoading = opportunities.length === 0;
   
   const previewList = useMemo(() => {
-    let list = (projects || []).slice();
+    let list = (opportunities || []).slice();
     list.sort((a, b) => Number(isFullyFunded(a)) - Number(isFullyFunded(b)));
     return list.slice(0, 6);
-  }, [projects]);
+  }, [opportunities]);
 
   return (
     <section id="opportunities" className="border-t border-border bg-surface">
@@ -368,7 +392,7 @@ function Opportunities() {
             <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
             <span className="text-muted-foreground">
               <span className="num font-bold text-foreground">
-                {(projects || []).filter((p) => !isFullyFunded(p)).length}
+                {(opportunities || []).filter((p) => !isFullyFunded(p)).length}
               </span>{" "}
               টি সক্রিয় সুযোগ
             </span>
@@ -409,17 +433,17 @@ function Opportunities() {
 
 function FinalCTA() {
   return (
-    <section className="relative overflow-hidden border-t border-border bg-surface">
+    <section className="relative overflow-hidden border-t border-border bg-[#051F20] text-white">
       <div
-        className="pointer-events-none absolute inset-0 opacity-30"
+        className="pointer-events-none absolute inset-0 opacity-10"
         style={{ background: "var(--gradient-hero)" }}
         aria-hidden
       />
       <div className="relative mx-auto max-w-4xl px-5 py-24 text-center sm:px-8 sm:py-28">
-        <h2 className="text-3xl font-bold leading-tight sm:text-5xl">
+        <h2 className="text-3xl font-bold leading-tight sm:text-5xl text-white">
           আজই <span className="gradient-text">অংশীদার</span> হোন
         </h2>
-        <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
+        <p className="mx-auto mt-4 max-w-xl text-white/70">
           দেশের সম্ভাবনাময় ব্যবসাগুলোতে বিনিয়োগ শুরু করুন।
         </p>
         <Link

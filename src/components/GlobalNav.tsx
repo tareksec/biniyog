@@ -9,11 +9,6 @@ export function GlobalNav() {
   const navigate = useNavigate();
   const router = useRouterState();
   
-  // Hide on admin pages
-  if (router.location.pathname.startsWith('/admin')) {
-    return null;
-  }
-
   // Track active section on scroll (only applies on home page)
   useEffect(() => {
     if (router.location.pathname !== '/') return;
@@ -37,6 +32,11 @@ export function GlobalNav() {
     
     return () => observer.disconnect();
   }, [router.location.pathname]);
+
+  // Hide on admin pages — must be AFTER all hooks (Rules of Hooks)
+  if (router.location.pathname.startsWith('/admin')) {
+    return null;
+  }
 
   const scrollTo = (id: string) => {
     setOpen(false);

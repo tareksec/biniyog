@@ -61,12 +61,16 @@ export function getAuthSnapshot(): AuthSnapshot {
 }
 
 // ─── Hook ────────────────────────────────────────────────────────────
+
+// Cached server snapshot to avoid React's "getServerSnapshot should be cached" warning
+const serverSnapshot: AuthSnapshot = Object.freeze({
+  session: null,
+  user: null,
+  loading: true,
+});
+
 export function useAuth() {
-  const state = useSyncExternalStore(subscribe, getSnapshot, () => ({
-    session: null,
-    user: null,
-    loading: true,
-  }));
+  const state = useSyncExternalStore(subscribe, getSnapshot, () => serverSnapshot);
 
   const signIn = useCallback(
     async (email: string, password: string) => {
