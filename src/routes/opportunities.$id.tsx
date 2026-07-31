@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import type { Testimonial } from "@/lib/database.types";
 import { TestimonialCard } from "@/components/TestimonialsSection";
-import { fetchOpportunities, isFullyFunded, statusLabel, parseLinks, fundingProgress, getRiskLevel, resolveImageUrl, resolveImageUrls, getStatusConfig, fetchOpportunitySubsections, type Opportunity, type OpportunityRisk, type OpportunityPayout, type OpportunityLegalCheck } from "@/lib/projects";
+import { fetchOpportunities, isFullyFunded, statusLabel, parseLinks, getRiskLevel, resolveImageUrl, resolveImageUrls, getStatusConfig, fetchOpportunitySubsections, type Opportunity, type OpportunityRisk, type OpportunityPayout, type OpportunityLegalCheck } from "@/lib/projects";
 import { InvestmentCalculator } from "@/components/InvestmentCalculator";
 import { motion } from "framer-motion";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
@@ -210,7 +210,7 @@ function OpportunityDetailsPage() {
           {project.description || "—"}
         </p>
 
-        <FundingProgress project={project} />
+
 
         <div className="mt-8 grid grid-cols-2 gap-4 rounded-2xl border border-border/80 bg-card/60 p-5 shadow-sm sm:grid-cols-3 sm:gap-6 sm:p-7">
           <Field label="নুন্যতম বিনিয়োগ" value={project.investment_amount || ""} num highlight />
@@ -313,33 +313,6 @@ function Field({ label, value, num, accent, highlight }: { label: string; value:
   );
 }
 
-function FundingProgress({ project }: { project: Opportunity }) {
-  const percent = fundingProgress(project);
-  const config = getStatusConfig(project.status);
-  const funded = isFullyFunded(project);
-
-  return (
-    <section className="mt-8 rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <h4 className="text-sm font-semibold">বিনিয়োগ করুন</h4>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            {funded ? "এই রাউন্ডের বিনিয়োগ সম্পন্ন হয়েছে।" : "বর্তমান বিনিয়োগ কমিটমেন্টের অনুপাত।"}
-          </p>
-        </div>
-        <div className="num text-2xl font-bold text-primary">{percent}%</div>
-      </div>
-      <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-muted">
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${percent}%` }}
-          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-          className={`h-full rounded-full ${config.color}`}
-        />
-      </div>
-    </section>
-  );
-}
 
 
 

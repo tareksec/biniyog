@@ -7,10 +7,9 @@ import {
   isFullyFunded,
   isOpen,
   statusLabel,
-  fundingProgress,
+  statusLabel,
   getRiskLevel,
   resolveImageUrl,
-  getStatusConfig,
 } from "@/lib/projects";
 
 /* ────────────────────────────────────────────────────────────
@@ -110,80 +109,6 @@ export function riskChipStyle(level: "low" | "med" | "high"): { bg: string; text
 }
 
 /* ────────────────────────────────────────────────────────────
-   Circular Ring Progress
-   ──────────────────────────────────────────────────────────── */
-export function CircularProgress({
-  percent,
-  status,
-  label,
-  size = 88,
-  strokeWidth = 6,
-}: {
-  percent: number;
-  status: string | null;
-  label: string;
-  size?: number;
-  strokeWidth?: number;
-}) {
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (percent / 100) * circumference;
-  const ringColors = getStatusRingColors(status);
-
-  return (
-    <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
-        <defs>
-          <linearGradient id="ringGradGreen" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#8EB69B" />
-            <stop offset="100%" stopColor="#235347" />
-          </linearGradient>
-          <linearGradient id="ringGradAmber" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#fbbf24" />
-            <stop offset="100%" stopColor="#f59e0b" />
-          </linearGradient>
-          <linearGradient id="ringGradSlate" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#94a3b8" />
-            <stop offset="100%" stopColor="#64748b" />
-          </linearGradient>
-          <linearGradient id="ringGradNeutral" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#a3a3a3" />
-            <stop offset="100%" stopColor="#737373" />
-          </linearGradient>
-        </defs>
-        {/* Trail */}
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          strokeWidth={strokeWidth}
-          className={ringColors.trail}
-        />
-        {/* Progress */}
-        <motion.circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          strokeWidth={strokeWidth}
-          stroke={ringColors.stroke}
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          initial={{ strokeDashoffset: circumference }}
-          whileInView={{ strokeDashoffset: offset }}
-          viewport={{ once: true }}
-          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-lg font-extrabold leading-none text-foreground num">{label}</span>
-      </div>
-    </div>
-  );
-}
-
-/* ────────────────────────────────────────────────────────────
    Main OpportunityCard
    ──────────────────────────────────────────────────────────── */
 export function OpportunityCard({
@@ -212,7 +137,6 @@ export function OpportunityCard({
   };
   const funded = isFullyFunded(project);
   const active = isOpen(project);
-  const percent = fundingProgress(project);
   const risk = getRiskLevel(project);
   const catIcon = getCategoryIcon(project.category);
   const profitData = formatProfit(project.expected_profit || "", project.profit_period);
@@ -322,12 +246,7 @@ export function OpportunityCard({
               </div>
             </div>
 
-            {/* Circular ring */}
-            <CircularProgress
-              percent={percent}
-              status={project.status}
-              label={`${Math.round(percent)}%`}
-            />
+
           </div>
 
           {/* ── Info Chips ── */}

@@ -120,25 +120,7 @@ export function parseRoi(raw: string | number | undefined | null): number {
   return Math.max(...vals);
 }
 
-/** Deterministic pseudo funding % (30–95) from id, or 100 if funded. */
-export function fundingProgress(p: Opportunity): number {
-  if (isFullyFunded(p)) return 100;
-  const config = getStatusConfig(p.status);
-  
-  if (config.width === "100%") return 100;
-  
-  const id = p.id || "default";
-  let h = 0;
-  for (let i = 0; i < id.length; i++) {
-    h = (h * 31 + id.charCodeAt(i)) >>> 0;
-  }
-  
-  if (config.width === "dynamic-high") {
-    return 85 + (h % 11); // 85..95
-  }
-  
-  return 30 + (h % 51); // 30..80
-}
+
 
 /** Unique categories present. */
 export function uniqueCategories(list: Opportunity[]): string[] {

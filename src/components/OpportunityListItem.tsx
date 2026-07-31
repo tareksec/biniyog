@@ -7,16 +7,12 @@ import {
   isFullyFunded,
   isOpen,
   statusLabel,
-  fundingProgress,
   getRiskLevel,
   resolveImageUrl,
   getStatusConfig,
 } from "@/lib/projects";
-import {
   getCategoryIcon,
-  getStatusRingColors,
   riskChipStyle,
-  CircularProgress,
   formatProfit
 } from "@/components/OpportunityCard";
 
@@ -46,7 +42,6 @@ export function OpportunityListItem({
   };
   const funded = isFullyFunded(project);
   const active = isOpen(project);
-  const percent = fundingProgress(project);
   const risk = getRiskLevel(project);
   const catIcon = getCategoryIcon(project.category);
   const profitData = formatProfit(project.expected_profit || "", project.profit_period);
@@ -93,16 +88,9 @@ export function OpportunityListItem({
           </button>
         </div>
 
-        {/* Left: Thumbnail and Progress Ring */}
+        {/* Left: Thumbnail */}
         <div className="relative shrink-0 flex items-center justify-center mt-6 sm:mt-0">
-          <CircularProgress
-            percent={percent}
-            status={project.status}
-            label={percent + "%"}
-            size={72}
-            strokeWidth={4}
-          />
-          <div className="absolute h-12 w-12 rounded-full overflow-hidden ring-2 ring-background">
+          <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full overflow-hidden ring-4 ring-muted">
             <img
               src={resolveImageUrl(project)}
               alt=""
