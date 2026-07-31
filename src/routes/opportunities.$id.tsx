@@ -515,7 +515,9 @@ function OpportunityTestimonials({ project }: { project: Opportunity }) {
 
       <div className="mt-4 flex justify-center border-t border-border/50 pt-8">
         <a 
-          href="mailto:contact@biniyog.com" 
+          href={`https://form.techvrs.com/?business=${encodeURIComponent(project.name || "")}`}
+          target="_blank"
+          rel="noopener noreferrer"
           className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-6 py-2.5 text-sm font-semibold text-primary hover:bg-primary hover:text-primary-foreground transition-colors shadow-sm"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
