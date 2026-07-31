@@ -72,7 +72,7 @@ function InsightsPage() {
                   src={article.image} 
                   alt={article.title}
                   loading="lazy"
-                  className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                  className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                 />
                 <div className="absolute top-4 left-4">
                   <span className="pill bg-white/90 backdrop-blur-md text-primary font-bold shadow-sm border-none">

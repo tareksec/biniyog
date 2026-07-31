@@ -171,16 +171,20 @@ function Hero({ stats }: { stats: { profitMin: number; profitMax: number; verifi
         </motion.div>
 
         <div data-hero-art className="relative mx-auto w-full max-w-[620px] lg:max-w-[720px] flex items-center justify-center py-2 lg:-mr-6 scale-105 sm:scale-110 lg:scale-115 transition-all">
-          {/* Vibrant ambient glow behind the hero image */}
+          {/* Static ambient glow for mobile (performance) */}
+          <div className="absolute -inset-4 bg-gradient-to-tr from-primary/30 via-emerald-500/20 to-teal-400/20 blur-[60px] rounded-full pointer-events-none -z-10 md:hidden" />
+          <div className="absolute inset-8 bg-primary/25 blur-[40px] rounded-full pointer-events-none -z-10 md:hidden" />
+
+          {/* Animated vibrant ambient glow behind the hero image (desktop only) */}
           <motion.div 
             animate={prefersReduced ? {} : { opacity: [0.4, 0.7, 0.4], scale: [0.95, 1.05, 0.95] }}
             transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute -inset-4 bg-gradient-to-tr from-primary/30 via-emerald-500/20 to-teal-400/20 blur-[70px] rounded-full pointer-events-none -z-10" 
+            className="absolute -inset-4 bg-gradient-to-tr from-primary/30 via-emerald-500/20 to-teal-400/20 blur-[70px] rounded-full pointer-events-none -z-10 hidden md:block" 
           />
           <motion.div 
             animate={prefersReduced ? {} : { opacity: [0.3, 0.6, 0.3], scale: [1, 1.1, 1] }}
             transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
-            className="absolute inset-8 bg-primary/25 blur-[50px] rounded-full pointer-events-none -z-10" 
+            className="absolute inset-8 bg-primary/25 blur-[50px] rounded-full pointer-events-none -z-10 hidden md:block" 
           />
           
           <motion.div
@@ -194,7 +198,7 @@ function Hero({ stats }: { stats: { profitMin: number; profitMax: number; verifi
               transition={{ duration: 3.5, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
               src={heroImage} 
               alt="Business Investment Growth" 
-              className="w-full h-auto object-contain drop-shadow-[0_25px_60px_rgba(0,0,0,0.2)] transition-transform duration-500 hover:scale-[1.03]"
+              className="w-full h-auto object-contain drop-shadow-[0_25px_60px_rgba(0,0,0,0.2)] transition-transform duration-300 hover:scale-[1.03]"
             />
           </motion.div>
         </div>

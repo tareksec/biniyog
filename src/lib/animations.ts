@@ -43,13 +43,13 @@ export const staggerContainer: Variants = {
   },
 };
 
-/** Scale-in / Pop-in for icons, avatars, badges */
+/** Subtle fade-in / slide-up for icons, avatars, badges (replacing bouncy scaleIn) */
 export const scaleIn: Variants = {
-  hidden: { opacity: 0, scale: 0.8 },
+  hidden: { opacity: 0, y: 10 },
   show: {
     opacity: 1,
-    scale: 1,
-    transition: { duration: 0.35, ease: [0.34, 1.56, 0.64, 1] },
+    y: 0,
+    transition: { duration: 0.3, ease: "easeOut" },
   },
 };
 

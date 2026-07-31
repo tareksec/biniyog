@@ -63,9 +63,9 @@ const MorphingIcon = ({ type, isActive, onClick, onMouseEnter }: { type: string,
                         { morphSVG: "M12.1483 3.46366L12.8548 8.05624C12.9493 8.67024 12.8508 9.29842 12.573 9.85405L8.08541 18.8292C7.58673 19.8265 8.31198 21 9.42705 21H14.5729C15.688 21 16.4133 19.8265 15.9146 18.8292L11.427 9.85405C11.1492 9.29842 11.0507 8.67024 11.1452 8.05624L11.8517 3.46366C11.8778 3.29407 12.1222 3.29407 12.1483 3.46366Z", duration: 0.09 },
                         {
                             morphSVG: "M21 18V10.5339C21 9.57062 20.5374 8.66591 19.7565 8.1019L13.7565 3.76856C12.7079 3.01128 11.2921 3.01128 10.2435 3.76856L4.24353 8.1019C3.46259 8.66591 3 9.57062 3 10.5339V18C3 19.6569 4.34315 21 6 21H18C19.6569 21 21 19.6569 21 18Z",
-                            duration: 0.71, ease: "elastic.out(1, .9)",
+                            duration: 0.71, ease: "power2.out",
                             onStart: () => {
-                                gsap.to(button, { "--tab-bar-home-scale": 0.7, duration: 0.71, ease: "elastic.out(1, .9)" });
+                                gsap.to(button, { "--tab-bar-home-scale": 0.7, duration: 0.71, ease: "power2.out" });
                                 gsap.to(button, { "--tab-bar-home-opacity": 1, duration: 0.2 });
                             },
                         },
@@ -97,9 +97,9 @@ const MorphingIcon = ({ type, isActive, onClick, onMouseEnter }: { type: string,
                         {
                             morphSVG: "M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z",
                             duration: 0.7,
-                            ease: "elastic.out(1, .9)",
+                            ease: "power2.out",
                             onStart: () => {
-                                gsap.to(button, { "--tab-bar-blog-scale": 0.7, duration: 0.7, ease: "elastic.out(1, .9)" });
+                                gsap.to(button, { "--tab-bar-blog-scale": 0.7, duration: 0.7, ease: "power2.out" });
                                 gsap.to(button, { "--tab-bar-blog-opacity": 1, duration: 0.2 });
                             }
                         }
@@ -121,9 +121,9 @@ const MorphingIcon = ({ type, isActive, onClick, onMouseEnter }: { type: string,
                         { morphSVG: "M12 21C12 21 14.0216 19.0215 14.3637 16C14.6026 13.8898 13.5128 11.9823 13 10C12 6.134 13.134 3 12 3C10.866 3 12 6.134 11 10C10.4873 11.9823 9.39736 13.8898 9.6363 16C9.97843 19.0215 12 21 12 21Z", duration: 0.05 },
                         {
                             morphSVG: "M12 21C12 21 14.6062 18.8589 16.64 16C17.941 14.1711 19 12.0475 19 10C19 6.134 15.87 3 12 3C8.13 3 5 6.134 5 10C5 12.0475 6.05896 14.1711 7.36 16C9.39381 18.8589 12 21 12 21Z",
-                            duration: 0.75, ease: "elastic.out(1, .9)",
+                            duration: 0.75, ease: "power2.out",
                             onStart: () => {
-                                gsap.to(button, { "--tab-bar-marker-scale": 0.7, duration: 0.75, ease: "elastic.out(1, .9)" });
+                                gsap.to(button, { "--tab-bar-marker-scale": 0.7, duration: 0.75, ease: "power2.out" });
                                 gsap.to(button, { "--tab-bar-marker-opacity": 1, duration: 0.2 });
                             }
                         }
@@ -145,9 +145,9 @@ const MorphingIcon = ({ type, isActive, onClick, onMouseEnter }: { type: string,
                         { morphSVG: "M12 21C12 21 14.0216 19.0215 14.3637 16C14.6026 13.8898 13.5128 11.9823 13 10C12 6.134 13.134 3 12 3C10.866 3 12 6.134 11 10C10.4873 11.9823 9.39736 13.8898 9.6363 16C9.97843 19.0215 12 21 12 21Z", duration: 0.05 },
                         {
                             morphSVG: "M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z",
-                            duration: 0.7, ease: "elastic.out(1, .9)",
+                            duration: 0.7, ease: "power2.out",
                             onStart: () => {
-                                gsap.to(button, { "--tab-bar-email-scale": 0.7, duration: 0.7, ease: "elastic.out(1, .9)" });
+                                gsap.to(button, { "--tab-bar-email-scale": 0.7, duration: 0.7, ease: "power2.out" });
                                 gsap.to(button, { "--tab-bar-email-opacity": 1, duration: 0.2 });
                             }
                         }
@@ -169,9 +169,9 @@ const MorphingIcon = ({ type, isActive, onClick, onMouseEnter }: { type: string,
                         { morphSVG: "M13.364 5.63604C14.0062 9.12971 7.68417 13.4401 8.36401 18.3639C8.84929 21.8787 15.1508 21.8787 15.6361 18.3639C16.316 13.4401 9.99389 9.12969 10.6361 5.63604C11.3564 1.71793 12.6438 1.71795 13.364 5.63604Z", duration: 0.05 },
                         {
                             morphSVG: "M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z",
-                            duration: 0.8, ease: "elastic.out(1, .9)",
+                            duration: 0.8, ease: "power2.out",
                             onStart: () => {
-                                gsap.to(button, { "--tab-bar-linkedin-scale": 0.7, duration: 0.8, ease: "elastic.out(1, .9)" });
+                                gsap.to(button, { "--tab-bar-linkedin-scale": 0.7, duration: 0.8, ease: "power2.out" });
                                 gsap.to(button, { "--tab-bar-linkedin-opacity": 1, duration: 0.2 });
                             }
                         }
@@ -206,12 +206,12 @@ const MorphingIcon = ({ type, isActive, onClick, onMouseEnter }: { type: string,
                             // Return to X shape
                             morphSVG: "M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z",
                             duration: 0.75,
-                            ease: "elastic.out(1, .9)",
+                            ease: "power2.out",
                             onStart: () => {
                                 gsap.to(button, {
                                     "--tab-bar-x-scale": 0.7,
                                     duration: 0.75,
-                                    ease: "elastic.out(1, .9)"
+                                    ease: "power2.out"
                                 });
                                 gsap.to(button, {
                                     "--tab-bar-x-opacity": 1,
@@ -250,12 +250,12 @@ const MorphingIcon = ({ type, isActive, onClick, onMouseEnter }: { type: string,
                             // Return to Github shape
                             morphSVG: "M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z",
                             duration: 0.75,
-                            ease: "elastic.out(1, .9)",
+                            ease: "power2.out",
                             onStart: () => {
                                 gsap.to(button, {
                                     "--tab-bar-github-scale": 0.7,
                                     duration: 0.75,
-                                    ease: "elastic.out(1, .9)",
+                                    ease: "power2.out",
                                 });
                                 gsap.to(button, {
                                     "--tab-bar-github-opacity": 1,
@@ -432,7 +432,7 @@ export const GlassDock = React.forwardRef<HTMLDivElement, GlassDockProps>(
                                             scale: isHovered ? 1.05 : 1,
                                             y: isHovered ? -3 : 0,
                                         }}
-                                        transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+                                        transition={{ duration: 0.25, ease: "easeOut" }}
                                         className={cn(
                                             "flex h-10 items-center gap-2 px-4 rounded-full font-bold shadow-md transition-all",
                                             "bg-primary text-primary-foreground shadow-primary/25 hover:bg-primary/90 hover:shadow-primary/40"
@@ -468,7 +468,7 @@ export const GlassDock = React.forwardRef<HTMLDivElement, GlassDockProps>(
                                         scale: isHovered ? 1.15 : 1,
                                         y: isHovered ? -4 : 0,
                                     }}
-                                    transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+                                    transition={{ duration: 0.25, ease: "easeOut" }}
                                     className={cn(
                                         "flex h-10 w-10 items-center justify-center rounded-full transition-colors",
                                         isHovered ? "bg-primary/10" : "hover:bg-muted"
