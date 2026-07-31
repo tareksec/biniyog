@@ -7,7 +7,6 @@ import {
   isFullyFunded,
   isOpen,
   statusLabel,
-  statusLabel,
   getRiskLevel,
   resolveImageUrl,
 } from "@/lib/projects";

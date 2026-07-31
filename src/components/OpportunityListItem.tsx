@@ -11,6 +11,7 @@ import {
   resolveImageUrl,
   getStatusConfig,
 } from "@/lib/projects";
+import {
   getCategoryIcon,
   riskChipStyle,
   formatProfit
