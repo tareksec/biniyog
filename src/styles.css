@@ -89,6 +89,13 @@
   --gradient-hero: radial-gradient(70% 60% at 70% 40%, rgba(35, 83, 71, 0.15) 0%, rgba(22, 56, 50, 0.05) 40%, rgba(255, 255, 255, 0) 75%);
   --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.06);
   --shadow-elevated: 0 10px 30px -5px rgba(35, 83, 71, 0.12), 0 0 40px -10px rgba(5, 31, 32, 0.05);
+
+  /* ── Why-us card tint palette ── */
+  /* Tint = soft card background, Solid = icon badge fill, Text = heading color */
+  --card-tint-1: #e8f5ec;   --card-solid-1: #235347;  --card-border-1: #c4dfc9;  --card-text-1: #143d33;
+  --card-tint-2: #e6f0f8;   --card-solid-2: #2a6496;  --card-border-2: #bdd4ea;  --card-text-2: #1a3f5e;
+  --card-tint-3: #fdf3e4;   --card-solid-3: #a67c2e;  --card-border-3: #ecd9b2;  --card-text-3: #5e4518;
+  --card-tint-4: #f0ebf7;   --card-solid-4: #6b4fa0;  --card-border-4: #d5c9e8;  --card-text-4: #3e2d61;
 }
 
 @layer base {
@@ -243,6 +250,32 @@
   .animate-marquee-left:hover,
   .animate-marquee-right:hover {
     animation-play-state: paused;
+  }
+
+  /* ── Why-us card interactions ── */
+  .why-card {
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+  }
+  @media (hover: hover) {
+    .why-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+    .why-card:hover .why-card-badge {
+      transform: scale(1.05);
+    }
+  }
+  .why-card-badge {
+    transition: transform 0.2s ease-out;
+  }
+
+  /* Dark-mode overrides for why-us cards */
+  .dark .why-card {
+    background: var(--card) !important;
+    border-color: var(--border) !important;
+  }
+  .dark .why-card-badge {
+    opacity: 0.85;
   }
 
   /* ── Card hover interactions ── */

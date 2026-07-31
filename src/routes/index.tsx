@@ -236,33 +236,42 @@ function Stat({ value, label }: { value: React.ReactNode; label: string }) {
   );
 }
 
+const WHY_COLORS = [
+  { tint: "var(--card-tint-1)", solid: "var(--card-solid-1)", border: "var(--card-border-1)", text: "var(--card-text-1)" },
+  { tint: "var(--card-tint-2)", solid: "var(--card-solid-2)", border: "var(--card-border-2)", text: "var(--card-text-2)" },
+  { tint: "var(--card-tint-3)", solid: "var(--card-solid-3)", border: "var(--card-border-3)", text: "var(--card-text-3)" },
+  { tint: "var(--card-tint-4)", solid: "var(--card-solid-4)", border: "var(--card-border-4)", text: "var(--card-text-4)" },
+];
+
 const WHY = [
   {
-    label: "ব্যবসায়ীর সাথে সরাসরি সংযোগ",
-    desc: "আপনার ও ব্যবসায়ীর মাঝে সরাসরি যোগাযোগ এবং সম্পর্ক হবে। মাঝে কেউ থাকবে না।",
-    icon: (
+    label: "ব্যবসায়ীর সাথে সরাসরি সংযোগ",
+    desc: "আপনার ও ব্যবসায়ীর মাঝে সরাসরি যোগাযোগ এবং সম্পর্ক হবে। মাঝে কেউ থাকবে না।",
+    iconPath: (
       <>
         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
         <circle cx="9" cy="7" r="4" />
         <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
       </>
     ),
+    colorIndex: 0,
   },
   {
-    label: "সুদ মুক্ত আয়",
-    desc: "সকল প্রকার আয় সুদ মুক্ত। কোন প্রকার বাহানা ও ঘুরিয়ে সুদ খাওয়ার সুযোগ নেই।",
-    icon: <path d="M9 12l2 2 4-4M12 3l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V7l8-4z" />,
+    label: "সুদ মুক্ত আয়",
+    desc: "সকল প্রকার আয় সুদ মুক্ত। কোন প্রকার বাহানা ও ঘুরিয়ে সুদ খাওয়ার সুযোগ নেই।",
+    iconPath: <path d="M9 12l2 2 4-4M12 3l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V7l8-4z" />,
+    colorIndex: 1,
   },
-
   {
     label: "আইনি সুরক্ষা",
     desc: "প্রতিটি বিনিয়োগ লিগ্যাল ডকুমেন্ট ও সিকিউরিটি চেক নিশ্চিত করে করবেন।",
-    icon: <path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z" />,
+    iconPath: <path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z" />,
+    colorIndex: 2,
   },
   {
     label: "স্বচ্ছ চুক্তি",
     desc: "প্রতি মাসের হিসাব প্রদর্শন বাবদ লাভ-ক্ষতি ভাগাভাগি — সম্পূর্ণ স্বচ্ছ রিপোর্টিং।",
-    icon: (
+    iconPath: (
       <>
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
         <path d="M14 2v6h6" />
@@ -271,35 +280,40 @@ const WHY = [
         <path d="M10 9H8" />
       </>
     ),
+    colorIndex: 3,
   },
   {
     label: "আকর্ষণীয় লাভ",
-    desc: "২৫+% পর্যন্ত সম্ভাব্য বার্ষিক লাভের সম্ভাবনা।",
-    icon: <path d="M3 17l6-6 4 4 8-8M14 7h7v7" />,
+    desc: "অনেক ভালো লাভ পাবার সম্ভাবনা",
+    iconPath: <path d="M3 17l6-6 4 4 8-8M14 7h7v7" />,
+    colorIndex: 0,
   },
   {
-    label: "বিনিয়োগের আগে ও পরে সরেজমিনে যাচাইয়ের সুযোগ",
+    label: "বিনিয়োগের আগে ও পরে সরেজমিনে যাচাইয়ের সুযোগ",
     desc: "বিনিয়োগকারী যেকোনো সময় ব্যবসাপ্রতিষ্ঠান ও হিসাব সরাসরি নিজে গিয়ে যাচাই করতে পারবেন।",
-    icon: <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />,
+    iconPath: <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />,
+    colorIndex: 1,
   },
   {
     label: "সমাজের জন্য কল্যাণকর ব্যবসা",
-    desc: "ক্ষতিকর পণ্য, ফটকাবাজি, জুয়া, অস্বাস্থ্যকর খাবার ।  এমন ব্যবসাকে  বাছাই করা হয় না |",
-    icon: (
+    desc: "ক্ষতিকর পণ্য, ফটকাবাজি, জুয়া, অস্বাস্থ্যকর খাবার ।  এমন ব্যবসাকে  বাছাই করা হয় না |",
+    iconPath: (
       <>
         <path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z" />
       </>
     ),
+    colorIndex: 2,
   },
   {
     label: "স্বাধীন সিদ্ধান্ত",
     desc: "নিজে যাচাই বাছাই করে স্বাধীন ভাবে সিদ্ধান্ত নিবেন।",
-    icon: (
+    iconPath: (
       <>
         <circle cx="12" cy="12" r="10" />
         <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
       </>
     ),
+    colorIndex: 3,
   },
 ];
 
@@ -316,46 +330,62 @@ function WhyChoose() {
           initial={prefersReduced ? "show" : "hidden"}
           whileInView="show"
           viewport={{ once: true, amount: 0.1 }}
-          className="mt-10 grid gap-5 sm:mt-14 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4"
+          className="mt-10 grid gap-4 sm:mt-14 sm:gap-5 sm:grid-cols-2 lg:grid-cols-4"
         >
-          {WHY.map((w, i) => (
-            <motion.div
-              key={w.label}
-              variants={revealVariants}
-              className="group relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)] card-hover sm:p-7 flex flex-col justify-between"
-            >
-              <div>
-                <span
-                  className="grid h-12 w-12 place-items-center rounded-2xl border border-primary/20 bg-primary/10 text-primary shadow-sm"
+          {WHY.map((w, i) => {
+            const c = WHY_COLORS[w.colorIndex];
+            return (
+              <motion.div
+                key={w.label}
+                variants={revealVariants}
+                className="why-card group relative overflow-hidden rounded-2xl p-5 sm:p-6 flex flex-col justify-between"
+                style={{
+                  backgroundColor: c.tint,
+                  borderWidth: 1,
+                  borderStyle: "solid",
+                  borderColor: c.border,
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+                }}
+              >
+                <div>
+                  <span
+                    className="why-card-badge grid h-12 w-12 place-items-center rounded-[14px]"
+                    style={{ backgroundColor: c.solid }}
+                  >
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      {w.iconPath}
+                    </svg>
+                  </span>
+                  <h3
+                    className="mt-4 text-base font-medium leading-snug sm:mt-4"
+                    style={{ color: c.text }}
+                  >
+                    {w.label}
+                  </h3>
+                  <p className="mt-2 text-[13px] leading-[1.6] text-muted-foreground sm:text-[13.5px]">
+                    {w.desc}
+                  </p>
+                </div>
+                <Link
+                  to="/opportunities"
+                  className="mt-5 inline-flex items-center gap-1.5 text-[13px] font-semibold transition-all duration-200 hover:gap-2.5 sm:mt-6"
+                  style={{ color: c.text }}
                 >
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    {w.icon}
+                  আরও জানুন
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                    <path d="M5 12h14M13 5l7 7-7 7" />
                   </svg>
+                </Link>
+                <span
+                  aria-hidden
+                  className="num pointer-events-none absolute -bottom-3 right-4 text-[56px] font-bold select-none"
+                  style={{ color: c.text, opacity: 0.06 }}
+                >
+                  {String(i + 1).padStart(2, "0")}
                 </span>
-                <h3 className="mt-5 text-lg font-bold leading-tight sm:mt-6 sm:text-xl">
-                  {w.label}
-                </h3>
-                <p className="mt-2 text-[13.5px] leading-relaxed text-muted-foreground sm:text-sm">
-                  {w.desc}
-                </p>
-              </div>
-              <Link
-                to="/opportunities"
-                className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition hover:gap-2.5 sm:mt-6"
-              >
-                আরও জানুন
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M5 12h14M13 5l7 7-7 7" />
-                </svg>
-              </Link>
-              <span
-                aria-hidden
-                className="num pointer-events-none absolute -bottom-4 right-4 text-6xl font-bold text-primary/10"
-              >
-                {String(i + 1).padStart(2, "0")}
-              </span>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </motion.div>
       </div>
     </section>
