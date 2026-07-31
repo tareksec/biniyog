@@ -3,6 +3,10 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+// ARCHITECTURE NOTE: GSAP is explicitly retained in this component due to its heavy reliance 
+// on complex multi-step SVG path morphing (`gsap/MorphSVGPlugin`). Framer Motion does not 
+// natively support these types of complex, non-compatible path length SVG animations out of the box.
+// DO NOT migrate this file to Framer Motion unless doing a complete visual redesign of the dock.
 import gsap from "gsap";
 
 type DockIcon = React.ComponentType<{ className?: string }>;

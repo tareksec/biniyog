@@ -6,7 +6,6 @@ import type { Testimonial } from "@/lib/database.types";
 import { TestimonialCard } from "@/components/TestimonialsSection";
 import { fetchOpportunities, isFullyFunded, statusLabel, parseLinks, fundingProgress, getRiskLevel, resolveImageUrl, resolveImageUrls, getStatusConfig, fetchOpportunitySubsections, type Opportunity, type OpportunityRisk, type OpportunityPayout, type OpportunityLegalCheck } from "@/lib/projects";
 import { InvestmentCalculator } from "@/components/InvestmentCalculator";
-import { Slider } from "@/components/ui/slider";
 import { motion } from "framer-motion";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
@@ -484,7 +483,7 @@ function PayoutTrackRecord({ records = [] }: { records?: OpportunityPayout[] }) 
 }
 
 function OpportunityTestimonials({ project }: { project: Opportunity }) {
-  const { data: testimonials = [], isLoading } = useQuery({
+  const { data: testimonials = [], isLoading, isError, error } = useQuery({
     queryKey: ["testimonials-opp", project.id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -497,6 +496,11 @@ function OpportunityTestimonials({ project }: { project: Opportunity }) {
     },
     staleTime: 1000 * 60 * 5, // 5 min
   });
+
+  if (isError) {
+    console.error("OpportunityTestimonials query failed:", error);
+    return null;
+  }
 
   if (isLoading || testimonials.length === 0) return null;
 
