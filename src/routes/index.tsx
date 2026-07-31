@@ -20,6 +20,7 @@ import heroImage from "@/hero/hero.png";
 import { PolicySection } from "@/components/PolicySection";
 import { Loader2, CalendarCheck } from "lucide-react";
 import { usePrefersReducedMotion, revealVariants, staggerContainer, scaleIn } from "@/lib/animations";
+import { FlipFadeText } from "@/components/ui/flip-fade-text";
 
 type OpportunitiesSearch = {
   category?: string;
@@ -106,10 +107,18 @@ function Hero({ stats }: { stats: { profitMin: number; profitMax: number; verifi
             <span className="text-muted-foreground">যাচাইকৃত · বিনিয়োগ মডেল</span>
           </span>
 
-          <h1 className="mt-6 text-4xl font-bold leading-[1.15] tracking-tight text-foreground sm:text-5xl md:text-[3.6rem]">
-            দেশের <span className="gradient-text">সম্ভাবনাময় ব্যবসায়</span>{" "}
-            বিনিয়োগ করুন
-          </h1>
+          <div className="mt-6">
+            <h1 className="sr-only">দেশের সম্ভাবনাময় ব্যবসায় বিনিয়োগ করুন</h1>
+            <div aria-hidden="true">
+              <FlipFadeText 
+                words={["দেশের সম্ভাবনাময় ব্যবসায় বিনিয়োগ করুন"]}
+                textClassName="text-3xl font-bold leading-[1.25] tracking-tight text-foreground sm:text-4xl md:text-[3.2rem] flex flex-wrap justify-start text-left"
+                className="justify-start min-h-[auto]"
+                staggerDelay={0.03}
+                letterDuration={0.4}
+              />
+            </div>
+          </div>
 
           <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
             যাচাইকৃত ব্যবসা প্রতিষ্ঠানে স্বচ্ছ উপায়ে আকর্ষণীয় লাভ অর্জন করুন।
@@ -474,7 +483,7 @@ function FinalCTA() {
         className="relative mx-auto max-w-4xl px-5 py-24 text-center sm:px-8 sm:py-28"
       >
         <h2 className="text-3xl font-bold leading-tight sm:text-5xl text-white">
-          আজই <span className="gradient-text">অংশীদার</span> হোন
+          আজই <span className="text-emerald-400">অংশীদার</span> হোন
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-white/70">
           দেশের সম্ভাবনাময় ব্যবসাগুলোতে বিনিয়োগ শুরু করুন।
