@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "generate-fallback": "node generate-fallback.mjs"
+    "generate-fallback": "node --env-file=.env generate-fallback.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

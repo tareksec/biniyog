@@ -16,9 +16,6 @@ import { createClient } from "@supabase/supabase-js";
 import { writeFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
