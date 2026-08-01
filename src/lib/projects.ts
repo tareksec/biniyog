@@ -30,12 +30,10 @@ export async function fetchOpportunitiesSSR(): Promise<Opportunity[]> {
     console.warn("[fetchOpportunitiesSSR] Supabase error, using fallback:", err instanceof Error ? err.message : err);
     if (import.meta.env.SSR) {
       try {
-        const fs = await import("node:fs");
-        const path = await import("node:path");
-        const fallbackPath = path.resolve(process.cwd(), "src/data/opportunities-fallback.json");
-        return JSON.parse(fs.readFileSync(fallbackPath, "utf-8"));
-      } catch (fsErr) {
-        console.error("Failed to read fallback file on server:", fsErr);
+        const module = await import("@/data/opportunities-fallback.json");
+        return module.default as Opportunity[];
+      } catch (importErr) {
+        console.error("Failed to import fallback file on server:", importErr);
         return [];
       }
     }
