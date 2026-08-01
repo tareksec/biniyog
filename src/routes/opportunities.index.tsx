@@ -603,7 +603,7 @@ function OpportunitiesPage() {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
-            className="fixed bottom-24 sm:bottom-28 left-0 right-0 z-40 mx-auto w-[90%] max-w-sm rounded-full bg-foreground p-3 pl-6 text-background shadow-2xl flex items-center justify-between"
+            className="fixed bottom-24 sm:bottom-28 left-0 right-0 z-[55] mx-auto w-[90%] max-w-sm rounded-full bg-foreground p-3 pl-6 text-background shadow-2xl flex items-center justify-between"
           >
             <div className="flex items-center gap-2">
               <span className="grid h-6 w-6 place-items-center rounded-full bg-background/20 text-xs font-bold">

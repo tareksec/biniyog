@@ -70,7 +70,7 @@ export function HomepageTopNav() {
           {/* Hamburger Menu Toggle (Mobile/Tablet) */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="lg:hidden p-2 text-white/90 hover:text-white hover:bg-white/10 rounded-full transition-colors outline-none"
+            className="lg:hidden p-2.5 text-white/90 hover:text-white hover:bg-white/10 rounded-full transition-colors outline-none"
           >
             {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
@@ -85,7 +85,7 @@ export function HomepageTopNav() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="pointer-events-auto absolute top-20 left-4 right-4 z-[55] mx-auto max-w-sm rounded-3xl bg-[#0a3821] p-4 lg:hidden flex flex-col gap-2"
+            className="pointer-events-auto absolute top-20 left-4 right-4 z-[55] mx-auto max-w-full rounded-3xl bg-[#0a3821] p-4 lg:hidden flex flex-col gap-2"
             style={{
               border: "2px solid rgba(255, 255, 255, 0.9)",
               boxShadow: "0 0 20px rgba(255, 255, 255, 0.15), 0 4px 20px rgba(0, 0, 0, 0.15)"

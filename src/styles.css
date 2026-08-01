@@ -197,10 +197,18 @@
   z-index: 1;
 }
 
-/* Mobile: fall back to scroll attachment (fixed causes jank/glitches on iOS/Android) */
+/* Mobile: fall back to scroll attachment (fixed causes jank/glitches on iOS/Android)
+   AND swap to mobile-optimized hero image */
 @media (max-width: 768px) {
   .homepage-bg {
     background-attachment: scroll !important;
+    background-image: url('/heromobile.png') !important;
+    background-position: center top !important;
+    background-size: cover !important;
+  }
+  /* Mobile overlay: slightly heavier for better text contrast on heromobile.png */
+  .homepage-overlay {
+    background: rgba(244, 251, 245, 0.52) !important;
   }
 }
 

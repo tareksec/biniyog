@@ -87,7 +87,7 @@ function LandingPage() {
     >
       {/* Full-page readability overlay — sits between fixed BG image and all sections */}
       <div
-        className="pointer-events-none fixed inset-0 z-0"
+        className="homepage-overlay pointer-events-none fixed inset-0 z-0"
         style={{ background: "rgba(244, 251, 245, 0.45)" }}
         aria-hidden
       />
@@ -128,8 +128,8 @@ function LandingPage() {
       <FaqSection />
       <FinalCTA />
       
-      {/* Sticky Mobile CTA */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-background/80 backdrop-blur-md border-t border-border/50 md:hidden pb-[max(env(safe-area-inset-bottom),1rem)]">
+      {/* Sticky Mobile CTA — pushed above the bottom dock to avoid overlap */}
+      <div className="fixed bottom-16 left-0 right-0 z-[51] p-4 bg-background/80 backdrop-blur-md border-t border-border/50 md:hidden pb-[max(env(safe-area-inset-bottom),1rem)]">
         <Link
           to="/opportunities"
           className="flex w-full items-center justify-center gap-2 rounded-full px-6 py-3.5 text-[15px] font-semibold text-primary-foreground shadow-lg btn-hover"
@@ -275,7 +275,7 @@ function Hero({
         style={{ background: "var(--gradient-hero)" }}
         aria-hidden
       />
-      <div className="relative z-10 mx-auto max-w-7xl px-5 pt-20 pb-16 sm:px-8 sm:pt-24 lg:pt-28 lg:pb-24">
+      <div className="relative z-10 mx-auto max-w-7xl px-5 pt-24 pb-16 sm:px-8 sm:pt-28 lg:pt-32 lg:pb-24">
         {/* ── Text block ── */}
         <motion.div
           className="mx-auto max-w-3xl text-center"
@@ -615,7 +615,7 @@ function Opportunities({ opportunities }: { opportunities: Opportunity[] }) {
 
 function FinalCTA() {
   return (
-    <section className="relative overflow-hidden border-t border-border bg-[#020F10] text-white">
+    <section className="relative overflow-hidden border-t border-border bg-[#000A0B] text-white">
       <div
         className="pointer-events-none absolute inset-0 opacity-10"
         style={{ background: "var(--gradient-hero)" }}
