@@ -166,7 +166,7 @@ export function PolicySection() {
     <section 
       id="policy" 
       // Important: Removed 'overflow-hidden' because it breaks 'position: sticky'
-      className="border-t border-border bg-surface relative overflow-x-clip py-20 sm:py-28"
+      className="border-t border-border bg-surface/75 backdrop-blur-[2px] relative overflow-x-clip py-20 sm:py-28"
     >
       <div ref={containerRef} className="px-5 sm:px-8 max-w-7xl mx-auto">
         

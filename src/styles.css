@@ -38,6 +38,7 @@
   --color-ring: var(--ring);
   --color-grid: var(--grid);
   --color-surface: var(--surface);
+  --color-pin: var(--pin);
   
   --ease-smooth-out: var(--ease-smooth-out);
   --ease-smooth-in-out: var(--ease-smooth-in-out);
@@ -89,6 +90,9 @@
   --gradient-hero: radial-gradient(70% 60% at 70% 40%, rgba(35, 83, 71, 0.15) 0%, rgba(22, 56, 50, 0.05) 40%, rgba(255, 255, 255, 0) 75%);
   --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.06);
   --shadow-elevated: 0 10px 30px -5px rgba(35, 83, 71, 0.12), 0 0 40px -10px rgba(5, 31, 32, 0.05);
+  --shadow-note: 0 18px 40px -18px rgba(5, 31, 32, 0.16);
+  --shadow-note-lift: 0 26px 55px -20px rgba(5, 31, 32, 0.26);
+  --pin: #c0392b;
 
   /* ── Why-us card tint palette ── */
   /* Tint = soft card background, Solid = icon badge fill, Text = heading color */
@@ -146,6 +150,14 @@
   }
 }
 
+@utility shadow-note {
+  box-shadow: var(--shadow-note);
+}
+
+@utility shadow-note-lift {
+  box-shadow: var(--shadow-note-lift);
+}
+
 @utility wireframe-grid {
   background-image:
     linear-gradient(to right, var(--grid) 1px, transparent 1px),
@@ -177,6 +189,19 @@
   border: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(6px);
+}
+
+/* ── Homepage fixed background ── */
+.homepage-bg > *:not([aria-hidden]) {
+  position: relative;
+  z-index: 1;
+}
+
+/* Mobile: fall back to scroll attachment (fixed causes jank/glitches on iOS/Android) */
+@media (max-width: 768px) {
+  .homepage-bg {
+    background-attachment: scroll !important;
+  }
 }
 
 @layer utilities {
@@ -252,30 +277,13 @@
     animation-play-state: paused;
   }
 
-  /* ── Why-us card interactions ── */
-  .why-card {
-    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+  /* Hide scrollbar utility */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
   }
-  @media (hover: hover) {
-    .why-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    }
-    .why-card:hover .why-card-badge {
-      transform: scale(1.05);
-    }
-  }
-  .why-card-badge {
-    transition: transform 0.2s ease-out;
-  }
-
-  /* Dark-mode overrides for why-us cards */
-  .dark .why-card {
-    background: var(--card) !important;
-    border-color: var(--border) !important;
-  }
-  .dark .why-card-badge {
-    opacity: 0.85;
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 
   /* ── Card hover interactions ── */

@@ -36,7 +36,7 @@ const FAQS = [
 
 export function FaqSection() {
   return (
-    <section id="faq" className="border-t border-border bg-background" aria-label="সাধারণ জিজ্ঞাসা">
+    <section id="faq" className="border-t border-border bg-background/75 backdrop-blur-[2px]" aria-label="সাধারণ জিজ্ঞাসা">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

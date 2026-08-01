@@ -158,7 +158,7 @@ export function TestimonialsSection() {
 
   return (
     <section 
-      className="border-t border-border bg-surface overflow-hidden py-16 sm:py-24"
+      className="border-t border-border bg-surface/75 backdrop-blur-[2px] overflow-hidden py-16 sm:py-24"
       onTouchStart={() => setIsTouching(true)}
       onTouchEnd={() => setIsTouching(false)}
       onTouchCancel={() => setIsTouching(false)}

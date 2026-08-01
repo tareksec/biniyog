@@ -1,11 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { OpportunityCard } from "@/components/OpportunityCard";
-import { useOpportunities, isFullyFunded, parseAmount, parseRoi } from "@/lib/projects";
+import { motion, useReducedMotion } from "framer-motion";
+import { OpportunityCard, getCategoryIcon } from "@/components/OpportunityCard";
+import { useOpportunities, isFullyFunded, isOpen, statusLabel, parseAmount, parseRoi } from "@/lib/projects";
 import type { Opportunity } from "@/lib/projects";
-import { HeroIllustration } from "@/components/HeroIllustration";
 import { CountUp } from "@/components/CountUp";
 import {
   InstructorSection,
@@ -16,9 +15,10 @@ import { OpportunityFilters, type SortKey } from "@/components/OpportunityFilter
 import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { InvestmentCalculator } from "@/components/InvestmentCalculator";
 import { FaqSection } from "@/components/FaqSection";
-import heroImage from "@/hero/hero.png";
 import { PolicySection } from "@/components/PolicySection";
-import { Loader2, CalendarCheck } from "lucide-react";
+import { WhyChooseSection } from "@/components/WhyChooseSection";
+import { Loader2, CalendarCheck, MapPin, Sparkles } from "lucide-react";
+import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { usePrefersReducedMotion, revealVariants, staggerContainer, scaleIn } from "@/lib/animations";
 import { FlipFadeText } from "@/components/ui/flip-fade-text";
 
@@ -74,7 +74,23 @@ function LandingPage() {
   }, [opportunities]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground antialiased">
+    <div
+      className="homepage-bg min-h-screen text-foreground antialiased"
+      style={{
+        backgroundColor: "#f4fbf5",
+        backgroundImage: "url('/herouse.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center top",
+        backgroundRepeat: "no-repeat",
+        backgroundAttachment: "fixed",
+      }}
+    >
+      {/* Full-page readability overlay — sits between fixed BG image and all sections */}
+      <div
+        className="pointer-events-none fixed inset-0 z-0"
+        style={{ background: "rgba(244, 251, 245, 0.45)" }}
+        aria-hidden
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -99,13 +115,13 @@ function LandingPage() {
           }),
         }}
       />
-      <Hero stats={heroStats} />
-      <WhyChoose />
+      <Hero stats={heroStats} opportunities={opportunities} />
+      <WhyChooseSection />
       <PolicySection />
       <InstructorSection />
       <Opportunities opportunities={opportunities} />
       <HowItWorks />
-      <div className="bg-background">
+      <div className="bg-background/75 backdrop-blur-[2px]">
         <InvestmentCalculator />
       </div>
       <TestimonialsSection />
@@ -131,21 +147,138 @@ function LandingPage() {
 
 const revealItem = revealVariants;
 
-function Hero({ stats }: { stats: { profitMin: number; profitMax: number; verifiedCount: number } }) {
-  const prefersReduced = usePrefersReducedMotion();
+/* ────────────────────────────────────────────────────────────
+   Sticky-note card pattern — ported from Still-worker reference
+   ──────────────────────────────────────────────────────────── */
+
+const NOTE_EASE = [0.22, 0.61, 0.36, 1] as const;
+
+function StickyPin({ prefersReduced }: { prefersReduced: boolean }) {
   return (
-    <section id="top" className="relative overflow-hidden bg-surface dot-pattern">
-      <div
-        className="pointer-events-none absolute inset-0 bg-background/50"
-        aria-hidden
-      />
+    <div className="flex justify-center pb-3">
+      <motion.div
+        animate={prefersReduced ? {} : { y: [0, -4, 0], rotate: [-12, -8, -12] }}
+        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+      >
+        <MapPin className="size-6 fill-pin text-pin drop-shadow-sm" strokeWidth={1.5} />
+      </motion.div>
+    </div>
+  );
+}
+
+function StickyNoteCard({
+  label,
+  children,
+  delay,
+  prefersReduced,
+}: {
+  label: string;
+  children: React.ReactNode;
+  delay: number;
+  prefersReduced: boolean;
+}) {
+  return (
+    <motion.div
+      className="group [perspective:1000px]"
+      initial={prefersReduced ? { opacity: 1, y: 0, rotateX: 0 } : { opacity: 0, y: 40, rotateX: 8 }}
+      whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+      viewport={{ once: true, amount: 0.3 }}
+      transition={{ duration: 0.85, delay: prefersReduced ? 0 : delay, ease: NOTE_EASE }}
+    >
+      <StickyPin prefersReduced={prefersReduced} />
+      <p className="pb-3 text-center text-sm font-semibold text-foreground">{label}</p>
+      <motion.div
+        className="relative"
+        whileHover={prefersReduced ? {} : { y: -8, rotate: -0.6 }}
+        transition={{ type: "spring", stiffness: 260, damping: 20 }}
+      >
+        <div className="absolute -right-2 -top-2 h-full w-full rotate-2 rounded-2xl border border-border bg-card/70 transition-transform duration-500 group-hover:rotate-3" />
+        <div className="relative rounded-2xl border border-border bg-card p-4 shadow-note transition-shadow duration-500 group-hover:shadow-note-lift">
+          {children}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+const HERO_STATUS_COLORS: Record<string, string> = {
+  "বিনিয়োগ নেওয়া চলমান-সুযোগ আছে": "#146C43",
+  "বিনিয়োগ নেওয়া শেষের দিকে": "#eab308",
+  "বিনিয়োগ নেওয়া শেষ-সামনে আবার শুরু হবে ইনশা আল্লাহ": "#64748b",
+  "বিনিয়োগ নেওয়া শেষ-সামনে আবার শুরু হবে": "#64748b",
+};
+
+function Hero({
+  stats,
+  opportunities,
+}: {
+  stats: { profitMin: number; profitMax: number; verifiedCount: number };
+  opportunities: Opportunity[];
+}) {
+  const prefersReduced = usePrefersReducedMotion();
+
+  // Card 1 — Growth stats
+  const growthMetrics = useMemo(() => {
+    const active = opportunities.filter((p) => isOpen(p)).length;
+    let totalAmount = 0;
+    opportunities.filter((p) => isOpen(p)).forEach((p) => {
+      totalAmount += parseAmount(p.investment_amount);
+    });
+    let formattedAmount = "";
+    if (totalAmount >= 10000000) {
+      formattedAmount = `৳ ${(totalAmount / 10000000).toFixed(2)} কোটি`;
+    } else if (totalAmount >= 100000) {
+      formattedAmount = `৳ ${(totalAmount / 100000).toFixed(1)} লক্ষ`;
+    } else {
+      formattedAmount = `৳ ${totalAmount.toLocaleString()}`;
+    }
+    const rois = opportunities
+      .map((p) => parseRoi(p.expected_profit))
+      .filter((v): v is number => !isNaN(v) && v > 0);
+    const avgRoi = rois.length > 0 ? (rois.reduce((a, b) => a + b, 0) / rois.length).toFixed(1) : "0";
+
+    return {
+      total: opportunities.length,
+      active,
+      totalAmountFormatted: formattedAmount,
+      avgRoi,
+    };
+  }, [opportunities]);
+
+  // Card 2 — Status distribution
+  const statusData = useMemo(() => {
+    const map: Record<string, number> = {};
+    opportunities.forEach((p) => {
+      const s = p.status || "অজানা";
+      map[s] = (map[s] || 0) + 1;
+    });
+    return Object.entries(map).map(([name, value]) => ({ name, value }));
+  }, [opportunities]);
+
+  // Card 3 — Recent opportunities
+  const recentOpps = useMemo(() => {
+    return [...opportunities]
+      .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
+      .slice(0, 3);
+  }, [opportunities]);
+
+  const growthBars = [
+    { label: "মোট সুযোগ", value: growthMetrics.total, max: Math.max(growthMetrics.total, 1), color: "#146C43" },
+    { label: "সক্রিয় সুযোগ", value: growthMetrics.active, max: Math.max(growthMetrics.total, 1), color: "#2FA36F" },
+    { label: "গড় লাভ", value: parseFloat(growthMetrics.avgRoi), max: 100, color: "#0ea5e9", suffix: "%" },
+  ];
+
+  return (
+    <section id="top" className="relative z-[1] overflow-hidden">
       <div
         className="pointer-events-none absolute inset-0"
         style={{ background: "var(--gradient-hero)" }}
         aria-hidden
       />
-      <div className="relative z-10 mx-auto grid max-w-7xl gap-12 px-5 pt-20 pb-16 sm:px-8 sm:pt-24 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-12 lg:pt-28 lg:pb-24">
+      <div className="relative z-10 mx-auto max-w-7xl px-5 pt-20 pb-16 sm:px-8 sm:pt-24 lg:pt-28 lg:pb-24">
+        {/* ── Text block ── */}
         <motion.div
+          className="mx-auto max-w-3xl text-center"
           initial={prefersReduced ? "show" : "hidden"}
           animate="show"
           variants={revealVariants}
@@ -159,36 +292,43 @@ function Hero({ stats }: { stats: { profitMin: number; profitMax: number; verifi
             <span className="text-muted-foreground">যাচাইকৃত · বিনিয়োগ মডেল</span>
           </span>
 
-          <div className="mt-6">
+          <div className="mt-7">
             <h1 className="sr-only">দেশের সম্ভাবনাময় ব্যবসায় বিনিয়োগ করুন</h1>
             <div aria-hidden="true">
               <FlipFadeText 
                 words={["দেশের সম্ভাবনাময় ব্যবসায় বিনিয়োগ করুন"]}
-                textClassName="text-3xl font-bold leading-[1.25] tracking-tight text-foreground sm:text-4xl md:text-[3.2rem] flex flex-wrap justify-start text-left"
-                className="justify-start min-h-[auto]"
+                textClassName="text-4xl font-extrabold leading-[1.15] tracking-tight text-foreground sm:text-5xl lg:text-[3.5rem] flex flex-wrap justify-center text-center"
+                className="justify-center min-h-[auto]"
                 staggerDelay={0.03}
                 letterDuration={0.4}
               />
             </div>
           </div>
 
-          <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+          <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
             যাচাইকৃত ব্যবসা প্রতিষ্ঠানে স্বচ্ছ উপায়ে আকর্ষণীয় লাভ অর্জন করুন।
           </p>
 
-          <div className="mt-8 flex flex-wrap items-center gap-4">
-            <Link
-              to="/opportunities"
-              className="group inline-flex items-center gap-3 rounded-full px-6 py-3.5 text-[15px] font-semibold text-primary-foreground shadow-[var(--shadow-elevated)] btn-hover"
-              style={{ background: "var(--gradient-primary)" }}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+            <motion.div
+              whileHover={prefersReduced ? {} : { y: -3, scale: 1.03 }}
+              whileTap={prefersReduced ? {} : { scale: 0.97 }}
+              transition={{ type: "spring", stiffness: 320, damping: 20 }}
             >
-              বিনিয়োগের সুযোগ দেখুন
-              <span className="grid h-7 w-7 place-items-center rounded-full bg-white/20 transition-transform group-hover:translate-x-0.5">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M5 12h14M13 5l7 7-7 7" />
-                </svg>
-              </span>
-            </Link>
+              <Link
+                to="/opportunities"
+                className="group inline-flex items-center gap-2.5 rounded-full bg-[#163832] px-7 py-3.5 text-[15px] font-semibold text-white shadow-note hover:shadow-note-lift transition-shadow duration-300"
+              >
+                বিনিয়োগের সুযোগ দেখুন
+                <motion.span
+                  className="inline-flex"
+                  animate={prefersReduced ? {} : { rotate: [0, 14, -8, 0], scale: [1, 1.12, 1] }}
+                  transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <Sparkles className="size-4" />
+                </motion.span>
+              </Link>
+            </motion.div>
             <a
               href={CONSULTANCY_URL}
               target="_blank"
@@ -202,7 +342,7 @@ function Hero({ stats }: { stats: { profitMin: number; profitMax: number; verifi
             </a>
           </div>
 
-          <div className="mt-12 grid max-w-lg grid-cols-3 gap-6 border-t border-border/70 pt-7 text-left">
+          <div className="mx-auto mt-12 grid max-w-lg grid-cols-3 gap-6 border-t border-border/70 pt-7">
             <Stat 
               value={
                 stats.profitMin === stats.profitMax 
@@ -217,44 +357,118 @@ function Hero({ stats }: { stats: { profitMin: number; profitMax: number; verifi
             />
             <Stat 
               value={<CountUp to={100} suffix="%" duration={1.2} />} 
-              label="সুদ এবং ঘুরিয়ে সুদ মুক্ত" 
+              label="সুদ এবং ঘুরিয়ে সুদ মুক্ত" 
             />
           </div>
         </motion.div>
 
-        <div data-hero-art className="relative mx-auto w-full max-w-[620px] lg:max-w-[720px] flex items-center justify-center py-2 lg:-mr-6 scale-105 sm:scale-110 lg:scale-115 transition-all">
-          {/* Static ambient glow for mobile (performance) */}
-          <div className="absolute -inset-4 bg-gradient-to-tr from-primary/30 via-emerald-500/20 to-teal-400/20 blur-[60px] rounded-full pointer-events-none -z-10 md:hidden" />
-          <div className="absolute inset-8 bg-primary/25 blur-[40px] rounded-full pointer-events-none -z-10 md:hidden" />
+        {/* ── Pinned sticky-note cards ── */}
+        <div className="mx-auto mt-16 grid max-w-5xl gap-10 md:grid-cols-3 md:gap-12 lg:mt-20">
+          {/* Card 1 — Growth Stats */}
+          <StickyNoteCard label="সামগ্রিক প্রবৃদ্ধি" delay={0.05} prefersReduced={prefersReduced}>
+            <div className="mb-3">
+              <p className="text-xs font-semibold text-foreground">{growthMetrics.totalAmountFormatted}</p>
+              <p className="text-[11px] text-muted-foreground">মোট বিনিয়োগযোগ্য পরিমাণ</p>
+            </div>
+            <ul className="space-y-3">
+              {growthBars.map((bar, i) => (
+                <li key={bar.label} className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold text-muted-foreground">{bar.label}</span>
+                    <span className="text-[11px] font-bold text-foreground num">
+                      {bar.value}{bar.suffix || ""}
+                    </span>
+                  </div>
+                  <div
+                    className="h-1.5 w-full overflow-hidden rounded-full bg-border/60"
+                    role="progressbar"
+                    aria-valuenow={bar.value}
+                    aria-valuemin={0}
+                    aria-valuemax={bar.max}
+                    aria-label={`${bar.label} progress`}
+                  >
+                    <motion.div
+                      className="h-full rounded-full"
+                      style={{ backgroundColor: bar.color }}
+                      initial={{ width: "0%" }}
+                      whileInView={{ width: `${Math.min((bar.value / bar.max) * 100, 100)}%` }}
+                      viewport={{ once: true, amount: 0.6 }}
+                      transition={{ duration: 1.2, delay: 0.3 + i * 0.15, ease: NOTE_EASE }}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </StickyNoteCard>
 
-          {/* Animated vibrant ambient glow behind the hero image (desktop only) */}
-          <motion.div 
-            animate={prefersReduced ? {} : { opacity: [0.4, 0.7, 0.4], scale: [0.95, 1.05, 0.95] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute -inset-4 bg-gradient-to-tr from-primary/30 via-emerald-500/20 to-teal-400/20 blur-[70px] rounded-full pointer-events-none -z-10 hidden md:block" 
-          />
-          <motion.div 
-            animate={prefersReduced ? {} : { opacity: [0.3, 0.6, 0.3], scale: [1, 1.1, 1] }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
-            className="absolute inset-8 bg-primary/25 blur-[50px] rounded-full pointer-events-none -z-10 hidden md:block" 
-          />
-          
-          <motion.div
-            initial={prefersReduced ? "show" : "hidden"}
-            animate="show"
-            variants={scaleIn}
-            className="relative z-10 w-full flex items-center justify-center"
-          >
-            <motion.img 
-              animate={prefersReduced ? {} : { y: [-8, 8] }}
-              transition={{ duration: 3.5, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
-              src={heroImage} 
-              alt="Business Investment Growth" 
-              className="w-full h-auto object-contain drop-shadow-[0_25px_60px_rgba(0,0,0,0.2)] transition-transform duration-300 hover:scale-[1.03]"
-              fetchPriority="high"
-              decoding="async"
-            />
-          </motion.div>
+          {/* Card 2 — Status Distribution */}
+          <StickyNoteCard label="স্ট্যাটাস ডিস্ট্রিবিউশন" delay={0.18} prefersReduced={prefersReduced}>
+            <div className="flex flex-col items-center">
+              <div className="relative size-28">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={statusData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={32}
+                      outerRadius={50}
+                      paddingAngle={2}
+                      dataKey="value"
+                      stroke="none"
+                    >
+                      {statusData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={HERO_STATUS_COLORS[entry.name] || "#94a3b8"} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-lg font-bold text-foreground num">{opportunities.length}</span>
+                  <span className="text-[9px] text-muted-foreground">মোট</span>
+                </div>
+              </div>
+              <div className="mt-3 w-full space-y-1.5">
+                {statusData.map((s, i) => (
+                  <div key={i} className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <div className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: HERO_STATUS_COLORS[s.name] || "#94a3b8" }} />
+                      <span className="text-[10px] font-semibold text-muted-foreground truncate">{s.name.replace("বিনিয়োগ নেওয়া ", "")}</span>
+                    </div>
+                    <span className="text-[11px] font-bold num shrink-0">{s.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </StickyNoteCard>
+
+          {/* Card 3 — Recent Opportunities */}
+          <StickyNoteCard label="নতুন সুযোগসমূহ" delay={0.31} prefersReduced={prefersReduced}>
+            <div className="space-y-3">
+              {recentOpps.map((opp, i) => {
+                const catIcon = getCategoryIcon(opp.category);
+                return (
+                  <motion.div
+                    key={opp.id}
+                    className="flex items-center gap-2.5 rounded-xl border border-border bg-card p-2 shadow-note"
+                    initial={prefersReduced ? { opacity: 1 } : { opacity: 0, y: 14, scale: 0.95 }}
+                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                    viewport={{ once: true, amount: 0.4 }}
+                    transition={{ duration: 0.55, delay: 0.3 + i * 0.08, ease: NOTE_EASE }}
+                    whileHover={prefersReduced ? {} : { y: -4, scale: 1.04 }}
+                  >
+                    <span className={`flex size-8 items-center justify-center rounded-lg ${catIcon.bg}`}>
+                      {catIcon.icon}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] font-semibold text-foreground truncate leading-tight">{opp.name}</p>
+                      <p className="text-[10px] text-muted-foreground num">{opp.investment_amount}</p>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </StickyNoteCard>
         </div>
       </div>
     </section>
@@ -263,7 +477,7 @@ function Hero({ stats }: { stats: { profitMin: number; profitMax: number; verifi
 
 function Stat({ value, label }: { value: React.ReactNode; label: string }) {
   return (
-    <div>
+    <div className="text-center">
       <div className="num text-2xl font-bold text-foreground sm:text-3xl">
         {value}
       </div>
@@ -271,184 +485,6 @@ function Stat({ value, label }: { value: React.ReactNode; label: string }) {
         {label}
       </div>
     </div>
-  );
-}
-
-const WHY_COLORS = [
-  { tint: "var(--card-tint-1)", solid: "var(--card-solid-1)", border: "var(--card-border-1)", text: "var(--card-text-1)" },
-  { tint: "var(--card-tint-2)", solid: "var(--card-solid-2)", border: "var(--card-border-2)", text: "var(--card-text-2)" },
-  { tint: "var(--card-tint-3)", solid: "var(--card-solid-3)", border: "var(--card-border-3)", text: "var(--card-text-3)" },
-  { tint: "var(--card-tint-4)", solid: "var(--card-solid-4)", border: "var(--card-border-4)", text: "var(--card-text-4)" },
-];
-
-const WHY = [
-  {
-    label: "ব্যবসায়ীর সাথে সরাসরি সংযোগ",
-    desc: "আপনার ও ব্যবসায়ীর মাঝে সরাসরি যোগাযোগ এবং সম্পর্ক হবে। মাঝে কেউ থাকবে না।",
-    iconPath: (
-      <>
-        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-        <circle cx="9" cy="7" r="4" />
-        <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-      </>
-    ),
-    colorIndex: 0,
-    hash: "connect",
-  },
-  {
-    label: "সুদ মুক্ত আয়",
-    desc: "সকল প্রকার আয় সুদ মুক্ত। কোন প্রকার বাহানা ও ঘুরিয়ে সুদ খাওয়ার সুযোগ নেই।",
-    iconPath: <path d="M9 12l2 2 4-4M12 3l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V7l8-4z" />,
-    colorIndex: 1,
-    hash: "interest-free",
-  },
-  {
-    label: "আইনি সুরক্ষা",
-    desc: "প্রতিটি বিনিয়োগ লিগ্যাল ডকুমেন্ট ও সিকিউরিটি চেক নিশ্চিত করে করবেন।",
-    iconPath: <path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z" />,
-    colorIndex: 2,
-    hash: "legal",
-  },
-  {
-    label: "স্বচ্ছ চুক্তি",
-    desc: "প্রতি মাসের হিসাব প্রদর্শন বাবদ লাভ-ক্ষতি ভাগাভাগি — সম্পূর্ণ স্বচ্ছ রিপোর্টিং।",
-    iconPath: (
-      <>
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        <path d="M14 2v6h6" />
-        <path d="M16 13H8" />
-        <path d="M16 17H8" />
-        <path d="M10 9H8" />
-      </>
-    ),
-    colorIndex: 3,
-    hash: "transparent",
-  },
-  {
-    label: "আকর্ষণীয় লাভ",
-    desc: "অনেক ভালো লাভ পাবার সম্ভাবনা",
-    iconPath: <path d="M3 17l6-6 4 4 8-8M14 7h7v7" />,
-    colorIndex: 0,
-    hash: "returns",
-  },
-  {
-    label: "বিনিয়োগের আগে ও পরে সরেজমিনে যাচাইয়ের সুযোগ",
-    desc: "বিনিয়োগকারী যেকোনো সময় ব্যবসাপ্রতিষ্ঠান ও হিসাব সরাসরি নিজে গিয়ে যাচাই করতে পারবেন।",
-    iconPath: <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />,
-    colorIndex: 1,
-    hash: "verify",
-  },
-  {
-    label: "সমাজের জন্য কল্যাণকর ব্যবসা",
-    desc: "ক্ষতিকর পণ্য, ফটকাবাজি, জুয়া, অস্বাস্থ্যকর খাবার ।  এমন ব্যবসাকে  বাছাই করা হয় না |",
-    iconPath: (
-      <>
-        <path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z" />
-      </>
-    ),
-    colorIndex: 2,
-    hash: "social",
-  },
-  {
-    label: "স্বাধীন সিদ্ধান্ত",
-    desc: "নিজে যাচাই বাছাই করে স্বাধীন ভাবে সিদ্ধান্ত নিবেন।",
-    iconPath: (
-      <>
-        <circle cx="12" cy="12" r="10" />
-        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
-      </>
-    ),
-    colorIndex: 3,
-    hash: "connect",
-  },
-];
-
-function WhyChoose() {
-  const prefersReduced = usePrefersReducedMotion();
-  return (
-    <section id="why" className="border-t border-border bg-background">
-      <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-28">
-        <SectionHeader
-          title="কেন আমরা"
-        />
-        <motion.div
-          variants={staggerContainer}
-          initial={prefersReduced ? "show" : "hidden"}
-          whileInView="show"
-          viewport={{ once: true, amount: 0.1 }}
-          className="mt-10 grid gap-4 sm:mt-14 sm:gap-5 sm:grid-cols-2 lg:grid-cols-4"
-        >
-          {WHY.map((w, i) => {
-            const c = WHY_COLORS[w.colorIndex];
-            return (
-              <motion.div
-                key={w.label}
-                variants={revealVariants}
-                onClick={() => {
-                  window.location.href = `/insights/keno-somriddhite-biniyog#${w.hash}`;
-                }}
-                className="why-card group relative overflow-hidden rounded-2xl p-5 sm:p-6 flex flex-col justify-between cursor-pointer"
-                style={{
-                  backgroundColor: c.tint,
-                  borderWidth: 1,
-                  borderStyle: "solid",
-                  borderColor: c.border,
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-                }}
-              >
-                <div>
-                  <span
-                    className="why-card-badge grid h-12 w-12 place-items-center rounded-[14px]"
-                    style={{ backgroundColor: c.solid }}
-                  >
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      {w.iconPath}
-                    </svg>
-                  </span>
-                  <h3
-                    className="mt-4 text-base font-medium leading-snug sm:mt-4"
-                    style={{ color: c.text }}
-                  >
-                    {w.label}
-                  </h3>
-                  <p className="mt-2 text-[13px] leading-[1.6] text-muted-foreground sm:text-[13.5px]">
-                    {w.desc}
-                  </p>
-                </div>
-                <div
-                  className="mt-5 inline-flex items-center gap-1.5 text-[13px] font-semibold transition-all duration-200 group-hover:gap-2.5 sm:mt-6"
-                  style={{ color: c.text }}
-                >
-                  আরও জানুন
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                    <path d="M5 12h14M13 5l7 7-7 7" />
-                  </svg>
-                </div>
-                <span
-                  aria-hidden
-                  className="num pointer-events-none absolute -bottom-3 right-4 text-[56px] font-bold select-none"
-                  style={{ color: c.text, opacity: 0.06 }}
-                >
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-              </motion.div>
-            );
-          })}
-        </motion.div>
-
-        <div className="mt-10 text-center sm:mt-12">
-          <Link
-            to="/insights/keno-somriddhite-biniyog"
-            className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-6 py-3 text-[15px] font-semibold text-foreground shadow-sm transition-all duration-200 hover:border-primary/40 hover:text-primary hover:shadow-[var(--shadow-elevated)]"
-          >
-            বিস্তারিত পড়ুন
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-              <path d="M5 12h14M13 5l7 7-7 7" />
-            </svg>
-          </Link>
-        </div>
-      </div>
-    </section>
   );
 }
 
@@ -470,7 +506,7 @@ const STEPS = [
 function HowItWorks() {
   const prefersReduced = usePrefersReducedMotion();
   return (
-    <section id="how" className="relative overflow-hidden border-t border-border bg-surface">
+    <section id="how" className="relative overflow-hidden border-t border-border bg-surface/75 backdrop-blur-[2px]">
       <div className="relative mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-28">
         <SectionHeader eyebrow="কীভাবে কাজ করে" title="তিন ধাপে বিনিয়োগ শুরু করুন" />
         <motion.div
@@ -514,7 +550,7 @@ function Opportunities({ opportunities }: { opportunities: Opportunity[] }) {
   }, [opportunities]);
 
   return (
-    <section id="opportunities" className="border-t border-border bg-surface">
+    <section id="opportunities" className="border-t border-border bg-surface/75 backdrop-blur-[2px]">
       <div className="mx-auto max-w-7xl px-5 py-24 sm:px-8 sm:py-28">
         <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
           <div className="max-w-2xl">
@@ -579,7 +615,7 @@ function Opportunities({ opportunities }: { opportunities: Opportunity[] }) {
 
 function FinalCTA() {
   return (
-    <section className="relative overflow-hidden border-t border-border bg-[#051F20] text-white">
+    <section className="relative overflow-hidden border-t border-border bg-[#020F10] text-white">
       <div
         className="pointer-events-none absolute inset-0 opacity-10"
         style={{ background: "var(--gradient-hero)" }}

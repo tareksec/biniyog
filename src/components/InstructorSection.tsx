@@ -29,7 +29,7 @@ export const LINKEDIN_URL =
 export function InstructorSection() {
   const prefersReduced = usePrefersReducedMotion();
   return (
-    <section id="expert" className="border-t border-border bg-background" aria-label="এক্সপার্টের কথা">
+    <section id="expert" className="border-t border-border bg-background/75 backdrop-blur-[2px]" aria-label="এক্সপার্টের কথা">
       <div className="mx-auto max-w-6xl px-5 py-24 sm:px-8 sm:py-28">
         <div className="grid gap-12 lg:grid-cols-[1fr_1.4fr] lg:gap-16">
           <div className="relative">
