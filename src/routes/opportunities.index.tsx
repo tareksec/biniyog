@@ -48,6 +48,13 @@ interface OpportunitiesSearch {
 
 export const Route = createFileRoute("/opportunities/")({
   component: OpportunitiesPage,
+  loader: async ({ context }) => {
+    const { fetchOpportunitiesSSR } = await import("@/lib/projects");
+    await context.queryClient.ensureQueryData({
+      queryKey: ["opportunities"],
+      queryFn: fetchOpportunitiesSSR,
+    });
+  },
   validateSearch: (search: Record<string, unknown>): OpportunitiesSearch => {
     return {
       q: typeof search.q === "string" ? search.q : undefined,

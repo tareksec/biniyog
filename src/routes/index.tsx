@@ -28,6 +28,13 @@ type OpportunitiesSearch = {
 };
 
 export const Route = createFileRoute("/")({
+  loader: async ({ context }) => {
+    const { fetchOpportunitiesSSR } = await import("@/lib/projects");
+    await context.queryClient.ensureQueryData({
+      queryKey: ["opportunities"],
+      queryFn: fetchOpportunitiesSSR,
+    });
+  },
   validateSearch: (search: Record<string, unknown>): OpportunitiesSearch => {
     return {
       category: search.category as string | undefined,

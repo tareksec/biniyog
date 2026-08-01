@@ -3,17 +3,70 @@ import { supabase } from "@/lib/supabase";
 import type { Opportunity, OpportunityRisk, OpportunityPayout, OpportunityLegalCheck } from "@/lib/database.types";
 export type { Opportunity, OpportunityRisk, OpportunityPayout, OpportunityLegalCheck };
 
-export async function fetchOpportunities(): Promise<Opportunity[]> {
-  const { data, error } = await supabase
-    .from("opportunities")
-    .select("*")
-    .order("created_at", { ascending: false });
+/** Timeout (ms) for the live Supabase fetch before falling back. */
+const FETCH_TIMEOUT_MS = 4_000;
 
-  if (error) {
-    console.error("Error fetching opportunities:", error);
+
+export async function fetchOpportunitiesSSR(): Promise<Opportunity[]> {
+  try {
+    // Race the Supabase query against a timeout
+    const result = await Promise.race([
+      supabase
+        .from("opportunities")
+        .select("*")
+        .order("created_at", { ascending: false }),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Supabase fetch timed out")), FETCH_TIMEOUT_MS),
+      ),
+    ]);
+
+    const { data, error } = result;
+
+    if (error) throw new Error(error.message);
+    if (!data || data.length === 0) throw new Error("Empty data returned");
+
+    return data;
+  } catch (err) {
+    console.warn("[fetchOpportunitiesSSR] Supabase error, using fallback:", err instanceof Error ? err.message : err);
+    if (import.meta.env.SSR) {
+      try {
+        const fs = await import("node:fs");
+        const path = await import("node:path");
+        const fallbackPath = path.resolve(process.cwd(), "src/data/opportunities-fallback.json");
+        return JSON.parse(fs.readFileSync(fallbackPath, "utf-8"));
+      } catch (fsErr) {
+        console.error("Failed to read fallback file on server:", fsErr);
+        return [];
+      }
+    }
     return [];
   }
-  return data || [];
+}
+
+export async function fetchOpportunities(): Promise<Opportunity[]> {
+  try {
+    const { data, error } = await supabase
+      .from("opportunities")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.warn("[fetchOpportunities] Supabase error:", error.message);
+      return [];
+    }
+
+    if (!data || data.length === 0) {
+      return [];
+    }
+
+    return data;
+  } catch (err) {
+    console.warn(
+      "[fetchOpportunities] Fetch failed:",
+      err instanceof Error ? err.message : err,
+    );
+    return [];
+  }
 }
 
 export function useOpportunities() {

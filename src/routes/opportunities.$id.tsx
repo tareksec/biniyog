@@ -4,14 +4,14 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import type { Testimonial } from "@/lib/database.types";
 import { TestimonialCard } from "@/components/TestimonialsSection";
-import { fetchOpportunities, isFullyFunded, statusLabel, parseLinks, getRiskLevel, resolveImageUrl, resolveImageUrls, getStatusConfig, fetchOpportunitySubsections, type Opportunity, type OpportunityRisk, type OpportunityPayout, type OpportunityLegalCheck } from "@/lib/projects";
+import { fetchOpportunitiesSSR, fetchOpportunities, isFullyFunded, statusLabel, parseLinks, getRiskLevel, resolveImageUrl, resolveImageUrls, getStatusConfig, fetchOpportunitySubsections, type Opportunity, type OpportunityRisk, type OpportunityPayout, type OpportunityLegalCheck } from "@/lib/projects";
 import { InvestmentCalculator } from "@/components/InvestmentCalculator";
 import { motion } from "framer-motion";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
 export const Route = createFileRoute("/opportunities/$id")({
   loader: async ({ params }) => {
-    const allProjects = await fetchOpportunities();
+    const allProjects = await fetchOpportunitiesSSR();
     const project = allProjects.find((p) => p.id === params.id || p.slug === params.id);
     if (!project) throw notFound();
     const subsections = await fetchOpportunitySubsections(project.id);
