@@ -47,6 +47,16 @@ interface OpportunitiesSearch {
 }
 
 export const Route = createFileRoute("/opportunities/")({
+  head: () => ({
+    meta: [
+      { title: "সকল বিনিয়োগের সুযোগ · সমৃদ্ধি" },
+      { name: "description", content: "সমৃদ্ধির সকল যাচাইকৃত হালাল বিনিয়োগের সুযোগগুলো এক্সপ্লোর করুন। আপনার পছন্দমতো সেক্টর ও মুনাফার হার অনুযায়ী বিনিয়োগ বেছে নিন।" },
+      { property: "og:title", content: "সকল বিনিয়োগের সুযোগ · সমৃদ্ধি" },
+      { property: "og:description", content: "সমৃদ্ধির সকল যাচাইকৃত হালাল বিনিয়োগের সুযোগগুলো এক্সপ্লোর করুন। আপনার পছন্দমতো সেক্টর ও মুনাফার হার অনুযায়ী বিনিয়োগ বেছে নিন।" },
+      { name: "twitter:title", content: "সকল বিনিয়োগের সুযোগ · সমৃদ্ধি" },
+      { name: "twitter:description", content: "সমৃদ্ধির সকল যাচাইকৃত হালাল বিনিয়োগের সুযোগগুলো এক্সপ্লোর করুন। আপনার পছন্দমতো সেক্টর ও মুনাফার হার অনুযায়ী বিনিয়োগ বেছে নিন।" },
+    ],
+  }),
   component: OpportunitiesPage,
   loader: async ({ context }) => {
     const { fetchOpportunitiesSSR } = await import("@/lib/projects");
@@ -330,6 +340,29 @@ function OpportunitiesPage() {
 
   return (
     <div className="min-h-screen bg-background pb-32">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Home",
+                item: "https://samriddhi.techvrs.com"
+              },
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: "Opportunities",
+                item: "https://samriddhi.techvrs.com/opportunities"
+              }
+            ]
+          }),
+        }}
+      />
       {/* Top Header / Stats */}
       <div className="bg-primary/5 pt-28 pb-8 px-4 sm:px-6">
         <div className="mx-auto max-w-7xl">

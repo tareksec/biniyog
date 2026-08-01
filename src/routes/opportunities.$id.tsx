@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import type { Testimonial } from "@/lib/database.types";
 import { TestimonialCard } from "@/components/TestimonialsSection";
-import { fetchOpportunitiesSSR, fetchOpportunities, isFullyFunded, statusLabel, parseLinks, getRiskLevel, resolveImageUrl, resolveImageUrls, getStatusConfig, fetchOpportunitySubsections, type Opportunity, type OpportunityRisk, type OpportunityPayout, type OpportunityLegalCheck } from "@/lib/projects";
+import { fetchOpportunitiesSSR, fetchOpportunities, isFullyFunded, statusLabel, parseLinks, getRiskLevel, resolveImageUrl, resolveImageUrls, getStatusConfig, fetchOpportunitySubsections, fetchTestimonialsSSR, type Opportunity, type OpportunityRisk, type OpportunityPayout, type OpportunityLegalCheck } from "@/lib/projects";
 import { InvestmentCalculator } from "@/components/InvestmentCalculator";
 import { motion } from "framer-motion";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
@@ -15,6 +15,10 @@ export const Route = createFileRoute("/opportunities/$id")({
     const project = allProjects.find((p) => p.id === params.id || p.slug === params.id);
     if (!project) throw notFound();
     const subsections = await fetchOpportunitySubsections(project.id);
+    await context.queryClient.ensureQueryData({
+      queryKey: ["testimonials-opp", project.id],
+      queryFn: () => fetchTestimonialsSSR(project.id),
+    });
     return { project, ...subsections };
   },
   head: ({ loaderData }) => {
@@ -30,6 +34,8 @@ export const Route = createFileRoute("/opportunities/$id")({
         { name: "description", content: desc },
         { property: "og:title", content: title },
         { property: "og:description", content: desc },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: desc },
       ],
     };
   },
@@ -86,6 +92,51 @@ function OpportunityDetailsPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([
+            {
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                {
+                  "@type": "ListItem",
+                  position: 1,
+                  name: "Home",
+                  item: "https://samriddhi.techvrs.com"
+                },
+                {
+                  "@type": "ListItem",
+                  position: 2,
+                  name: "Opportunities",
+                  item: "https://samriddhi.techvrs.com/opportunities"
+                },
+                {
+                  "@type": "ListItem",
+                  position: 3,
+                  name: project.name,
+                  item: `https://samriddhi.techvrs.com/opportunities/${project.slug || project.id}`
+                }
+              ]
+            },
+            {
+              "@context": "https://schema.org",
+              "@type": "Product",
+              name: project.name,
+              description: project.description || "একটি বিনিয়োগ সুযোগ",
+              image: resolveImageUrl(project),
+              offers: {
+                "@type": "Offer",
+                price: parseFloat((project.investment_amount || "0").replace(/[^0-9.]/g, "")) || 0,
+                priceCurrency: "BDT",
+                availability: funded ? "https://schema.org/SoldOut" : "https://schema.org/InStock",
+                url: `https://samriddhi.techvrs.com/opportunities/${project.slug || project.id}`
+              }
+            }
+          ])
+        }}
+      />
       <header className="sticky top-0 z-20 border-b border-border/70 bg-background/85 backdrop-blur">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-5 py-4 sm:px-8">
           <button onClick={handleBack} className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors cursor-pointer">
@@ -476,15 +527,7 @@ function PayoutTrackRecord({ records = [] }: { records?: OpportunityPayout[] }) 
 function OpportunityTestimonials({ project }: { project: Opportunity }) {
   const { data: testimonials = [], isLoading, isError, error } = useQuery({
     queryKey: ["testimonials-opp", project.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("testimonials")
-        .select("*")
-        .eq("related_opportunity_id", project.id)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data || [];
-    },
+    queryFn: () => fetchTestimonialsSSR(project.id),
     staleTime: 1000 * 60 * 5, // 5 min
   });
 
@@ -500,6 +543,38 @@ function OpportunityTestimonials({ project }: { project: Opportunity }) {
         </h3>
       </div>
       
+      {testimonials.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Product",
+              "@id": `https://samriddhi.techvrs.com/opportunities/${project.slug || project.id}`,
+              review: testimonials.filter(t => t.rating).map(t => ({
+                "@type": "Review",
+                author: {
+                  "@type": "Person",
+                  name: t.name || "বিনিয়োগকারী",
+                },
+                datePublished: t.created_at,
+                reviewBody: t.quote,
+                reviewRating: {
+                  "@type": "Rating",
+                  ratingValue: t.rating,
+                  bestRating: 5,
+                },
+              })),
+              aggregateRating: {
+                "@type": "AggregateRating",
+                ratingValue: (testimonials.filter(t => t.rating).reduce((acc, curr) => acc + (curr.rating || 5), 0) / (testimonials.filter(t => t.rating).length || 1)).toFixed(1),
+                reviewCount: testimonials.filter(t => t.rating).length || 1,
+              },
+            }),
+          }}
+        />
+      )}
+
       <div className="mb-6" />
 
       {isLoading ? (

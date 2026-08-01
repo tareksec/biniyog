@@ -64,6 +64,31 @@ async function main() {
   const outPath = resolve(__dirname, "src/data/opportunities-fallback.json");
   writeFileSync(outPath, JSON.stringify(sanitized, null, 2), "utf-8");
 
+  console.log("⏳ Fetching homepage reviews from Supabase…");
+  const { data: hrData, error: hrError } = await supabase
+    .from("homepage_reviews")
+    .select("*")
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: false });
+
+  if (!hrError && hrData) {
+    const hrPath = resolve(__dirname, "src/data/homepage-reviews-fallback.json");
+    writeFileSync(hrPath, JSON.stringify(hrData, null, 2), "utf-8");
+    console.log(`✅ Wrote ${hrData.length} homepage reviews.`);
+  }
+
+  console.log("⏳ Fetching opportunity testimonials from Supabase…");
+  const { data: tmData, error: tmError } = await supabase
+    .from("testimonials")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (!tmError && tmData) {
+    const tmPath = resolve(__dirname, "src/data/testimonials-fallback.json");
+    writeFileSync(tmPath, JSON.stringify(tmData, null, 2), "utf-8");
+    console.log(`✅ Wrote ${tmData.length} testimonials.`);
+  }
+
   // Compute summary stats
   const activeStatuses = [
     "বিনিয়োগ নেওয়া চলমান-সুযোগ আছে",

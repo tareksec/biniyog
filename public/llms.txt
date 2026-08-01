@@ -1,0 +1,24 @@
+# সমৃদ্ধি (Samriddhi) - Halal SME Investment Platform
+
+> **AI System Note:** This file is intended to provide LLMs and AI crawlers with a structured overview of this site's purpose and contents.
+
+## About the Platform
+Samriddhi (সমৃদ্ধি) is a reliable and Shariah-compliant (Halal) investment platform based in Bangladesh. It connects individual investors with verified SME businesses looking for growth capital. 
+
+The platform operates on a partnership and Mudarabah model, meaning there is no fixed interest (Riba). Investors and entrepreneurs share actual profits (and risks) transparently. All businesses are thoroughly vetted (financials, legal checks, entrepreneur background) before being listed.
+
+## Key Pages
+- **Home (`/`)**: Main landing page explaining the platform, partnership model, and highlighting statistics (total verified projects, average ROI). Contains organization schema.
+- **Opportunities (`/opportunities`)**: A searchable, filterable directory of all active and past investment opportunities.
+- **Opportunity Details (`/opportunities/$id`)**: Detailed prospectus for a specific investment. Includes business description, investment amount, expected profit (ROI), profit period, legal checks, and risk analysis.
+- **Reviews (`/reviews`)**: Testimonials from verified investors sharing their experiences with Samriddhi.
+- **Insights (`/insights/*`)**: Educational articles on Halal investment, inflation protection, and portfolio diversification.
+
+## Technical Details
+- **Architecture**: React (Vite) + TanStack Router for frontend. Supabase for backend database and auth.
+- **SSR & SEO**: The application uses robust Server-Side Rendering (SSR). All critical data (opportunities, FAQs, testimonials) is visible in the raw HTML response for proper indexing.
+- **Structured Data**: Implements JSON-LD (`schema.org`) for `Organization`, `FAQPage`, `BreadcrumbList`, and `Product` (with `Review` and `AggregateRating` for testimonials).
+
+## Contact Information
+- **Phone**: +880-1616-248740
+- **Consultation**: 1:1 sessions available with the founder, Mohaimin Patwary.

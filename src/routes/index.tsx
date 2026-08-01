@@ -30,10 +30,17 @@ type OpportunitiesSearch = {
 export const Route = createFileRoute("/")({
   loader: async ({ context }) => {
     const { fetchOpportunitiesSSR } = await import("@/lib/projects");
-    await context.queryClient.ensureQueryData({
-      queryKey: ["opportunities"],
-      queryFn: fetchOpportunitiesSSR,
-    });
+    const { fetchHomepageReviewsSSR } = await import("@/lib/homepage_reviews");
+    await Promise.all([
+      context.queryClient.ensureQueryData({
+        queryKey: ["opportunities"],
+        queryFn: fetchOpportunitiesSSR,
+      }),
+      context.queryClient.ensureQueryData({
+        queryKey: ["homepage_reviews"],
+        queryFn: fetchHomepageReviewsSSR,
+      }),
+    ]);
   },
   validateSearch: (search: Record<string, unknown>): OpportunitiesSearch => {
     return {
@@ -68,6 +75,30 @@ function LandingPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground antialiased">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "সমৃদ্ধি",
+            url: "https://samriddhi.techvrs.com",
+            logo: "https://samriddhi.techvrs.com/favicon.svg",
+            description: "সমৃদ্ধি একটি বিশ্বস্ত ও নিরাপদ হালাল বিনিয়োগ প্ল্যাটফর্ম।",
+            contactPoint: {
+              "@type": "ContactPoint",
+              telephone: "+880-1616-248740",
+              contactType: "Customer Service",
+              areaServed: "BD",
+              availableLanguage: ["Bengali", "English"]
+            },
+            sameAs: [
+              "https://www.facebook.com/groups/samriddhi.techvrs.bd",
+              "https://www.youtube.com/@Samriddhibd"
+            ]
+          }),
+        }}
+      />
       <Hero stats={heroStats} />
       <WhyChoose />
       <PolicySection />

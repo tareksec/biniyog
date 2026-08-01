@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import type { Opportunity, OpportunityRisk, OpportunityPayout, OpportunityLegalCheck } from "@/lib/database.types";
-export type { Opportunity, OpportunityRisk, OpportunityPayout, OpportunityLegalCheck };
+import type { Opportunity, OpportunityRisk, OpportunityPayout, OpportunityLegalCheck, Testimonial } from "@/lib/database.types";
+export type { Opportunity, OpportunityRisk, OpportunityPayout, OpportunityLegalCheck, Testimonial };
 
 /** Timeout (ms) for the live Supabase fetch before falling back. */
 const FETCH_TIMEOUT_MS = 4_000;
@@ -32,6 +32,46 @@ export async function fetchOpportunitiesSSR(): Promise<Opportunity[]> {
       try {
         const module = await import("@/data/opportunities-fallback.json");
         return module.default as Opportunity[];
+      } catch (importErr) {
+        console.error("Failed to import fallback file on server:", importErr);
+        return [];
+      }
+    }
+    return [];
+  }
+}
+
+export async function fetchTestimonialsSSR(opportunityId?: string): Promise<Testimonial[]> {
+  try {
+    let query = supabase
+        .from("testimonials")
+        .select("*")
+        .order("created_at", { ascending: false });
+    
+    if (opportunityId) {
+      query = query.eq("related_opportunity_id", opportunityId);
+    }
+
+    const result = await Promise.race([
+      query,
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Supabase fetch timed out")), FETCH_TIMEOUT_MS),
+      ),
+    ]);
+
+    const { data, error } = result;
+
+    if (error) throw new Error(error.message);
+    if (!data || data.length === 0) throw new Error("Empty data returned");
+
+    return data;
+  } catch (err) {
+    console.warn("[fetchTestimonialsSSR] Supabase error, using fallback:", err instanceof Error ? err.message : err);
+    if (import.meta.env.SSR) {
+      try {
+        const module = await import("@/data/testimonials-fallback.json");
+        const allTestimonials = module.default as Testimonial[];
+        return opportunityId ? allTestimonials.filter(t => t.related_opportunity_id === opportunityId) : allTestimonials;
       } catch (importErr) {
         console.error("Failed to import fallback file on server:", importErr);
         return [];

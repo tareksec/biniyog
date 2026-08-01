@@ -170,6 +170,38 @@ export function TestimonialsSection() {
         variants={revealVariants}
         className="mx-auto max-w-7xl px-5 sm:px-8 mb-12"
       >
+        {testimonials.length > 0 && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "Organization",
+                name: "সমৃদ্ধি",
+                url: "https://samriddhi.techvrs.com",
+                review: testimonials.filter(t => t.rating).map(t => ({
+                  "@type": "Review",
+                  author: {
+                    "@type": "Person",
+                    name: t.name || "বিনিয়োগকারী",
+                  },
+                  datePublished: t.created_at,
+                  reviewBody: t.quote,
+                  reviewRating: {
+                    "@type": "Rating",
+                    ratingValue: t.rating,
+                    bestRating: 5,
+                  },
+                })),
+                aggregateRating: {
+                  "@type": "AggregateRating",
+                  ratingValue: (testimonials.filter(t => t.rating).reduce((acc, curr) => acc + (curr.rating || 5), 0) / (testimonials.filter(t => t.rating).length || 1)).toFixed(1),
+                  reviewCount: testimonials.filter(t => t.rating).length || 1,
+                },
+              }),
+            }}
+          />
+        )}
         <div className="text-center">
           <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
             <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />

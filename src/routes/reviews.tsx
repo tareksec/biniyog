@@ -22,23 +22,23 @@ export const Route = createFileRoute("/reviews")({
     meta: [
       { title: "গ্রাহকদের মতামত ও অভিজ্ঞতা · সমৃদ্ধি" },
       { name: "description", content: "সমৃদ্ধির হালাল বিনিয়োগ সেবা ও ব্যবসা নিয়ে আমাদের সম্মানিত বিনিয়োগকারীদের বাস্তব অভিজ্ঞতা ও মতামত।" },
+      { property: "og:title", content: "গ্রাহকদের মতামত ও অভিজ্ঞতা · সমৃদ্ধি" },
+      { property: "og:description", content: "সমৃদ্ধির হালাল বিনিয়োগ সেবা ও ব্যবসা নিয়ে আমাদের সম্মানিত বিনিয়োগকারীদের বাস্তব অভিজ্ঞতা ও মতামত।" },
+      { name: "twitter:title", content: "গ্রাহকদের মতামত ও অভিজ্ঞতা · সমৃদ্ধি" },
+      { name: "twitter:description", content: "সমৃদ্ধির হালাল বিনিয়োগ সেবা ও ব্যবসা নিয়ে আমাদের সম্মানিত বিনিয়োগকারীদের বাস্তব অভিজ্ঞতা ও মতামত।" },
     ],
   }),
+  loader: async ({ context }) => {
+    const { fetchTestimonialsSSR } = await import("@/lib/projects");
+    await context.queryClient.ensureQueryData({
+      queryKey: ["testimonials-all"],
+      queryFn: () => fetchTestimonialsSSR(),
+    });
+  },
   component: ReviewsPage,
 });
 
-async function fetchAllTestimonials(): Promise<Testimonial[]> {
-  const { data, error } = await supabase
-    .from("testimonials")
-    .select("*")
-    .order("created_at", { ascending: false });
 
-  if (error) {
-    console.error("Error fetching testimonials:", error);
-    return [];
-  }
-  return data || [];
-}
 
 function ReviewGridCard({ item }: { item: Testimonial }) {
   const brandContent = item.brand_name ? (
@@ -116,7 +116,10 @@ function ReviewsPage() {
 
   const { data: testimonials = [], isLoading } = useQuery({
     queryKey: ["testimonials-all"],
-    queryFn: fetchAllTestimonials,
+    queryFn: async () => {
+      const { fetchTestimonialsSSR } = await import("@/lib/projects");
+      return fetchTestimonialsSSR();
+    },
     staleTime: 1000 * 60 * 5, // 5 min
   });
 
