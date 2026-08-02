@@ -7,7 +7,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { Component, useEffect, useState, Suspense, type ReactNode, type ErrorInfo } from "react";
+import { Component, useEffect, useState, useRef, Suspense, type ReactNode, type ErrorInfo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { usePrefersReducedMotion, pageTransition } from "@/lib/animations";
 
@@ -219,32 +219,49 @@ function RootShell({ children }: { children: ReactNode }) {
 function GlobalScrollRestoration() {
   const router = useRouter();
   const location = router.state.location;
+  const isInitialLoad = useRef(true);
 
-  // Restore scroll position on pathname change / mount
+  // Restore scroll position on pathname change (client-side only)
   useEffect(() => {
     if (location.pathname.startsWith("/admin")) return;
 
-    const key = `scroll:${location.pathname}`;
-    const savedScroll = sessionStorage.getItem(key);
-    if (savedScroll !== null) {
-      const targetScroll = parseInt(savedScroll, 10);
-      if (!isNaN(targetScroll)) {
-        window.scrollTo({ top: targetScroll, behavior: "instant" });
-        const t1 = setTimeout(() => {
-          window.scrollTo({ top: targetScroll, behavior: "instant" });
-        }, 100);
-        const t2 = setTimeout(() => {
-          window.scrollTo({ top: targetScroll, behavior: "instant" });
-        }, 250);
-        return () => {
-          clearTimeout(t1);
-          clearTimeout(t2);
-        };
+    if (isInitialLoad.current) {
+      isInitialLoad.current = false;
+      // On the very first render, the browser handles native scroll restoration (e.g. F5 refresh).
+      // We skip our custom logic so we don't flash to a stale sessionStorage position.
+      return;
+    }
+
+    // Use router history action to determine navigation type
+    const isPop = router.history.action === 'POP';
+
+    if (isPop) {
+      // Only restore on back/forward navigations (POP)
+      const key = `scroll:${location.pathname}`;
+      const savedScroll = sessionStorage.getItem(key);
+      if (savedScroll !== null) {
+        const targetScroll = parseInt(savedScroll, 10);
+        if (!isNaN(targetScroll)) {
+          // Defer to allow AnimatePresence page transitions to settle
+          const t1 = setTimeout(() => {
+            window.scrollTo({ top: targetScroll, behavior: "instant" });
+          }, 100);
+          const t2 = setTimeout(() => {
+            window.scrollTo({ top: targetScroll, behavior: "instant" });
+          }, 300);
+          return () => {
+            clearTimeout(t1);
+            clearTimeout(t2);
+          };
+        }
       }
     } else {
-      window.scrollTo({ top: 0, behavior: "instant" });
+      // For PUSH/REPLACE (fresh navigations, clicking Home, etc.), scroll to top
+      if (!location.hash) {
+        window.scrollTo({ top: 0, behavior: "instant" });
+      }
     }
-  }, [location.pathname]);
+  }, [location.pathname, location.hash, router.history.action]);
 
   // Save scroll position on scroll
   useEffect(() => {
@@ -255,7 +272,7 @@ function GlobalScrollRestoration() {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
         sessionStorage.setItem(`scroll:${currentPath}`, window.scrollY.toString());
-      }, 100);
+      }, 150);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });

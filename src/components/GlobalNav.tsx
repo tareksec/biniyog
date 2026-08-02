@@ -68,7 +68,7 @@ export function GlobalNav() {
       
       {/* Mobile hamburger */}
       <button
-        className="grid h-11 w-11 place-items-center rounded-full bg-muted/50 text-foreground transition hover:bg-muted active:scale-95 md:hidden"
+        className="grid h-[36px] w-[36px] sm:h-10 sm:w-10 shrink-0 place-items-center rounded-full bg-muted/50 text-foreground transition hover:bg-muted active:scale-95 md:hidden"
         aria-label={open ? "মেনু বন্ধ করুন" : "মেনু খুলুন"}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
