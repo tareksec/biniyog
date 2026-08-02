@@ -7,7 +7,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { Component, useEffect, useState, useRef, Suspense, type ReactNode, type ErrorInfo } from "react";
+import { Component, useEffect, useLayoutEffect, useState, useRef, Suspense, type ReactNode, type ErrorInfo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { usePrefersReducedMotion, pageTransition } from "@/lib/animations";
 
@@ -16,6 +16,15 @@ import { Footer } from "@/components/Footer";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "sonner";
+
+// Disable the browser's native scroll restoration as early as possible —
+// as soon as this module evaluates (before any navigation can occur). This
+// hands full control of scroll position to our JS below. Note: even with
+// 'manual', Chromium still performs native restoration during SPA navigation
+// commits, which is why the scroll-to-top below uses useLayoutEffect.
+if (typeof window !== "undefined" && "scrollRestoration" in window.history) {
+  window.history.scrollRestoration = "manual";
+}
 
 /* ────────────────────────────────────────────────────────────
    Hydration helpers — prevent blank screen from SSR mismatch
@@ -221,8 +230,44 @@ function GlobalScrollRestoration() {
   const location = router.state.location;
   const isInitialLoad = useRef(true);
 
-  // Restore scroll position on pathname change (client-side only)
+  // Disable the browser's native scroll restoration so it can't fight our
+  // JS-driven scroll handling. With scrollRestoration = 'auto' (the default),
+  // the browser restores a saved scroll position on navigation AFTER our
+  // scrollTo() runs, causing a visible "flash to footer" before we scroll to
+  // top. Setting it to 'manual' hands full control to the code below.
   useEffect(() => {
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+  }, []);
+
+  // Scroll to top IMMEDIATELY when navigation starts (before the async loader
+  // runs). This is the only way to prevent the browser's native scroll
+  // restoration flash — useLayoutEffect runs too late because it waits for the
+  // route component to finish loading and render. onBeforeLoad fires
+  // synchronously as soon as the navigation is committed.
+  useEffect(() => {
+    const unsub = router.subscribe("onBeforeLoad", (event) => {
+      if (isInitialLoad.current) return;
+      const toPath = event.toLocation?.pathname ?? event.pathname ?? "";
+      if (toPath.startsWith("/admin")) return;
+      if (toPath.includes("#")) return;
+      // Always scroll to top for new navigations. If this was a POP
+      // (back/forward), the useLayoutEffect below will restore the saved
+      // position after the route renders.
+      window.scrollTo({ top: 0, behavior: "instant" });
+    });
+    return unsub;
+  }, [router]);
+
+  // Restore scroll position on pathname change (client-side only).
+  // Uses useLayoutEffect so the scroll happens synchronously BEFORE the
+  // browser paints. The browser's native scroll restoration (even with
+  // scrollRestoration = 'manual', Chromium still restores on SPA nav) fires
+  // during the navigation commit — a useEffect would run AFTER paint and let
+  // that native restore flash on screen for a frame. useLayoutEffect runs
+  // before paint and overrides it.
+  useLayoutEffect(() => {
     if (location.pathname.startsWith("/admin")) return;
 
     if (isInitialLoad.current) {
