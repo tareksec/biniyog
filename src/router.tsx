@@ -8,7 +8,12 @@ export const getRouter = () => {
   const router = createRouter({
     routeTree,
     context: { queryClient },
-    scrollRestoration: true,
+    // Custom scroll restoration is handled in GlobalScrollRestoration
+    // (__root.tsx), which sets history.scrollRestoration='manual' and applies
+    // POP/PUSH-aware logic. Disable TanStack Router's built-in restoration so
+    // it doesn't fight the custom handler and cause a "flash to footer" when
+    // it restores a saved position right before we scroll to top.
+    scrollRestoration: false,
     // Cache preloaded route data for 30 seconds so in-session navigation
     // between already-visited routes is instant (no refetch / server roundtrip).
     defaultPreloadStaleTime: 30_000,

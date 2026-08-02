@@ -262,8 +262,12 @@ export function WhyChooseSection() {
 
   /* Cache a stable viewport height so dynamic mobile browser chrome
      (address bar show/hide) doesn't cause the progress calculation to jump.
-     Updated only on resize/orientationchange, not on every scroll tick. */
-  const viewportHeightRef = useRef(window.innerHeight);
+     Updated only on resize/orientationchange, not on every scroll tick.
+     SSR-safe: window is undefined during server render, so default to 0 and
+     let the resize handler / effect populate the real value on the client. */
+  const viewportHeightRef = useRef(
+    typeof window !== "undefined" ? window.innerHeight : 0
+  );
 
   selectedIndexRef.current = selectedIndex;
 
