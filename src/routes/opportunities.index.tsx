@@ -419,7 +419,7 @@ function OpportunitiesPage() {
                   placeholder="নাম বা ঠিকানা দিয়ে খুঁজুন..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full rounded-full border border-border bg-card pl-10 pr-4 py-2.5 text-sm font-medium outline-none transition focus:border-primary focus:ring-1 focus:ring-primary"
+                  className="w-full rounded-full border border-border bg-card pl-10 pr-4 py-2.5 text-base font-medium outline-none transition focus:border-primary focus:ring-1 focus:ring-primary"
                 />
                 {searchQuery && (
                   <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground">
@@ -491,14 +491,14 @@ function OpportunitiesPage() {
 
             {/* Category Tabs */}
             <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center mb-2">
-              <div className="-mx-4 sm:mx-0 flex gap-2 overflow-x-auto px-4 sm:px-0 pb-4 scrollbar-hide flex-1 w-full sm:w-auto">
+              <div className="-mx-4 sm:mx-0 flex gap-2 overflow-x-auto px-4 sm:px-0 pb-4 scrollbar-hide flex-1 w-full sm:w-auto snap-x snap-mandatory">
                 {categories.map((c) => {
                   const active = (searchParams.category || "all") === c;
                   return (
                     <button
                       key={c}
                       onClick={() => handleUpdateFilter("category", c === "all" ? undefined : c)}
-                      className={`shrink-0 rounded-full border px-4 py-1.5 text-sm font-medium btn-hover-sm ${
+                      className={`shrink-0 snap-start rounded-full border px-4 py-1.5 text-sm font-medium btn-hover-sm ${
                         active
                           ? "bg-primary border-primary text-primary-foreground"
                           : "bg-card border-border text-muted-foreground hover:bg-muted"

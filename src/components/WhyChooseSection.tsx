@@ -511,7 +511,7 @@ export function WhyChooseSection() {
               id="why-select"
               value={selectedIndex}
               onChange={(e) => handleItemClick(Number(e.target.value))}
-              className="w-full rounded-2xl border border-border/60 bg-card/90 px-4 py-3.5 text-[14px] font-semibold text-foreground shadow-[0_4px_20px_rgba(0,0,0,0.04)] backdrop-blur-sm transition-all duration-200 focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="w-full min-h-[44px] rounded-2xl border border-border/60 bg-card/90 px-4 py-3.5 text-base font-semibold text-foreground shadow-[0_4px_20px_rgba(0,0,0,0.04)] backdrop-blur-sm transition-all duration-200 focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
               {WHY_DATA.map((item, i) => (
                 <option key={item.id} value={i}>

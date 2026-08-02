@@ -332,7 +332,7 @@ function FloatingWhatsAppButton() {
       href="https://wa.me/8801316110209"
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-28 md:bottom-28 right-4 md:right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg transition-transform hover:scale-110 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-[#25D366]/40"
+      className="fixed bottom-[140px] md:bottom-28 right-4 md:right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg transition-transform hover:scale-110 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-[#25D366]/40"
       aria-label="হোয়াটসঅ্যাপে যোগাযোগ করুন"
     >
       <svg

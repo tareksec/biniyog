@@ -90,46 +90,79 @@ export function TestimonialCard({ item }: { item: Testimonial }) {
   );
 }
 
-export function HomepageReviewCard({ item }: { item: HomepageReview }) {
+export function HomepageReviewCard({ item, index = 0 }: { item: HomepageReview, index?: number }) {
   return (
-    <div className="w-[300px] sm:w-[380px] shrink-0 rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-[var(--shadow-card)] flex flex-col justify-between card-hover">
-      <div>
-        {/* Star Rating */}
-        {item.rating && item.rating > 0 ? (
-          <div className="flex items-center gap-1 mb-3">
-            {Array.from({ length: item.rating }).map((_, i) => (
-              <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
-            ))}
+    <div 
+      className="w-[320px] sm:w-[471px] h-[210px] sm:h-[232px] shrink-0 rounded-[20px] sm:rounded-[24px] border border-primary/10 bg-gradient-to-b from-card to-primary/[0.02] p-5 sm:p-7 shadow-[0_8px_24px_rgba(0,0,0,0.06)] flex flex-col justify-between card-hover relative overflow-hidden group animate-ambient-float"
+      style={{ animationDelay: `${index * 0.15}s` }}
+    >
+      {/* Background Quote Accent */}
+      <svg className="absolute -bottom-4 -right-4 w-32 h-32 text-primary/[0.03] rotate-12 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-12" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M14 17h3l2-4V7h-6v6h3M6 17h3l2-4V7H5v6h3"/>
+      </svg>
+      
+      <div className="relative z-10 flex flex-col h-full">
+        {/* Header: Avatar, Name, Location */}
+        <header className="flex items-center gap-3 mb-3 sm:mb-4">
+          {item.avatar_url ? (
+            <img
+              src={item.avatar_url}
+              alt={item.name}
+              className="h-10 w-10 sm:h-12 sm:w-12 shrink-0 rounded-full object-cover border-2 border-background shadow-sm"
+            />
+          ) : (
+            <span className="grid h-10 w-10 sm:h-12 sm:w-12 shrink-0 place-items-center rounded-full bg-primary/10 text-sm font-bold text-primary border-2 border-background shadow-sm">
+              {item.name.substring(0, 2)}
+            </span>
+          )}
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-sm sm:text-base font-semibold text-foreground">{item.name}</div>
+            <div className="truncate text-xs text-muted-foreground">
+              {item.location || "বিনিয়োগকারী"}
+            </div>
           </div>
-        ) : null}
+          {/* Star Rating */}
+          {item.rating && item.rating > 0 ? (
+            <div className="flex items-center gap-0.5 self-start pt-1">
+              {Array.from({ length: item.rating }).map((_, i) => (
+                <Star key={i} className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-amber-400 text-amber-400" />
+              ))}
+            </div>
+          ) : null}
+        </header>
 
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" className="text-primary/40">
-          <path d="M7.17 6C4.87 6 3 7.87 3 10.17V18h7v-7.83H6.5C6.5 8.7 7.7 7.5 9.17 7.5V6h-2zM17.17 6c-2.3 0-4.17 1.87-4.17 4.17V18h7v-7.83h-3.5c0-1.47 1.2-2.67 2.67-2.67V6h-2z"/>
-        </svg>
-        <p className="mt-3 text-base leading-relaxed text-foreground sm:text-lg">
-          {item.quote}
-        </p>
-      </div>
-
-      <footer className="mt-6 flex items-center gap-3 pt-4 border-t border-border/60">
-        {item.avatar_url ? (
-          <img
-            src={item.avatar_url}
-            alt={item.name}
-            className="h-11 w-11 shrink-0 rounded-full object-cover border border-border"
-          />
-        ) : (
-          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary/10 text-sm font-bold text-primary">
-            {item.name.substring(0, 2)}
-          </span>
-        )}
-        <div className="min-w-0 flex-1">
-          <div className="truncate text-sm font-semibold text-foreground">{item.name}</div>
-          <div className="truncate text-xs text-muted-foreground">
-            {item.location || "বিনিয়োগকারী"}
-          </div>
+        {/* Quote Content */}
+        <div className="flex-1 min-h-0 relative">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="text-primary/20 absolute -top-1 -left-2 -z-10">
+            <path d="M7.17 6C4.87 6 3 7.87 3 10.17V18h7v-7.83H6.5C6.5 8.7 7.7 7.5 9.17 7.5V6h-2zM17.17 6c-2.3 0-4.17 1.87-4.17 4.17V18h7v-7.83h-3.5c0-1.47 1.2-2.67 2.67-2.67V6h-2z"/>
+          </svg>
+          <p className="text-sm sm:text-base leading-relaxed text-foreground/90 line-clamp-4 pl-3 sm:pl-4">
+            {item.quote}
+          </p>
         </div>
-      </footer>
+      </div>
+    </div>
+  );
+}
+
+export function HomepageReviewSkeletonCard() {
+  return (
+    <div className="w-[320px] sm:w-[471px] h-[210px] sm:h-[232px] shrink-0 rounded-[20px] sm:rounded-[24px] border border-border bg-card p-5 sm:p-7 shadow-[0_8px_24px_rgba(0,0,0,0.06)] flex flex-col justify-between">
+      <div className="flex items-center gap-3 mb-3 sm:mb-4">
+        <div className="h-10 w-10 sm:h-12 sm:w-12 shrink-0 rounded-full skeleton-shimmer" />
+        <div className="min-w-0 flex-1 space-y-2">
+          <div className="h-4 w-32 rounded-md skeleton-shimmer" />
+          <div className="h-3 w-20 rounded-md skeleton-shimmer" />
+        </div>
+        <div className="flex gap-1">
+          <div className="h-3.5 w-16 rounded-md skeleton-shimmer" />
+        </div>
+      </div>
+      <div className="flex-1 space-y-2.5 mt-2">
+        <div className="h-4 w-full rounded-md skeleton-shimmer" />
+        <div className="h-4 w-11/12 rounded-md skeleton-shimmer" />
+        <div className="h-4 w-4/5 rounded-md skeleton-shimmer" />
+      </div>
     </div>
   );
 }
@@ -214,11 +247,29 @@ export function TestimonialsSection() {
       </motion.div>
 
       {isLoading ? (
-        <div className="flex min-h-[300px] items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary/50" />
+        <div className="flex flex-col gap-6 sm:gap-8 opacity-70">
+          <div className="flex overflow-hidden">
+            <div className="animate-marquee-left flex gap-6 pr-6 sm:gap-8 sm:pr-8">
+              {Array.from({ length: 6 }).map((_, idx) => (
+                <HomepageReviewSkeletonCard key={`sk1-${idx}`} />
+              ))}
+            </div>
+          </div>
+          <div className="flex overflow-hidden">
+            <div className="animate-marquee-right flex gap-6 pr-6 sm:gap-8 sm:pr-8">
+              {Array.from({ length: 6 }).map((_, idx) => (
+                <HomepageReviewSkeletonCard key={`sk2-${idx}`} />
+              ))}
+            </div>
+          </div>
         </div>
       ) : (
-        <div className="flex flex-col gap-6 sm:gap-8">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="flex flex-col gap-6 sm:gap-8"
+        >
           {/* Row 1: Left to Right (0% to -50%) */}
           <div className="flex overflow-hidden">
             <div 
@@ -226,7 +277,7 @@ export function TestimonialsSection() {
               style={{ animationPlayState: isTouching ? "paused" : undefined }}
             >
               {row1Items.map((item, idx) => (
-                <HomepageReviewCard key={`r1-${item.id || idx}-${idx}`} item={item} />
+                <HomepageReviewCard key={`r1-${item.id || idx}-${idx}`} item={item} index={idx} />
               ))}
             </div>
           </div>
@@ -238,7 +289,7 @@ export function TestimonialsSection() {
               style={{ animationPlayState: isTouching ? "paused" : undefined }}
             >
               {row2Items.map((item, idx) => (
-                <HomepageReviewCard key={`r2-${item.id || idx}-${idx}`} item={item} />
+                <HomepageReviewCard key={`r2-${item.id || idx}-${idx}`} item={item} index={idx} />
               ))}
             </div>
           </div>
@@ -255,7 +306,7 @@ export function TestimonialsSection() {
               </svg>
             </Link>
           </div>
-        </div>
+        </motion.div>
       )}
     </section>
   );
