@@ -36,7 +36,7 @@ export function InvestmentCalculator() {
   const monthsPercent = ((months - 1) / (480 - 1)) * 100;
 
   return (
-    <section className="mx-auto max-w-4xl px-5 py-12 sm:px-8">
+    <section id="calculator" className="mx-auto max-w-4xl px-5 py-12 sm:px-8 scroll-mb-24">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}

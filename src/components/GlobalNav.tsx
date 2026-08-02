@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
-import { Home, GraduationCap, Briefcase, LayoutDashboard } from "lucide-react";
+import { Home, GraduationCap, Briefcase, LayoutDashboard, Calculator } from "lucide-react";
 import { GlassDock, type DockItem } from "@/components/ui/glass-dock";
 
 export function GlobalNav() {
@@ -24,7 +24,7 @@ export function GlobalNav() {
       { rootMargin: "-20% 0px -70% 0px", threshold: 0 }
     );
     
-    const sections = ["top", "why", "how", "expert", "opportunities"];
+    const sections = ["top", "why", "how", "expert", "calculator", "opportunities"];
     sections.forEach((id) => {
       const el = document.getElementById(id);
       if (el) observer.observe(el);
@@ -51,6 +51,7 @@ export function GlobalNav() {
   const dockItems: DockItem[] = [
     { title: "হোম", icon: Home, onClick: () => scrollTo("top") },
     { title: "এক্সপার্ট", icon: GraduationCap, onClick: () => scrollTo("expert") },
+    { title: "ক্যালকুলেটর", icon: Calculator, onClick: () => scrollTo("calculator") },
     { title: "সক্রিয় সুযোগ", icon: Briefcase, onClick: () => { setOpen(false); navigate({ to: "/opportunities" }); }, highlight: true },
     { title: "ড্যাশবোর্ড", icon: LayoutDashboard, onClick: () => { setOpen(false); navigate({ to: "/dashboard" }); } },
   ];
@@ -98,7 +99,7 @@ export function GlobalNav() {
           <nav className="absolute left-4 right-4 bottom-24 rounded-3xl border border-border/50 bg-background/95 p-5 shadow-2xl backdrop-blur-xl animate-in slide-in-from-bottom-4 fade-in duration-200" aria-label="মোবাইল নেভিগেশন">
             <div className="flex flex-col gap-1 text-[15px] font-medium">
               {dockItems.map((item) => {
-                const id = item.title === "হোম" ? "top" : item.title === "এক্সপার্ট" ? "expert" : "";
+                const id = item.title === "হোম" ? "top" : item.title === "এক্সপার্ট" ? "expert" : item.title === "ক্যালকুলেটর" ? "calculator" : "";
                 const isOpp = item.title === "সক্রিয় সুযোগ";
                 const isActive = (id && activeSection === id && router.location.pathname === '/') || (isOpp && router.location.pathname.startsWith('/opportunities'));
                 return (
