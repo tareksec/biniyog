@@ -8,24 +8,28 @@ export type HomepageReviewUpdate = Database["public"]["Tables"]["homepage_review
 const FETCH_TIMEOUT_MS = 4_000;
 
 export async function fetchHomepageReviewsSSR(): Promise<HomepageReview[]> {
+  let supabasePromise: Promise<unknown> | undefined;
   try {
+    supabasePromise = supabase
+      .from("homepage_reviews")
+      .select("*")
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: false });
+
     const result = await Promise.race([
-      supabase
-        .from("homepage_reviews")
-        .select("*")
-        .order("sort_order", { ascending: true })
-        .order("created_at", { ascending: false }),
+      supabasePromise,
       new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error("Supabase fetch timed out")), FETCH_TIMEOUT_MS),
       ),
     ]);
 
-    const { data, error } = result;
+    const { data, error } = result as { data: HomepageReview[] | null; error: { message: string } | null };
     if (error) throw new Error(error.message);
     if (!data || data.length === 0) throw new Error("Empty data returned");
 
-    return data;
+    return data as HomepageReview[];
   } catch (err) {
+    if (supabasePromise) supabasePromise.catch(() => {});
     console.warn("[fetchHomepageReviewsSSR] Supabase error, using fallback:", err instanceof Error ? err.message : err);
     if (import.meta.env.SSR) {
       try {

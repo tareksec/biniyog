@@ -192,6 +192,16 @@
 }
 
 /* ── Homepage fixed background ── */
+.homepage-bg {
+  /* Background image — loaded by browser after critical content is painted.
+     The background is decorative, so it won't block First Contentful Paint. */
+  background-image: url('/herouse.png');
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
 .homepage-bg > *:not([aria-hidden]) {
   position: relative;
   z-index: 1;
@@ -390,4 +400,13 @@
       background: var(--muted);
     }
   }
+}
+
+/* ── SSR & hydration safety net ── */
+/* Prevents a blank white screen if framer-motion fails to animate
+   the root wrapper from opacity:0 → opacity:1.  The !important
+   guarantees content is always visible regardless of framer-motion's
+   inline styles. */
+.flex.flex-col.min-h-screen > .flex-grow {
+  opacity: 1 !important;
 }

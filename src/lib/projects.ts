@@ -6,27 +6,38 @@ export type { Opportunity, OpportunityRisk, OpportunityPayout, OpportunityLegalC
 /** Timeout (ms) for the live Supabase fetch before falling back. */
 const FETCH_TIMEOUT_MS = 4_000;
 
+/** Ensure a promise rejection doesn't go unhandled (e.g. the loser of a Promise.race). */
+function suppressUnhandled(p: Promise<unknown> | undefined): void {
+  if (p) p.catch(() => {});
+}
+
 
 export async function fetchOpportunitiesSSR(): Promise<Opportunity[]> {
+  let supabasePromise: Promise<unknown> | undefined;
   try {
-    // Race the Supabase query against a timeout
+    // Race the Supabase query against a timeout.
+    // IMPORTANT: we save a reference to the losing promise so it doesn't
+    // become an unhandled rejection if it settles after the race resolves.
+    supabasePromise = supabase
+      .from("opportunities")
+      .select("*")
+      .order("created_at", { ascending: false });
+
     const result = await Promise.race([
-      supabase
-        .from("opportunities")
-        .select("*")
-        .order("created_at", { ascending: false }),
+      supabasePromise,
       new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error("Supabase fetch timed out")), FETCH_TIMEOUT_MS),
       ),
     ]);
 
-    const { data, error } = result;
+    const { data, error } = result as { data: Opportunity[] | null; error: { message: string } | null };
 
     if (error) throw new Error(error.message);
     if (!data || data.length === 0) throw new Error("Empty data returned");
 
-    return data;
+    return data as Opportunity[];
   } catch (err) {
+    suppressUnhandled(supabasePromise);
     console.warn("[fetchOpportunitiesSSR] Supabase error, using fallback:", err instanceof Error ? err.message : err);
     if (import.meta.env.SSR) {
       try {
@@ -42,6 +53,7 @@ export async function fetchOpportunitiesSSR(): Promise<Opportunity[]> {
 }
 
 export async function fetchTestimonialsSSR(opportunityId?: string): Promise<Testimonial[]> {
+  let supabasePromise: Promise<unknown> | undefined;
   try {
     let query = supabase
         .from("testimonials")
@@ -52,20 +64,23 @@ export async function fetchTestimonialsSSR(opportunityId?: string): Promise<Test
       query = query.eq("related_opportunity_id", opportunityId);
     }
 
+    supabasePromise = query;
+
     const result = await Promise.race([
-      query,
+      supabasePromise,
       new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error("Supabase fetch timed out")), FETCH_TIMEOUT_MS),
       ),
     ]);
 
-    const { data, error } = result;
+    const { data, error } = result as { data: Testimonial[] | null; error: { message: string } | null };
 
     if (error) throw new Error(error.message);
     if (!data || data.length === 0) throw new Error("Empty data returned");
 
-    return data;
+    return data as Testimonial[];
   } catch (err) {
+    suppressUnhandled(supabasePromise);
     console.warn("[fetchTestimonialsSSR] Supabase error, using fallback:", err instanceof Error ? err.message : err);
     if (import.meta.env.SSR) {
       try {

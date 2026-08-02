@@ -7,7 +7,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, Suspense, type ReactNode } from "react";
+import { Component, useEffect, useState, Suspense, type ReactNode, type ErrorInfo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { usePrefersReducedMotion, pageTransition } from "@/lib/animations";
 
@@ -16,6 +16,79 @@ import { Footer } from "@/components/Footer";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "sonner";
+
+/* ────────────────────────────────────────────────────────────
+   Hydration helpers — prevent blank screen from SSR mismatch
+   ──────────────────────────────────────────────────────────── */
+
+/** Returns false during SSR and the very first client render,
+ *  then true after hydration completes. This lets us defer
+ *  AnimatePresence (which wraps Outlet in a motion.div with a
+ *  key) until after hydration so the server HTML and the first
+ *  client render produce identical DOM. */
+function useIsHydrated() {
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
+  return hydrated;
+}
+
+/* ────────────────────────────────────────────────────────────
+   Class-based error boundary — catches any uncaught render
+   error in the entire tree and shows a graceful fallback
+   instead of a blank white screen.
+   ──────────────────────────────────────────────────────────── */
+interface AppErrorBoundaryState { hasError: boolean; error: Error | null }
+
+class AppErrorBoundary extends Component<{ children: ReactNode }, AppErrorBoundaryState> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error): AppErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error("[AppErrorBoundary]", error, errorInfo);
+    reportLovableError(error, { boundary: "app_class_error_boundary", componentStack: errorInfo.componentStack ?? "" });
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex min-h-screen items-center justify-center bg-background px-4">
+          <div className="max-w-md text-center">
+            <h1 className="text-xl font-semibold tracking-tight text-foreground">
+              পেজটি লোড হয়নি
+            </h1>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              আমাদের পক্ষ থেকে কিছু ভুল হয়েছে। রিফ্রেশ করুন অথবা হোমে ফিরে যান।
+            </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-2">
+              <button
+                onClick={() => {
+                  this.setState({ hasError: false, error: null });
+                  window.location.reload();
+                }}
+                className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                আবার চেষ্টা করুন
+              </button>
+              <a
+                href="/"
+                className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+              >
+                হোমে ফিরে যান
+              </a>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 function NotFoundComponent() {
   return (
@@ -127,11 +200,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="bn">
+    <html lang="bn" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         {children}
         <Scripts />
       </body>
@@ -195,38 +268,56 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
   const prefersReduced = usePrefersReducedMotion();
+  const hydrated = useIsHydrated();
   const locationKey = router.state.location.pathname + (router.state.location.searchStr || "");
+
+  // During SSR and the very first client render, render <Outlet /> directly
+  // (no AnimatePresence / motion.div wrapper) so the server HTML and client
+  // initial render produce identical DOM — preventing React error #418.
+  // After hydration completes, enable page-transition animations.
+  const outletContent = (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    }>
+      <Outlet />
+    </Suspense>
+  );
 
   return (
     <QueryClientProvider client={queryClient}>
-      <GlobalScrollRestoration />
-      <div className="flex flex-col min-h-screen">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={locationKey}
-            initial={prefersReduced ? "animate" : "initial"}
-            animate="animate"
-            exit={prefersReduced ? "animate" : "exit"}
-            variants={pageTransition}
-            className="flex-grow"
-          >
-            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-            <Suspense fallback={
-              <div className="flex min-h-screen items-center justify-center bg-background">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-              </div>
-            }>
-              <Outlet />
-            </Suspense>
-          </motion.div>
-        </AnimatePresence>
-        <Footer />
-      </div>
-      
-      {/* Global floating elements */}
-      <GlobalNav />
-      <FloatingWhatsAppButton />
-      <Toaster position="top-center" richColors />
+      <AppErrorBoundary>
+        <GlobalScrollRestoration />
+        <div className="flex flex-col min-h-screen">
+          {hydrated ? (
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={locationKey}
+                initial={prefersReduced ? "animate" : "initial"}
+                animate="animate"
+                exit={prefersReduced ? "animate" : "exit"}
+                variants={pageTransition}
+                className="flex-grow"
+                suppressHydrationWarning
+              >
+                {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+                {outletContent}
+              </motion.div>
+            </AnimatePresence>
+          ) : (
+            <div className="flex-grow" style={{ opacity: 1 }}>
+              {outletContent}
+            </div>
+          )}
+          <Footer />
+        </div>
+        
+        {/* Global floating elements */}
+        <GlobalNav />
+        <FloatingWhatsAppButton />
+        <Toaster position="top-center" richColors />
+      </AppErrorBoundary>
     </QueryClientProvider>
   );
 }
