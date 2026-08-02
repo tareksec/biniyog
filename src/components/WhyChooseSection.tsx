@@ -1,7 +1,12 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Link } from "@tanstack/react-router";
-import { motion, AnimatePresence, useInView, useScroll, useMotionValueEvent, useTime, useTransform, useSpring, MotionValue } from "framer-motion";
+import { motion, AnimatePresence, useInView, useTime, useTransform } from "framer-motion";
 import { usePrefersReducedMotion } from "@/lib/animations";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
+
 import {
   Users,
   BadgeCheck,
@@ -178,14 +183,14 @@ function NumBadge({
 function IconBadge({
   item,
   size = 22,
-  floatY,
 }: {
   item: WhyItem;
   size?: number;
-  floatY?: MotionValue<number>;
 }) {
   const { Icon } = item;
   const prefersReduced = usePrefersReducedMotion();
+  const time = useTime();
+  const floatY = useTransform(time, (t) => Math.sin(t / 450) * -3.5);
 
   return (
     <motion.span
@@ -211,6 +216,10 @@ function IconBadge({
 /* ────────────────────────────────────────────────────────────
    Sidebar stagger variants
    ──────────────────────────────────────────────────────────── */
+const TOTAL_SCROLL_PX = 3000;
+const ITEM_COUNT = WHY_DATA.length; // 8
+const SNAP_INCREMENT = 1 / (ITEM_COUNT - 1); // 1/7 ≈ 0.1428 — 8 items = 7 intervals
+
 const SMOOTH_EASE = [0.16, 1, 0.3, 1];
 
 const sidebarContainerVariants = {
@@ -238,55 +247,62 @@ export function WhyChooseSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-10%" });
 
-  // Continuous seamless floating value for the icon badge
-  const time = useTime();
-  const floatY = useTransform(time, (t) => Math.sin(t / 450) * -3.5);
-
-  /* Scroll-triggered auto-advance functionality */
+  /* GSAP ScrollTrigger refs */
   const scrollTrackRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: scrollTrackRef,
-    offset: ["start start", "end end"],
-  });
+  const pinnedRef = useRef<HTMLDivElement>(null);
+  const stRef = useRef<ScrollTrigger | null>(null);
+  const selectedIndexRef = useRef(0);
 
-  // Apply a spring to smooth out rapid scrolling/flicking
-  const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 120,
-    damping: 30,
-    mass: 0.8,
-  });
+  selectedIndexRef.current = selectedIndex;
 
-  const isManualClick = useRef(false);
-  const clickTimeout = useRef<NodeJS.Timeout>();
+  /* ── ScrollTrigger: pin + snap + progress-driven advancement ── */
+  useEffect(() => {
+    if (prefersReduced) return;
+    if (!scrollTrackRef.current || !pinnedRef.current) return;
 
-  useMotionValueEvent(smoothProgress, "change", (latest) => {
-    if (prefersReduced || isManualClick.current) return;
-    let newIndex = Math.floor(latest * 8);
-    if (newIndex > 7) newIndex = 7;
-    if (newIndex < 0) newIndex = 0;
-    
-    if (newIndex !== selectedIndex) {
-      setSelectedIndex(newIndex);
-    }
-  });
+    const st = ScrollTrigger.create({
+      trigger: scrollTrackRef.current,
+      pin: pinnedRef.current,
+      start: "top top",
+      end: `+=${TOTAL_SCROLL_PX}`,
+      scrub: 0.5,
+      snap: {
+        snapTo: SNAP_INCREMENT,
+        duration: 0.3,
+        ease: "power2.out",
+      },
+      onUpdate: (self) => {
+        const idx = Math.round(self.progress * (ITEM_COUNT - 1));
+        const clamped = Math.max(0, Math.min(ITEM_COUNT - 1, idx));
+        if (clamped !== selectedIndexRef.current) {
+          selectedIndexRef.current = clamped;
+          setSelectedIndex(clamped);
+        }
+      },
+    });
 
-  const handleItemClick = (index: number) => {
-    setSelectedIndex(index);
-    if (!prefersReduced && scrollTrackRef.current) {
-      isManualClick.current = true;
-      if (clickTimeout.current) clearTimeout(clickTimeout.current);
-      
-      const trackTop = scrollTrackRef.current.getBoundingClientRect().top + window.scrollY;
-      const progress = (index + 0.5) / 8;
-      const targetY = trackTop + progress * 3000; // 3000px total scroll distance (~375px/item)
-      
+    stRef.current = st;
+
+    return () => {
+      st.kill();
+      stRef.current = null;
+    };
+  }, [prefersReduced]);
+
+  /* ── Manual click: scroll the page to the item's ScrollTrigger position ── */
+  const handleItemClick = useCallback(
+    (index: number) => {
+      setSelectedIndex(index);
+      selectedIndexRef.current = index;
+
+      if (prefersReduced || !stRef.current) return;
+
+      const st = stRef.current;
+      const targetY = st.start + (index / (ITEM_COUNT - 1)) * TOTAL_SCROLL_PX;
       window.scrollTo({ top: targetY, behavior: "smooth" });
-      
-      clickTimeout.current = setTimeout(() => {
-        isManualClick.current = false;
-      }, 1500); // 1500ms to allow smooth scroll to finish over the larger track
-    }
-  };
+    },
+    [prefersReduced]
+  );
 
   const panelTransition = prefersReduced
     ? { duration: 0 }
@@ -296,16 +312,11 @@ export function WhyChooseSection() {
     <section
       id="why"
       ref={scrollTrackRef}
-      className={
-        "relative " + 
-        (!prefersReduced ? "h-[calc(100vh+3000px)]" : "")
-      }
+      className="relative border-t border-border bg-background/75 backdrop-blur-[2px]"
     >
       <div 
-        className={
-          "w-full bg-background/75 border-t border-border backdrop-blur-[2px] " +
-          (!prefersReduced ? "sticky top-0 min-h-[100dvh] flex flex-col justify-center overflow-hidden" : "")
-        }
+        ref={pinnedRef}
+        className="w-full min-h-[100dvh] flex flex-col justify-center overflow-hidden"
       >
         <div className="mx-auto w-full max-w-7xl px-5 py-12 sm:px-8 sm:py-20">
           {/* Section heading */}
@@ -439,7 +450,6 @@ export function WhyChooseSection() {
                 <IconBadge
                   item={WHY_DATA[selectedIndex]}
                   size={28}
-                  floatY={floatY}
                 />
 
                 <div className="mt-5 flex items-baseline gap-3 sm:mt-6">
