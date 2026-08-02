@@ -25,7 +25,7 @@ export function CountUp({
   duration?: number;
 }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const [val, setVal] = useState(to); // Start at final value for reduced-motion
+  const [val, setVal] = useState(0); // Start at 0 for SSR/client consistency — animate to `to` client-side
   const prefersReduced = usePrefersReducedMotion();
   
   // margin "-15% 0px" approximates "top 85%" from ScrollTrigger

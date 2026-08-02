@@ -1,22 +1,34 @@
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import type { Variants, Transition } from "framer-motion";
 
 /* ────────────────────────────────────────────────────────────
    Accessibility — Prefers Reduced Motion
+   SSR-safe: uses useSyncExternalStore so server and client
+   produce identical initial output (false), preventing
+   React hydration error #418.
    ──────────────────────────────────────────────────────────── */
+const MQ = "(prefers-reduced-motion: reduce)";
+
+function subscribeReducedMotion(cb: () => void) {
+  const mq = window.matchMedia(MQ);
+  mq.addEventListener("change", cb);
+  return () => mq.removeEventListener("change", cb);
+}
+
+function getReducedMotionSnapshot() {
+  return window.matchMedia(MQ).matches;
+}
+
+function getReducedMotionServerSnapshot() {
+  return false;
+}
+
 export function usePrefersReducedMotion(): boolean {
-  const [prefersReduced, setPrefersReduced] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setPrefersReduced(mq.matches);
-
-    const onChange = (e: MediaQueryListEvent) => setPrefersReduced(e.matches);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
-
-  return prefersReduced;
+  return useSyncExternalStore(
+    subscribeReducedMotion,
+    getReducedMotionSnapshot,
+    getReducedMotionServerSnapshot,
+  );
 }
 
 /* ────────────────────────────────────────────────────────────

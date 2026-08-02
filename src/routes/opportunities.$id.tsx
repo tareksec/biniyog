@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
 export const Route = createFileRoute("/opportunities/$id")({
-  loader: async ({ params }) => {
+  loader: async ({ params, context }) => {
     const allProjects = await fetchOpportunitiesSSR();
     const project = allProjects.find((p) => p.id === params.id || p.slug === params.id);
     if (!project) throw notFound();

@@ -249,6 +249,38 @@ export function InvestmentCalculator() {
             </div>
           </div>
         </div>
+
+        {/* ── Dock Bar ── */}
+        <div className="sticky bottom-0 z-10 border-t border-border/50 bg-card/80 backdrop-blur-xl px-6 py-3.5 sm:px-10">
+          <div className="flex items-center justify-between gap-3 sm:gap-6">
+            {/* Yearly */}
+            <div className="flex flex-col items-center min-w-0">
+              <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">বার্ষিক</span>
+              <span className="num text-sm font-bold text-foreground sm:text-base">৳{yearlyReturn.toLocaleString("en-IN")}</span>
+            </div>
+            <div className="h-8 w-px bg-border/60 shrink-0" />
+            {/* Monthly */}
+            <div className="flex flex-col items-center min-w-0">
+              <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">মাসিক</span>
+              <span className="num text-sm font-bold text-foreground sm:text-base">৳{monthlyReturn.toLocaleString("en-IN")}</span>
+            </div>
+            <div className="h-8 w-px bg-border/60 shrink-0" />
+            {/* Total */}
+            <div className="flex flex-col items-center min-w-0">
+              <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                মোট ({durationUnit === "year" ? `${years}ব.` : `${months}মা.`})
+              </span>
+              <span className="num text-sm font-bold text-primary sm:text-base">৳{totalReturn.toLocaleString("en-IN")}</span>
+            </div>
+            {/* CTA */}
+            <a
+              href="#opportunities"
+              className="shrink-0 rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-sm transition-all duration-200 hover:scale-[1.03] hover:shadow-md sm:px-5 sm:py-2.5 sm:text-sm"
+            >
+              বিনিয়োগ করুন
+            </a>
+          </div>
+        </div>
       </motion.div>
     </section>
   );
