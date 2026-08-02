@@ -132,7 +132,7 @@ function StickyScrollCard({
             <span className="inline-block px-3 py-1 mb-4 text-[11px] font-bold tracking-widest text-primary bg-primary/10 rounded-full uppercase">
               নীতিমালা ০{policy.id}
             </span>
-            <h3 className="text-2xl sm:text-3xl md:text-4xl font-display font-extrabold text-foreground mb-4 tracking-tight">
+            <h3 className="text-2xl sm:text-3xl md:text-4xl font-display font-extrabold text-foreground mb-4">
               {policy.title}
             </h3>
             <p className="text-[15px] sm:text-[17px] text-muted-foreground leading-relaxed font-medium mb-6">

@@ -78,11 +78,6 @@ function LandingPage() {
       className="homepage-bg min-h-screen text-foreground antialiased"
       style={{
         backgroundColor: "#f4fbf5",
-        backgroundImage: "url('/herouse.png')",
-        backgroundSize: "cover",
-        backgroundPosition: "center top",
-        backgroundRepeat: "no-repeat",
-        backgroundAttachment: "fixed",
       }}
     >
       {/* Full-page readability overlay — sits between fixed BG image and all sections */}
@@ -297,10 +292,11 @@ function Hero({
             <div aria-hidden="true">
               <FlipFadeText 
                 words={["দেশের সম্ভাবনাময় ব্যবসায় বিনিয়োগ করুন"]}
-                textClassName="text-4xl font-extrabold leading-[1.15] tracking-tight text-foreground sm:text-5xl lg:text-[3.5rem] flex flex-wrap justify-center text-center"
+                textClassName="text-4xl font-extrabold leading-[1.15] text-foreground sm:text-5xl lg:text-[3.5rem] flex flex-wrap justify-center text-center"
                 className="justify-center min-h-[auto]"
                 staggerDelay={0.03}
                 letterDuration={0.4}
+                splitMode="word"
               />
             </div>
           </div>

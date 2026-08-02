@@ -159,7 +159,7 @@ function DashboardPage() {
       <div className="bg-primary/5 pt-28 pb-10 px-4 sm:px-6">
         <div className="mx-auto max-w-7xl flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-display font-extrabold text-foreground tracking-tight mb-2">
+            <h1 className="text-3xl sm:text-4xl font-display font-extrabold text-foreground mb-2">
               সুযোগসমূহ ওভারভিউ
             </h1>
             <p className="text-muted-foreground font-medium flex items-center gap-2">

@@ -118,7 +118,7 @@ function KrishiKhateBiniyogArticle() {
             <span className="text-xs text-muted-foreground font-medium">৪ মিনিট পড়া</span>
           </div>
 
-          <h1 className="font-display text-3xl sm:text-4xl md:text-[2.5rem] font-bold leading-tight tracking-tight">
+          <h1 className="font-display text-3xl sm:text-4xl md:text-[2.5rem] font-bold leading-tight">
             বাংলাদেশের কৃষি খাতে বিনিয়োগের সম্ভাবনা ও ঝুঁকি
           </h1>
           <p className="mt-5 text-lg leading-relaxed text-muted-foreground">

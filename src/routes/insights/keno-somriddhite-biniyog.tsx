@@ -182,7 +182,7 @@ function WhySamriddhiArticle() {
             <span className="text-xs text-muted-foreground font-medium">৮ মিনিট পড়া</span>
           </div>
 
-          <h1 className="font-display text-3xl sm:text-4xl md:text-[2.5rem] font-bold leading-tight tracking-tight">
+          <h1 className="font-display text-3xl sm:text-4xl md:text-[2.5rem] font-bold leading-tight">
             কেন সমৃদ্ধিতে বিনিয়োগ করবেন: একটি সম্পূর্ণ গাইড
           </h1>
           <p className="mt-5 text-lg leading-relaxed text-muted-foreground">

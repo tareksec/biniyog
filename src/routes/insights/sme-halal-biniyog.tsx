@@ -133,7 +133,7 @@ function SmeHalalBiniyogArticle() {
             <span className="text-xs text-muted-foreground font-medium">৫ মিনিট পড়া</span>
           </div>
 
-          <h1 className="font-display text-3xl sm:text-4xl md:text-[2.5rem] font-bold leading-tight tracking-tight">
+          <h1 className="font-display text-3xl sm:text-4xl md:text-[2.5rem] font-bold leading-tight">
             এসএমই ব্যবসায় হালাল বিনিয়োগের গুরুত্ব এবং পদ্ধতি
           </h1>
           <p className="mt-5 text-lg leading-relaxed text-muted-foreground">

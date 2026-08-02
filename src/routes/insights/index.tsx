@@ -71,7 +71,7 @@ function InsightsPage() {
 
       <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-16">
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <h1 className="font-display text-4xl sm:text-5xl font-bold tracking-tight">ইনসাইটস ও ব্লগ</h1>
+          <h1 className="font-display text-4xl sm:text-5xl font-bold">ইনসাইটস ও ব্লগ</h1>
           <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
             হালাল বিনিয়োগ, ব্যবসা ও ফাইন্যান্স নিয়ে এক্সপার্টদের মতামত এবং গাইডলাইন।
           </p>

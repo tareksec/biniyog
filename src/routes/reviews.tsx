@@ -210,7 +210,7 @@ function ReviewsPage() {
             <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
             গ্রাহকদের সন্তুষ্টি ও আস্থা
           </span>
-          <h1 className="font-display text-4xl sm:text-5xl font-bold tracking-tight">
+          <h1 className="font-display text-4xl sm:text-5xl font-bold">
             বিনিয়োগকারীদের বাস্তব অভিজ্ঞতা
           </h1>
           <p className="mt-4 text-lg leading-relaxed text-muted-foreground max-w-2xl mx-auto">
