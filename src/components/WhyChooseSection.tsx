@@ -30,7 +30,7 @@ interface WhyItem {
   expandedDesc: string;
   gradient: string;
   isLight: boolean;
-  Icon: React.FC<{ size?: number; className?: string }>;
+  Icon: React.FC<{ size?: number; className?: string; strokeWidth?: number | string; color?: string }>;
   articleHash: string;
 }
 
@@ -220,7 +220,7 @@ const TOTAL_SCROLL_PX = 3000;
 const ITEM_COUNT = WHY_DATA.length; // 8
 const SNAP_INCREMENT = 1 / (ITEM_COUNT - 1); // 1/7 ≈ 0.1428 — 8 items = 7 intervals
 
-const SMOOTH_EASE = [0.16, 1, 0.3, 1];
+const SMOOTH_EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 const sidebarContainerVariants = {
   hidden: {},
@@ -247,58 +247,81 @@ export function WhyChooseSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-10%" });
 
-  /* GSAP ScrollTrigger refs */
+  /* GSAP ScrollTrigger refs — snap + progress only, NO pin */
   const scrollTrackRef = useRef<HTMLDivElement>(null);
-  const pinnedRef = useRef<HTMLDivElement>(null);
   const stRef = useRef<ScrollTrigger | null>(null);
   const selectedIndexRef = useRef(0);
 
   selectedIndexRef.current = selectedIndex;
 
-  /* ── ScrollTrigger: pin + snap + progress-driven advancement ── */
+  /* ── Scroll-driven item advancement + GSAP snap ── */
   useEffect(() => {
     if (prefersReduced) return;
-    if (!scrollTrackRef.current || !pinnedRef.current) return;
+    if (!scrollTrackRef.current) return;
 
-    const st = ScrollTrigger.create({
-      trigger: scrollTrackRef.current,
-      pin: pinnedRef.current,
-      start: "top top",
-      end: `+=${TOTAL_SCROLL_PX}`,
-      scrub: 0.5,
-      snap: {
-        snapTo: SNAP_INCREMENT,
-        duration: 0.3,
-        ease: "power2.out",
-      },
-      onUpdate: (self) => {
-        const idx = Math.round(self.progress * (ITEM_COUNT - 1));
+    const trigger = scrollTrackRef.current;
+    let rafId: number | null = null;
+
+    /* rAF-throttled progress → index mapping.  Fires at most once per
+       animation frame so that AnimatePresence never queues more than one
+       exit animation at a time. */
+    const updateProgress = () => {
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        const rect = trigger.getBoundingClientRect();
+        const total = trigger.offsetHeight;
+        const scrolled = -rect.top;
+        const progress = Math.max(0, Math.min(1, scrolled / total));
+        const idx = Math.round(progress * (ITEM_COUNT - 1));
         const clamped = Math.max(0, Math.min(ITEM_COUNT - 1, idx));
         if (clamped !== selectedIndexRef.current) {
           selectedIndexRef.current = clamped;
           setSelectedIndex(clamped);
         }
+      });
+    };
+
+    window.addEventListener("scroll", updateProgress, { passive: true });
+    updateProgress(); // initial sync
+
+    /* GSAP ScrollTrigger — snap only (no pin, no animation, no scrub).
+       This snaps the browser's native scroll position to the nearest item
+       boundary whenever the user stops scrolling within this section. */
+    const st = ScrollTrigger.create({
+      trigger,
+      start: "top top",
+      end: "bottom bottom",
+      snap: {
+        snapTo: SNAP_INCREMENT,
+        duration: 0.3,
+        ease: "power2.out",
       },
     });
 
     stRef.current = st;
 
     return () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      window.removeEventListener("scroll", updateProgress);
       st.kill();
       stRef.current = null;
     };
   }, [prefersReduced]);
 
-  /* ── Manual click: scroll the page to the item's ScrollTrigger position ── */
+  /* ── Manual click: scroll the page to the item's position ── */
   const handleItemClick = useCallback(
     (index: number) => {
       setSelectedIndex(index);
       selectedIndexRef.current = index;
 
-      if (prefersReduced || !stRef.current) return;
+      if (prefersReduced || !scrollTrackRef.current) return;
 
-      const st = stRef.current;
-      const targetY = st.start + (index / (ITEM_COUNT - 1)) * TOTAL_SCROLL_PX;
+      const rect = scrollTrackRef.current.getBoundingClientRect();
+      const targetY =
+        window.scrollY +
+        rect.top +
+        (index / (ITEM_COUNT - 1)) * TOTAL_SCROLL_PX;
       window.scrollTo({ top: targetY, behavior: "smooth" });
     },
     [prefersReduced]
@@ -313,11 +336,13 @@ export function WhyChooseSection() {
       id="why"
       ref={scrollTrackRef}
       className="relative border-t border-border bg-background/75 backdrop-blur-[2px]"
+      style={
+        prefersReduced
+          ? undefined
+          : { height: `${TOTAL_SCROLL_PX}px` }
+      }
     >
-      <div 
-        ref={pinnedRef}
-        className="w-full min-h-[100dvh] flex flex-col justify-center overflow-hidden"
-      >
+      <div className="sticky top-0 h-screen flex flex-col justify-center overflow-hidden">
         <div className="mx-auto w-full max-w-7xl px-5 py-12 sm:px-8 sm:py-20">
           {/* Section heading */}
           <div className="mx-auto max-w-2xl text-center">
@@ -369,7 +394,7 @@ export function WhyChooseSection() {
                         transition={{
                           type: "tween",
                           duration: 0.55,
-                          ease: SMOOTH_EASE,
+                          ease: prefersReduced ? [0, 0, 1, 1] as [number, number, number, number] : SMOOTH_EASE,
                         }}
                       />
                     )}
