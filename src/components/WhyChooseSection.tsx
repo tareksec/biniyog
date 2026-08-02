@@ -252,6 +252,12 @@ export function WhyChooseSection() {
   const stRef = useRef<ScrollTrigger | null>(null);
   const selectedIndexRef = useRef(0);
 
+  /* Manual-click guard: blocks the scroll-driven index update while a
+     programmatic scroll-to-click-target is settling, so the content panel
+     stays locked to the clicked item and doesn't flash wrong content. */
+  const isManualScrollingRef = useRef(false);
+  const manualScrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   selectedIndexRef.current = selectedIndex;
 
   /* ── Scroll-driven item advancement + GSAP snap ── */
@@ -266,11 +272,16 @@ export function WhyChooseSection() {
        animation frame so that AnimatePresence never queues more than one
        exit animation at a time. */
     const updateProgress = () => {
+      if (isManualScrollingRef.current) return;
       if (rafId !== null) return;
       rafId = requestAnimationFrame(() => {
         rafId = null;
         const rect = trigger.getBoundingClientRect();
-        const total = trigger.offsetHeight;
+        /* The scrollable distance through the sticky section is the
+           trigger height *minus* one viewport height, because the inner
+           sticky panel occupies 100vh.  Using the raw offsetHeight
+           undercounts progress and makes the last items unreachable. */
+        const total = trigger.offsetHeight - window.innerHeight;
         const scrolled = -rect.top;
         const progress = Math.max(0, Math.min(1, scrolled / total));
         const idx = Math.round(progress * (ITEM_COUNT - 1));
@@ -303,26 +314,61 @@ export function WhyChooseSection() {
 
     return () => {
       if (rafId !== null) cancelAnimationFrame(rafId);
+      if (manualScrollTimeoutRef.current !== null) {
+        clearTimeout(manualScrollTimeoutRef.current);
+        manualScrollTimeoutRef.current = null;
+      }
+      isManualScrollingRef.current = false;
       window.removeEventListener("scroll", updateProgress);
       st.kill();
       stRef.current = null;
     };
   }, [prefersReduced]);
 
-  /* ── Manual click: scroll the page to the item's position ── */
+  /* ── Manual click: immediately lock content to the clicked item, then
+     instant-scroll the page to the matching snap position.  The
+     AnimatePresence on the right panel provides the visual transition;
+     the scroll-driven listener is temporarily blocked so intermediate
+     scroll events don't override the clicked state.  Once the panel
+     animation settles the guard is released and ScrollTrigger is
+     refreshed so normal scroll-to-advance works correctly afterward. ── */
   const handleItemClick = useCallback(
     (index: number) => {
+      // 1. Immediately lock state — triggers AnimatePresence right away
       setSelectedIndex(index);
       selectedIndexRef.current = index;
 
       if (prefersReduced || !scrollTrackRef.current) return;
 
+      // 2. Clear any pending guard-release from a previous rapid click
+      if (manualScrollTimeoutRef.current !== null) {
+        clearTimeout(manualScrollTimeoutRef.current);
+        manualScrollTimeoutRef.current = null;
+      }
+
+      // 3. Block the scroll-driven index updater until we're settled
+      isManualScrollingRef.current = true;
+
+      // 4. Calculate the exact snap-position scroll target.
+      //    Must use the viewport-adjusted range (same as updateProgress)
+      //    so the last item maps to the end of the scrollable range.
       const rect = scrollTrackRef.current.getBoundingClientRect();
+      const availableScroll = TOTAL_SCROLL_PX - window.innerHeight;
       const targetY =
         window.scrollY +
         rect.top +
-        (index / (ITEM_COUNT - 1)) * TOTAL_SCROLL_PX;
-      window.scrollTo({ top: targetY, behavior: "smooth" });
+        (index / (ITEM_COUNT - 1)) * availableScroll;
+
+      // 5. Instant scroll — AnimatePresence handles content transition
+      window.scrollTo({ top: targetY, behavior: "instant" as ScrollBehavior });
+
+      // 6. Release the guard after the panel animation finishes (0.55 s
+      //    AnimatePresence duration + small buffer), then sync ScrollTrigger
+      manualScrollTimeoutRef.current = setTimeout(() => {
+        isManualScrollingRef.current = false;
+        manualScrollTimeoutRef.current = null;
+        ScrollTrigger.refresh();
+      }, 700);
     },
     [prefersReduced]
   );
