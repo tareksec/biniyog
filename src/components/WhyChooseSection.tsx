@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Link } from "@tanstack/react-router";
 import { motion, AnimatePresence, useInView, useTime, useTransform } from "framer-motion";
 import { usePrefersReducedMotion } from "@/lib/animations";
+import { useIsMobile } from "@/hooks/use-mobile";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -243,6 +244,7 @@ const sidebarItemVariants = {
    ──────────────────────────────────────────────────────────── */
 export function WhyChooseSection() {
   const prefersReduced = usePrefersReducedMotion();
+  const isMobile = useIsMobile();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const sectionRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-10%" });
@@ -258,11 +260,19 @@ export function WhyChooseSection() {
   const isManualScrollingRef = useRef(false);
   const manualScrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  /* Cache a stable viewport height so dynamic mobile browser chrome
+     (address bar show/hide) doesn't cause the progress calculation to jump.
+     Updated only on resize/orientationchange, not on every scroll tick. */
+  const viewportHeightRef = useRef(window.innerHeight);
+
   selectedIndexRef.current = selectedIndex;
+
+  /* ── Disable scroll-jacking entirely on mobile ── */
+  const shouldUseScrollJacking = !prefersReduced && !isMobile;
 
   /* ── Scroll-driven item advancement + GSAP snap ── */
   useEffect(() => {
-    if (prefersReduced) return;
+    if (!shouldUseScrollJacking) return;
     if (!scrollTrackRef.current) return;
 
     const trigger = scrollTrackRef.current;
@@ -277,11 +287,10 @@ export function WhyChooseSection() {
       rafId = requestAnimationFrame(() => {
         rafId = null;
         const rect = trigger.getBoundingClientRect();
-        /* The scrollable distance through the sticky section is the
-           trigger height *minus* one viewport height, because the inner
-           sticky panel occupies 100vh.  Using the raw offsetHeight
-           undercounts progress and makes the last items unreachable. */
-        const total = trigger.offsetHeight - window.innerHeight;
+        /* Use the cached (stable) viewport height instead of
+           window.innerHeight to avoid jumps when mobile browser chrome
+           shows/hides.  The cached value is updated on resize only. */
+        const total = trigger.offsetHeight - viewportHeightRef.current;
         const scrolled = -rect.top;
         const progress = Math.max(0, Math.min(1, scrolled / total));
         const idx = Math.round(progress * (ITEM_COUNT - 1));
@@ -293,19 +302,29 @@ export function WhyChooseSection() {
       });
     };
 
+    /* Keep the cached viewport height fresh when the window actually
+       resizes (desktop resize or mobile orientation change). */
+    const onResize = () => {
+      viewportHeightRef.current = window.innerHeight;
+      ScrollTrigger.refresh();
+    };
+
     window.addEventListener("scroll", updateProgress, { passive: true });
+    window.addEventListener("resize", onResize);
+    window.addEventListener("orientationchange", onResize);
     updateProgress(); // initial sync
 
     /* GSAP ScrollTrigger — snap only (no pin, no animation, no scrub).
        This snaps the browser's native scroll position to the nearest item
-       boundary whenever the user stops scrolling within this section. */
+       boundary whenever the user stops scrolling within this section.
+       Slightly longer snap duration for a polished feel. */
     const st = ScrollTrigger.create({
       trigger,
       start: "top top",
       end: "bottom bottom",
       snap: {
         snapTo: SNAP_INCREMENT,
-        duration: 0.3,
+        duration: 0.45,
         ease: "power2.out",
       },
     });
@@ -320,10 +339,12 @@ export function WhyChooseSection() {
       }
       isManualScrollingRef.current = false;
       window.removeEventListener("scroll", updateProgress);
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("orientationchange", onResize);
       st.kill();
       stRef.current = null;
     };
-  }, [prefersReduced]);
+  }, [shouldUseScrollJacking]);
 
   /* ── Manual click: immediately lock content to the clicked item, then
      instant-scroll the page to the matching snap position.  The
@@ -338,7 +359,9 @@ export function WhyChooseSection() {
       setSelectedIndex(index);
       selectedIndexRef.current = index;
 
-      if (prefersReduced || !scrollTrackRef.current) return;
+      /* On mobile or reduced-motion, just update the state — no scroll
+         manipulation needed since the section is a simple stacked layout. */
+      if (!shouldUseScrollJacking || !scrollTrackRef.current) return;
 
       // 2. Clear any pending guard-release from a previous rapid click
       if (manualScrollTimeoutRef.current !== null) {
@@ -353,7 +376,7 @@ export function WhyChooseSection() {
       //    Must use the viewport-adjusted range (same as updateProgress)
       //    so the last item maps to the end of the scrollable range.
       const rect = scrollTrackRef.current.getBoundingClientRect();
-      const availableScroll = TOTAL_SCROLL_PX - window.innerHeight;
+      const availableScroll = TOTAL_SCROLL_PX - viewportHeightRef.current;
       const targetY =
         window.scrollY +
         rect.top +
@@ -370,7 +393,7 @@ export function WhyChooseSection() {
         ScrollTrigger.refresh();
       }, 700);
     },
-    [prefersReduced]
+    [shouldUseScrollJacking]
   );
 
   const panelTransition = prefersReduced
@@ -383,12 +406,19 @@ export function WhyChooseSection() {
       ref={scrollTrackRef}
       className="relative border-t border-border bg-background/75 backdrop-blur-[2px]"
       style={
-        prefersReduced
-          ? undefined
-          : { height: `${TOTAL_SCROLL_PX}px` }
+        shouldUseScrollJacking
+          ? { height: `${TOTAL_SCROLL_PX}px` }
+          : undefined
       }
     >
-      <div className="sticky top-0 h-screen flex flex-col justify-center overflow-hidden">
+      <div
+        className="flex flex-col justify-center overflow-hidden"
+        style={
+          shouldUseScrollJacking
+            ? { position: "sticky", top: 0, height: "100dvh" }
+            : undefined
+        }
+      >
         <div className="mx-auto w-full max-w-7xl px-5 py-12 sm:px-8 sm:py-20">
           {/* Section heading */}
           <div className="mx-auto max-w-2xl text-center">
