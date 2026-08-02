@@ -1,4 +1,5 @@
-﻿import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
+import { Link } from "@tanstack/react-router";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { usePrefersReducedMotion } from "@/lib/animations";
 import {
@@ -25,6 +26,7 @@ interface WhyItem {
   gradient: string;
   isLight: boolean;
   Icon: React.FC<{ size?: number; className?: string }>;
+  articleHash: string;
 }
 
 const WHY_DATA: WhyItem[] = [
@@ -38,6 +40,7 @@ const WHY_DATA: WhyItem[] = [
     gradient: "linear-gradient(135deg, #daf1de 0%, #c8e6d0 50%, #a8d5b5 100%)",
     isLight: true,
     Icon: Users,
+    articleHash: "connect",
   },
   {
     id: 1,
@@ -49,6 +52,7 @@ const WHY_DATA: WhyItem[] = [
     gradient: "linear-gradient(135deg, #b8d9c5 0%, #8EB69B 50%, #6ba87a 100%)",
     isLight: true,
     Icon: BadgeCheck,
+    articleHash: "interest-free",
   },
   {
     id: 2,
@@ -60,6 +64,7 @@ const WHY_DATA: WhyItem[] = [
     gradient: "linear-gradient(135deg, #235347 0%, #1a4038 50%, #163832 100%)",
     isLight: false,
     Icon: Scale,
+    articleHash: "legal",
   },
   {
     id: 3,
@@ -71,6 +76,7 @@ const WHY_DATA: WhyItem[] = [
     gradient: "linear-gradient(135deg, #163832 0%, #0B2B26 50%, #051F20 100%)",
     isLight: false,
     Icon: FileCheck,
+    articleHash: "transparent",
   },
   {
     id: 4,
@@ -81,6 +87,7 @@ const WHY_DATA: WhyItem[] = [
     gradient: "linear-gradient(135deg, #8EB69B 0%, #6a9e7a 50%, #4a8c5c 100%)",
     isLight: true,
     Icon: TrendingUp,
+    articleHash: "returns",
   },
   {
     id: 5,
@@ -92,6 +99,7 @@ const WHY_DATA: WhyItem[] = [
     gradient: "linear-gradient(135deg, #e2f2e5 0%, #c8e6d0 50%, #b8d9c5 100%)",
     isLight: true,
     Icon: Eye,
+    articleHash: "verify",
   },
   {
     id: 6,
@@ -103,6 +111,7 @@ const WHY_DATA: WhyItem[] = [
     gradient: "linear-gradient(135deg, #0B2B26 0%, #071c19 50%, #051F20 100%)",
     isLight: false,
     Icon: HeartHandshake,
+    articleHash: "social",
   },
   {
     id: 7,
@@ -110,9 +119,10 @@ const WHY_DATA: WhyItem[] = [
     shortDesc: "নিজে যাচাই বাছাই করে স্বাধীন ভাবে সিদ্ধান্ত নিবেন।",
     expandedDesc:
       "বিনিয়োগের চূড়ান্ত সিদ্ধান্ত সম্পূর্ণরূপে আপনার নিজস্ব। আমরা কেবল আপনাকে প্রয়োজনীয় তথ্য, বিশ্লেষণ ও যাচাইয়ের সুযোগ প্রদান করি — কোনো প্রকার চাপ সৃষ্টি বা প্রলোভন দেখিয়ে বিনিয়োগে উৎসাহিত করি না। প্রতিটি ব্যবসা সম্পর্কে পর্যাপ্ত তথ্য, ডকুমেন্ট ও রিপোর্ট আপনার কাছে সরবরাহ করা হয় যাতে আপনি নিজে সবকিছু যাচাই-বাছাই করে একটি সুচিন্তিত সিদ্ধান্ত নিতে পারেন। আমরা বিশ্বাস করি একজন সচেতন ও স্বাধীন সিদ্ধান্তগ্রহণকারী বিনিয়োগকারীই সফল বিনিয়োগের মূল চাবিকাঠি।",
-    gradient: "linear-gradient(135deg, #3d7a52 0%, #2a5e3a 50%, #1a4a2a 100%)",
-    isLight: false,
+    gradient: "linear-gradient(135deg, #c8e6d0 0%, #a8d5b5 50%, #8EB69B 100%)",
+    isLight: true,
     Icon: Lightbulb,
+    articleHash: "connect",
   },
 ];
 
@@ -237,6 +247,44 @@ export function WhyChooseSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(sectionRef, { once: true, margin: "0px 0px -10% 0px" });
 
+  /* Scroll snap functionality */
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const index = Number(entry.target.getAttribute("data-index"));
+            setSelectedIndex(index);
+          }
+        });
+      },
+      {
+        root: container,
+        threshold: 0.51,
+      }
+    );
+
+    itemRefs.current.forEach((ref) => {
+      if (ref) observer.observe(ref);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const handleItemClick = (index: number) => {
+    setSelectedIndex(index);
+    itemRefs.current[index]?.scrollIntoView({
+      behavior: prefersReduced ? "auto" : "smooth",
+      block: "start",
+    });
+  };
+
   const panelTransition = prefersReduced
     ? { duration: 0 }
     : { duration: 0.28, ease: [0.22, 1, 0.36, 1] };
@@ -259,35 +307,37 @@ export function WhyChooseSection() {
           ref={sectionRef}
           className="mt-12 flex flex-col gap-5 sm:mt-14 sm:flex-row sm:gap-6"
         >
-          {/* ── LEFT SIDEBAR: floating card (desktop) ── */}
+          {/* ── LEFT SIDEBAR: Unified list (desktop & mobile) ── */}
           <motion.div
-            className="hidden shrink-0 flex-col gap-1 sm:flex sm:w-[230px] lg:w-[260px]"
+            className="shrink-0 flex flex-col gap-1 w-full sm:w-[230px] lg:w-[260px]"
             variants={prefersReduced ? {} : sidebarContainerVariants}
             initial="hidden"
             animate={isInView ? "show" : "hidden"}
           >
-            {/* Outer floating card wrapper */}
-            <div className="rounded-2xl border border-border/60 bg-card/80 p-2 shadow-[0_4px_24px_rgba(0,0,0,0.04)] backdrop-blur-sm">
+            <div 
+              ref={scrollContainerRef}
+              className="flex flex-col rounded-2xl border border-border/60 bg-card/80 p-2 shadow-[0_4px_24px_rgba(0,0,0,0.04)] backdrop-blur-sm h-[280px] overflow-y-auto snap-y snap-mandatory scroll-pt-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+              style={{ overscrollBehaviorY: 'contain', scrollBehavior: prefersReduced ? 'auto' : 'smooth' }}
+            >
               {WHY_DATA.map((item, i) => {
                 const isActive = i === selectedIndex;
                 return (
                   <motion.button
                     key={item.id}
+                    ref={(el) => (itemRefs.current[i] = el)}
+                    data-index={i}
                     type="button"
-                    onClick={() => setSelectedIndex(i)}
+                    onClick={() => handleItemClick(i)}
                     variants={prefersReduced ? {} : sidebarItemVariants}
-                    whileHover={
-                      prefersReduced || isActive ? {} : { scale: 1.02 }
-                    }
-                    whileTap={
-                      prefersReduced || isActive ? {} : { scale: 0.98 }
-                    }
+                    whileHover={prefersReduced || isActive ? {} : { scale: 1.02 }}
+                    whileTap={prefersReduced || isActive ? {} : { scale: 0.98 }}
                     className={
-                      "group relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[13px] leading-snug font-medium transition-colors duration-200 " +
+                      "group relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 my-0.5 text-left text-[13px] leading-snug font-medium transition-colors duration-200 snap-start shrink-0 " +
                       (isActive
                         ? "text-[#143d33]"
                         : "text-muted-foreground hover:bg-[#daf1de]/40 hover:text-foreground")
                     }
+                    style={{ scrollSnapStop: "always" }}
                   >
                     {/* Active pill background (animated layout) */}
                     {isActive && (
@@ -328,25 +378,6 @@ export function WhyChooseSection() {
               })}
             </div>
           </motion.div>
-
-          {/* ── MOBILE DROPDOWN (floating card style) ── */}
-          <div className="sm:hidden">
-            <label htmlFor="why-select" className="sr-only">
-              একটি কারণ বাছাই করুন
-            </label>
-            <select
-              id="why-select"
-              value={selectedIndex}
-              onChange={(e) => setSelectedIndex(Number(e.target.value))}
-              className="w-full rounded-2xl border border-border/60 bg-card/90 px-4 py-3.5 text-[14px] font-semibold text-foreground shadow-[0_4px_20px_rgba(0,0,0,0.04)] backdrop-blur-sm transition-all duration-200 focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
-            >
-              {WHY_DATA.map((item, i) => (
-                <option key={item.id} value={i}>
-                  {toBengaliNumeral(i + 1)}. {item.label}
-                </option>
-              ))}
-            </select>
-          </div>
 
           {/* ── RIGHT DETAIL PANEL ── */}
           <div className="min-w-0 flex-1">
@@ -413,6 +444,18 @@ export function WhyChooseSection() {
                 >
                   {WHY_DATA[selectedIndex].expandedDesc}
                 </p>
+                <Link
+                  to={"/insights/keno-somriddhite-biniyog#" + WHY_DATA[selectedIndex].articleHash}
+                  className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold hover:underline underline-offset-4 transition-colors"
+                  style={{
+                    color: WHY_DATA[selectedIndex].isLight ? "#143d33" : "#8EB69B",
+                  }}
+                >
+                  বিস্তারিত পড়ুন 
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M5 12h14M13 5l7 7-7 7" />
+                  </svg>
+                </Link>
               </motion.div>
             </AnimatePresence>
           </div>

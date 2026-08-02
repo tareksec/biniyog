@@ -120,6 +120,7 @@ function LandingPage() {
         <InvestmentCalculator />
       </div>
       <TestimonialsSection />
+      <LatestInsightsSection />
       <FaqSection />
       <FinalCTA />
       
@@ -604,6 +605,90 @@ function Opportunities({ opportunities }: { opportunities: Opportunity[] }) {
             </div>
           </>
         )}
+      </div>
+    </section>
+  );
+}
+
+const insightsList = [
+  {
+    title: "কেন সমৃদ্ধিতে বিনিয়োগ করবেন: একটি সম্পূর্ণ গাইড",
+    tag: "বিনিয়োগ গাইড",
+    meta: "৩১ জুলাই ২০২৬ · ৮ মিনিট পড়া",
+    excerpt: "বাংলাদেশে হালাল ও স্বচ্ছ উপায়ে SME ব্যবসায় বিনিয়োগের সুযোগ দিন দিন বাড়ছে। সঠিক প্ল্যাটফর্ম বেছে নেওয়ার গাইডলাইন...",
+    link: "/insights/keno-somriddhite-biniyog"
+  },
+  {
+    title: "এসএমই (SME) খাতে হালাল বিনিয়োগের নিয়মাবলী",
+    tag: "শরীয়াহ গাইড",
+    meta: "১৫ আগস্ট ২০২৬ · ৫ মিনিট পড়া",
+    excerpt: "ছোট ও মাঝারি ব্যবসায় হালাল উপায়ে কীভাবে বিনিয়োগ করবেন এবং শরীয়াহ সম্মত মুনাফা নিশ্চিত করবেন তার বিস্তারিত দিকনির্দেশনা।",
+    link: "/insights"
+  },
+  {
+    title: "বিনিয়োগের ঝুঁকি কমানোর কার্যকরী কৌশল",
+    tag: "ঝুঁকি ব্যবস্থাপনা",
+    meta: "২৫ আগস্ট ২০২৬ · ৬ মিনিট পড়া",
+    excerpt: "যে কোনো ব্যবসায় বিনিয়োগে ঝুঁকি থাকে। সঠিক বিশ্লেষণ ও পোর্টফোলিও বৈচিত্র্যকরণের মাধ্যমে কীভাবে ঝুঁকি কমানো যায় তা জেনে নিন।",
+    link: "/insights"
+  }
+];
+
+function LatestInsightsSection() {
+  const prefersReduced = usePrefersReducedMotion();
+  return (
+    <section id="insights-preview" className="relative overflow-hidden border-t border-border bg-surface/75 backdrop-blur-[2px]">
+      <div className="mx-auto max-w-7xl px-5 py-24 sm:px-8 sm:py-28">
+        <SectionHeader
+          eyebrow="সাম্প্রতিক ইনসাইটস"
+          title="বিনিয়োগ সম্পর্কিত সর্বশেষ আর্টিকেল"
+          align="center"
+        />
+        
+        <motion.div
+          variants={staggerContainer}
+          initial={prefersReduced ? "show" : "hidden"}
+          whileInView="show"
+          viewport={{ once: true, amount: 0.1 }}
+          className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 sm:gap-6"
+        >
+          {insightsList.map((insight, i) => (
+            <motion.div key={i} variants={revealVariants}>
+              <Link to={insight.link} className="block h-full relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)] card-hover sm:p-8 group">
+                <div className="flex items-center gap-3 mb-5">
+                  <span className="pill bg-primary/10 text-primary font-semibold border-none text-[11px] px-2.5 py-1">
+                    {insight.tag}
+                  </span>
+                  <span className="text-xs text-muted-foreground font-medium">{insight.meta.split(' · ')[0]}</span>
+                </div>
+                <h3 className="text-lg sm:text-xl font-bold leading-tight group-hover:text-primary transition-colors duration-300">
+                  {insight.title}
+                </h3>
+                <p className="mt-3 text-[14px] leading-relaxed text-muted-foreground">
+                  {insight.excerpt}
+                </p>
+                <div className="mt-6 flex items-center gap-2 text-[13.5px] font-semibold text-primary">
+                  বিস্তারিত পড়ুন 
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="transition-transform duration-300 group-hover:translate-x-1">
+                    <path d="M5 12h14M13 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </Link>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        <div className="mt-16 flex justify-center">
+          <Link
+            to="/insights"
+            className="inline-flex items-center gap-2 rounded-full border-2 border-primary bg-background px-8 py-3.5 text-[15px] font-bold text-primary shadow-sm btn-hover hover:bg-primary hover:text-primary-foreground"
+          >
+            সব ইনসাইট দেখুন
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M5 12h14M13 5l7 7-7 7" />
+            </svg>
+          </Link>
+        </div>
       </div>
     </section>
   );
