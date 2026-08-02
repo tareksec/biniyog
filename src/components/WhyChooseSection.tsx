@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { Link } from "@tanstack/react-router";
-import { motion, AnimatePresence, useInView } from "framer-motion";
+import { motion, AnimatePresence, useInView, useScroll, useMotionValueEvent, useTime, useTransform, useSpring, MotionValue } from "framer-motion";
 import { usePrefersReducedMotion } from "@/lib/animations";
 import {
   Users,
@@ -178,11 +178,11 @@ function NumBadge({
 function IconBadge({
   item,
   size = 22,
-  floating = false,
+  floatY,
 }: {
   item: WhyItem;
   size?: number;
-  floating?: boolean;
+  floatY?: MotionValue<number>;
 }) {
   const { Icon } = item;
   const prefersReduced = usePrefersReducedMotion();
@@ -196,17 +196,8 @@ function IconBadge({
         backgroundColor: item.isLight
           ? "rgba(35,83,71,0.12)"
           : "rgba(255,255,255,0.15)",
+        y: prefersReduced ? 0 : floatY,
       }}
-      animate={
-        floating && !prefersReduced
-          ? { y: [0, -3, 0] }
-          : {}
-      }
-      transition={
-        floating && !prefersReduced
-          ? { duration: 2.8, repeat: Infinity, ease: "easeInOut" }
-          : {}
-      }
     >
       <Icon
         size={size}
@@ -220,6 +211,8 @@ function IconBadge({
 /* ────────────────────────────────────────────────────────────
    Sidebar stagger variants
    ──────────────────────────────────────────────────────────── */
+const SMOOTH_EASE = [0.16, 1, 0.3, 1];
+
 const sidebarContainerVariants = {
   hidden: {},
   show: {
@@ -232,7 +225,7 @@ const sidebarItemVariants = {
   show: {
     opacity: 1,
     x: 0,
-    transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] },
+    transition: { duration: 0.55, ease: SMOOTH_EASE },
   },
 };
 
@@ -242,62 +235,82 @@ const sidebarItemVariants = {
 export function WhyChooseSection() {
   const prefersReduced = usePrefersReducedMotion();
   const [selectedIndex, setSelectedIndex] = useState(0);
-
-  /* For scroll-triggered entrance */
   const sectionRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(sectionRef, { once: true, margin: "0px 0px -10% 0px" });
+  const isInView = useInView(sectionRef, { once: true, margin: "-10%" });
 
-  /* Scroll snap functionality */
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  // Continuous seamless floating value for the icon badge
+  const time = useTime();
+  const floatY = useTransform(time, (t) => Math.sin(t / 450) * -3.5);
 
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
+  /* Scroll-triggered auto-advance functionality */
+  const scrollTrackRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: scrollTrackRef,
+    offset: ["start start", "end end"],
+  });
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const index = Number(entry.target.getAttribute("data-index"));
-            setSelectedIndex(index);
-          }
-        });
-      },
-      {
-        root: container,
-        threshold: 0.51,
-      }
-    );
+  // Apply a spring to smooth out rapid scrolling/flicking
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 120,
+    damping: 30,
+    mass: 0.8,
+  });
 
-    itemRefs.current.forEach((ref) => {
-      if (ref) observer.observe(ref);
-    });
+  const isManualClick = useRef(false);
+  const clickTimeout = useRef<NodeJS.Timeout>();
 
-    return () => observer.disconnect();
-  }, []);
+  useMotionValueEvent(smoothProgress, "change", (latest) => {
+    if (prefersReduced || isManualClick.current) return;
+    let newIndex = Math.floor(latest * 8);
+    if (newIndex > 7) newIndex = 7;
+    if (newIndex < 0) newIndex = 0;
+    
+    if (newIndex !== selectedIndex) {
+      setSelectedIndex(newIndex);
+    }
+  });
 
   const handleItemClick = (index: number) => {
     setSelectedIndex(index);
-    itemRefs.current[index]?.scrollIntoView({
-      behavior: prefersReduced ? "auto" : "smooth",
-      block: "start",
-    });
+    if (!prefersReduced && scrollTrackRef.current) {
+      isManualClick.current = true;
+      if (clickTimeout.current) clearTimeout(clickTimeout.current);
+      
+      const trackTop = scrollTrackRef.current.getBoundingClientRect().top + window.scrollY;
+      const progress = (index + 0.5) / 8;
+      const targetY = trackTop + progress * 3000; // 3000px total scroll distance (~375px/item)
+      
+      window.scrollTo({ top: targetY, behavior: "smooth" });
+      
+      clickTimeout.current = setTimeout(() => {
+        isManualClick.current = false;
+      }, 1500); // 1500ms to allow smooth scroll to finish over the larger track
+    }
   };
 
   const panelTransition = prefersReduced
     ? { duration: 0 }
-    : { duration: 0.28, ease: [0.22, 1, 0.36, 1] };
+    : { duration: 0.55, ease: SMOOTH_EASE };
 
   return (
     <section
       id="why"
-      className="border-t border-border bg-background/75 backdrop-blur-[2px]"
+      ref={scrollTrackRef}
+      className={
+        "relative " + 
+        (!prefersReduced ? "h-[calc(100vh+3000px)]" : "")
+      }
     >
-      <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-28">
-        {/* Section heading */}
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-bold leading-tight text-foreground sm:text-4xl md:text-[2.5rem]">
+      <div 
+        className={
+          "w-full bg-background/75 border-t border-border backdrop-blur-[2px] " +
+          (!prefersReduced ? "sticky top-0 min-h-[100dvh] flex flex-col justify-center overflow-hidden" : "")
+        }
+      >
+        <div className="mx-auto w-full max-w-7xl px-5 py-12 sm:px-8 sm:py-20">
+          {/* Section heading */}
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="text-3xl font-bold leading-tight text-foreground sm:text-4xl md:text-[2.5rem]">
             কেন আমরা
           </h2>
         </div>
@@ -307,37 +320,35 @@ export function WhyChooseSection() {
           ref={sectionRef}
           className="mt-12 flex flex-col gap-5 sm:mt-14 sm:flex-row sm:gap-6"
         >
-          {/* ── LEFT SIDEBAR: Unified list (desktop & mobile) ── */}
+          {/* ── LEFT SIDEBAR: floating card (desktop) ── */}
           <motion.div
-            className="shrink-0 flex flex-col gap-1 w-full sm:w-[230px] lg:w-[260px]"
+            className="hidden shrink-0 flex-col gap-1 sm:flex sm:w-[230px] lg:w-[260px]"
             variants={prefersReduced ? {} : sidebarContainerVariants}
             initial="hidden"
             animate={isInView ? "show" : "hidden"}
           >
-            <div 
-              ref={scrollContainerRef}
-              className="flex flex-col rounded-2xl border border-border/60 bg-card/80 p-2 shadow-[0_4px_24px_rgba(0,0,0,0.04)] backdrop-blur-sm h-[280px] overflow-y-auto snap-y snap-mandatory scroll-pt-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-              style={{ overscrollBehaviorY: 'contain', scrollBehavior: prefersReduced ? 'auto' : 'smooth' }}
-            >
+            {/* Outer floating card wrapper */}
+            <div className="rounded-2xl border border-border/60 bg-card/80 p-2 shadow-[0_4px_24px_rgba(0,0,0,0.04)] backdrop-blur-sm">
               {WHY_DATA.map((item, i) => {
                 const isActive = i === selectedIndex;
                 return (
                   <motion.button
                     key={item.id}
-                    ref={(el) => (itemRefs.current[i] = el)}
-                    data-index={i}
                     type="button"
                     onClick={() => handleItemClick(i)}
                     variants={prefersReduced ? {} : sidebarItemVariants}
-                    whileHover={prefersReduced || isActive ? {} : { scale: 1.02 }}
-                    whileTap={prefersReduced || isActive ? {} : { scale: 0.98 }}
+                    whileHover={
+                      prefersReduced || isActive ? {} : { scale: 1.02 }
+                    }
+                    whileTap={
+                      prefersReduced || isActive ? {} : { scale: 0.98 }
+                    }
                     className={
-                      "group relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 my-0.5 text-left text-[13px] leading-snug font-medium transition-colors duration-200 snap-start shrink-0 " +
+                      "group relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[13px] leading-snug font-medium transition-colors duration-200 " +
                       (isActive
                         ? "text-[#143d33]"
                         : "text-muted-foreground hover:bg-[#daf1de]/40 hover:text-foreground")
                     }
-                    style={{ scrollSnapStop: "always" }}
                   >
                     {/* Active pill background (animated layout) */}
                     {isActive && (
@@ -345,9 +356,9 @@ export function WhyChooseSection() {
                         layoutId="why-active-pill"
                         className="absolute inset-1 rounded-[10px] bg-[#daf1de] shadow-sm"
                         transition={{
-                          type: "spring",
-                          stiffness: 420,
-                          damping: 30,
+                          type: "tween",
+                          duration: 0.55,
+                          ease: SMOOTH_EASE,
                         }}
                       />
                     )}
@@ -379,26 +390,47 @@ export function WhyChooseSection() {
             </div>
           </motion.div>
 
+          {/* ── MOBILE DROPDOWN (floating card style) ── */}
+          <div className="sm:hidden">
+            <label htmlFor="why-select" className="sr-only">
+              একটি কারণ বাছাই করুন
+            </label>
+            <select
+              id="why-select"
+              value={selectedIndex}
+              onChange={(e) => handleItemClick(Number(e.target.value))}
+              className="w-full rounded-2xl border border-border/60 bg-card/90 px-4 py-3.5 text-[14px] font-semibold text-foreground shadow-[0_4px_20px_rgba(0,0,0,0.04)] backdrop-blur-sm transition-all duration-200 focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
+            >
+              {WHY_DATA.map((item, i) => (
+                <option key={item.id} value={i}>
+                  {i + 1}. {item.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* ── RIGHT DETAIL PANEL ── */}
-          <div className="min-w-0 flex-1">
-            <AnimatePresence mode="wait">
+          <div className="min-w-0 flex-1 relative">
+            <AnimatePresence mode="popLayout">
               <motion.div
                 key={selectedIndex}
                 initial={
                   prefersReduced
                     ? {}
-                    : { opacity: 0, x: 14, scale: 0.995 }
+                    : { opacity: 0, y: 12, scale: 0.98, filter: "blur(4px)" }
                 }
                 animate={
-                  prefersReduced ? {} : { opacity: 1, x: 0, scale: 1 }
+                  prefersReduced 
+                    ? {} 
+                    : { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }
                 }
                 exit={
                   prefersReduced
                     ? {}
-                    : { opacity: 0, x: -14, scale: 0.995 }
+                    : { opacity: 0, y: -12, scale: 0.98, filter: "blur(4px)" }
                 }
                 transition={panelTransition}
-                className="overflow-hidden rounded-[26px] p-6 sm:p-10"
+                className="w-full overflow-hidden rounded-[26px] p-6 sm:p-10"
                 style={{
                   background: WHY_DATA[selectedIndex].gradient,
                   boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
@@ -407,7 +439,7 @@ export function WhyChooseSection() {
                 <IconBadge
                   item={WHY_DATA[selectedIndex]}
                   size={28}
-                  floating
+                  floatY={floatY}
                 />
 
                 <div className="mt-5 flex items-baseline gap-3 sm:mt-6">
@@ -460,6 +492,7 @@ export function WhyChooseSection() {
             </AnimatePresence>
           </div>
         </div>
+      </div>
       </div>
     </section>
   );
