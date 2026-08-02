@@ -51,7 +51,7 @@ export function GlobalNav() {
   const dockItems: DockItem[] = [
     { title: "হোম", icon: Home, onClick: () => scrollTo("top") },
     { title: "এক্সপার্ট", icon: GraduationCap, onClick: () => scrollTo("expert") },
-    { title: "ক্যালকুলেটর", icon: Calculator, onClick: () => scrollTo("calculator") },
+    { title: "ক্যালকুলেটর", icon: Calculator, onClick: () => scrollTo("calculator"), accent: true },
     { title: "সক্রিয় সুযোগ", icon: Briefcase, onClick: () => { setOpen(false); navigate({ to: "/opportunities" }); }, highlight: true },
     { title: "ড্যাশবোর্ড", icon: LayoutDashboard, onClick: () => { setOpen(false); navigate({ to: "/dashboard" }); } },
   ];

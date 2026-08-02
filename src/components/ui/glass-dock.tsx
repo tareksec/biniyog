@@ -16,7 +16,8 @@ export interface DockItem {
     icon: DockIcon;
     onClick?: () => void;
     href?: string;
-    highlight?: boolean;
+    highlight?: boolean; // Renders as a full pill button
+    accent?: boolean;    // Renders as a highlighted distinct icon
 }
 
 export interface GlassDockProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -465,16 +466,27 @@ export const GlassDock = React.forwardRef<HTMLDivElement, GlassDockProps>(
                                 <motion.div
                                     whileTap={{ scale: 0.95 }}
                                     animate={{
-                                        scale: isHovered ? 1.15 : 1,
+                                        scale: isHovered ? (el.accent ? 1.2 : 1.15) : 1,
                                         y: isHovered ? -4 : 0,
                                     }}
                                     transition={{ duration: 0.25, ease: "easeOut" }}
                                     className={cn(
-                                        "flex h-10 w-10 items-center justify-center rounded-full transition-colors",
-                                        isHovered ? "bg-primary/10" : "hover:bg-muted"
+                                        "flex h-10 w-10 items-center justify-center rounded-full transition-colors relative",
+                                        el.accent && !isHovered && "bg-primary/15",
+                                        isHovered 
+                                            ? (el.accent ? "bg-primary shadow-lg shadow-primary/40" : "bg-primary/10") 
+                                            : "hover:bg-muted"
                                     )}
                                 >
-                                    {isAnimated ? (
+                                    {el.accent && !isHovered && (
+                                        <div className="absolute inset-0 rounded-full bg-primary/40 animate-ping opacity-20" style={{ animationDuration: '2.5s' }} />
+                                    )}
+                                    {el.accent && (
+                                        <span className="absolute -top-1.5 -right-2 flex h-4 items-center justify-center rounded-full bg-red-500 px-1.5 text-[9px] font-bold text-white shadow-sm ring-2 ring-background z-20">
+                                            নতুন
+                                        </span>
+                                    )}
+                                    {isAnimated && !el.accent ? (
                                         <MorphingIcon
                                             type={type}
                                             isActive={isActive}
@@ -484,10 +496,10 @@ export const GlassDock = React.forwardRef<HTMLDivElement, GlassDockProps>(
                                     ) : (
                                         <Icon
                                             className={cn(
-                                                'h-[20px] w-[20px] transition-colors duration-200',
-                                                isHovered
-                                                    ? 'text-primary'
-                                                    : 'text-muted-foreground'
+                                                'h-[20px] w-[20px] transition-colors duration-200 relative z-10',
+                                                el.accent 
+                                                    ? (isHovered ? 'text-primary-foreground' : 'text-primary')
+                                                    : (isHovered ? 'text-primary' : 'text-muted-foreground')
                                             )}
                                         />
                                     )}
