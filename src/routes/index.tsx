@@ -363,10 +363,6 @@ function Hero({
         <div className="mx-auto mt-16 grid max-w-5xl gap-10 md:grid-cols-3 md:gap-12 lg:mt-20">
           {/* Card 1 — Growth Stats */}
           <StickyNoteCard label="সামগ্রিক প্রবৃদ্ধি" delay={0.05} prefersReduced={prefersReduced}>
-            <div className="mb-3">
-              <p className="text-xs font-semibold text-foreground">{growthMetrics.totalAmountFormatted}</p>
-              <p className="text-[11px] text-muted-foreground">মোট বিনিয়োগযোগ্য পরিমাণ</p>
-            </div>
             <ul className="space-y-3">
               {growthBars.map((bar, i) => (
                 <li key={bar.label} className="space-y-1.5">
