@@ -7,8 +7,12 @@ export type { Opportunity, OpportunityRisk, OpportunityPayout, OpportunityLegalC
 const FETCH_TIMEOUT_MS = 4_000;
 
 /** Ensure a promise rejection doesn't go unhandled (e.g. the loser of a Promise.race). */
-function suppressUnhandled(p: Promise<unknown> | undefined): void {
-  if (p) p.catch(() => {});
+function suppressUnhandled(p: any): void {
+  if (p && typeof p.catch === "function") {
+    p.catch(() => {});
+  } else if (p && typeof p.then === "function") {
+    p.then(() => {}, () => {});
+  }
 }
 
 

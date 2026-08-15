@@ -29,7 +29,11 @@ export async function fetchHomepageReviewsSSR(): Promise<HomepageReview[]> {
 
     return data as HomepageReview[];
   } catch (err) {
-    if (supabasePromise) supabasePromise.catch(() => {});
+    if (supabasePromise && typeof supabasePromise.catch === "function") {
+      supabasePromise.catch(() => {});
+    } else if (supabasePromise && typeof supabasePromise.then === "function") {
+      supabasePromise.then(() => {}, () => {});
+    }
     console.warn("[fetchHomepageReviewsSSR] Supabase error, using fallback:", err instanceof Error ? err.message : err);
     if (import.meta.env.SSR) {
       try {
