@@ -354,7 +354,7 @@ export function BlogPostForm({ post }: BlogPostFormProps) {
                     </div>
                   </div>
                 ) : (
-                  <div className="aspect-video rounded-md border border-dashed flex flex-col items-center justify-center gap-2 bg-muted/20">
+                  <div className="relative aspect-video rounded-md border border-dashed flex flex-col items-center justify-center gap-2 bg-muted/20 overflow-hidden hover:bg-muted/30 transition-colors">
                     {uploadingCover ? (
                       <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                     ) : (
