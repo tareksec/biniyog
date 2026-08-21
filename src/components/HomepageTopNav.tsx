@@ -11,10 +11,11 @@ export function HomepageTopNav() {
     { name: "কীভাবে কাজ করে", href: "#how" },
     { name: "এক্সপার্ট", href: "#expert" },
     { name: "সুযোগসমূহ", href: "#opportunities" },
-    { name: "ওভারভিউ", href: "#overview" },
+    { name: "ব্লগ", href: "/blog" },
   ];
 
   const handleScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (href.startsWith("/")) return; // Allow normal navigation for router links
     e.preventDefault();
     setIsOpen(false);
     const id = href.replace("#", "");
@@ -45,7 +46,16 @@ export function HomepageTopNav() {
 
         {/* Center: Desktop Links */}
         <div className="hidden lg:flex items-center gap-6 xl:gap-8">
-          {links.map((link) => (
+          {links.map((link) => link.href.startsWith("/") ? (
+            <Link
+              key={link.name}
+              to={link.href}
+              className="text-sm font-semibold text-white/90 hover:text-white transition-all relative group py-1 outline-none"
+            >
+              {link.name}
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#8fb28f] transition-all group-hover:w-full rounded-full"></span>
+            </Link>
+          ) : (
             <a
               key={link.name}
               href={link.href}
@@ -91,7 +101,16 @@ export function HomepageTopNav() {
               boxShadow: "0 0 20px rgba(255, 255, 255, 0.15), 0 4px 20px rgba(0, 0, 0, 0.15)"
             }}
           >
-            {links.map((link) => (
+            {links.map((link) => link.href.startsWith("/") ? (
+              <Link
+                key={link.name}
+                to={link.href}
+                onClick={() => setIsOpen(false)}
+                className="px-4 py-3 text-base font-semibold text-white/90 hover:text-white hover:bg-white/10 rounded-2xl transition-colors text-center"
+              >
+                {link.name}
+              </Link>
+            ) : (
               <a
                 key={link.name}
                 href={link.href}

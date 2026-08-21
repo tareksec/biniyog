@@ -16,6 +16,8 @@ import { Route as ReviewsRouteImport } from './routes/reviews'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
+import { Route as BlogIndexRouteImport } from './routes/blog.index'
+import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as InsightsIndexRouteImport } from './routes/insights/index'
 import { Route as InsightsSlugRouteImport } from './routes/insights/$slug'
 import { Route as InsightsInflationPortfolioRouteImport } from './routes/insights/inflation-portfolio'
@@ -61,6 +63,16 @@ const AdminDashboardRoute = AdminDashboardRouteImport.update({
 const AdminLoginRoute = AdminLoginRouteImport.update({
   id: '/admin/login',
   path: '/admin/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/blog/$slug',
+  path: '/blog/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InsightsIndexRoute = InsightsIndexRouteImport.update({
@@ -130,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/reviews': typeof ReviewsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/login': typeof AdminLoginRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/insights/$slug': typeof InsightsSlugRoute
   '/insights/inflation-portfolio': typeof InsightsInflationPortfolioRoute
   '/insights/keno-somriddhite-biniyog': typeof InsightsKenoSomriddhiteBiniyogRoute
@@ -137,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/insights/sme-halal-biniyog': typeof InsightsSmeHalalBiniyogRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
   '/admin/': typeof AdminIndexRoute
+  '/blog/': typeof BlogIndexRoute
   '/insights/': typeof InsightsIndexRoute
   '/opportunities/': typeof OpportunitiesIndexRoute
   '/api/public/reveal-details': typeof ApiPublicRevealDetailsRoute
@@ -149,6 +163,7 @@ export interface FileRoutesByTo {
   '/reviews': typeof ReviewsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/login': typeof AdminLoginRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/insights/$slug': typeof InsightsSlugRoute
   '/insights/inflation-portfolio': typeof InsightsInflationPortfolioRoute
   '/insights/keno-somriddhite-biniyog': typeof InsightsKenoSomriddhiteBiniyogRoute
@@ -156,6 +171,7 @@ export interface FileRoutesByTo {
   '/insights/sme-halal-biniyog': typeof InsightsSmeHalalBiniyogRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
   '/admin': typeof AdminIndexRoute
+  '/blog': typeof BlogIndexRoute
   '/insights': typeof InsightsIndexRoute
   '/opportunities': typeof OpportunitiesIndexRoute
   '/api/public/reveal-details': typeof ApiPublicRevealDetailsRoute
@@ -170,6 +186,7 @@ export interface FileRoutesById {
   '/reviews': typeof ReviewsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/login': typeof AdminLoginRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/insights/$slug': typeof InsightsSlugRoute
   '/insights/inflation-portfolio': typeof InsightsInflationPortfolioRoute
   '/insights/keno-somriddhite-biniyog': typeof InsightsKenoSomriddhiteBiniyogRoute
@@ -177,6 +194,7 @@ export interface FileRoutesById {
   '/insights/sme-halal-biniyog': typeof InsightsSmeHalalBiniyogRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
   '/admin/': typeof AdminIndexRoute
+  '/blog/': typeof BlogIndexRoute
   '/insights/': typeof InsightsIndexRoute
   '/opportunities/': typeof OpportunitiesIndexRoute
   '/api/public/reveal-details': typeof ApiPublicRevealDetailsRoute
@@ -192,6 +210,7 @@ export interface FileRouteTypes {
     | '/reviews'
     | '/admin/dashboard'
     | '/admin/login'
+    | '/blog/$slug'
     | '/insights/$slug'
     | '/insights/inflation-portfolio'
     | '/insights/keno-somriddhite-biniyog'
@@ -199,6 +218,7 @@ export interface FileRouteTypes {
     | '/insights/sme-halal-biniyog'
     | '/opportunities/$id'
     | '/admin/'
+    | '/blog/'
     | '/insights/'
     | '/opportunities/'
     | '/api/public/reveal-details'
@@ -211,6 +231,7 @@ export interface FileRouteTypes {
     | '/reviews'
     | '/admin/dashboard'
     | '/admin/login'
+    | '/blog/$slug'
     | '/insights/$slug'
     | '/insights/inflation-portfolio'
     | '/insights/keno-somriddhite-biniyog'
@@ -218,6 +239,7 @@ export interface FileRouteTypes {
     | '/insights/sme-halal-biniyog'
     | '/opportunities/$id'
     | '/admin'
+    | '/blog'
     | '/insights'
     | '/opportunities'
     | '/api/public/reveal-details'
@@ -231,6 +253,7 @@ export interface FileRouteTypes {
     | '/reviews'
     | '/admin/dashboard'
     | '/admin/login'
+    | '/blog/$slug'
     | '/insights/$slug'
     | '/insights/inflation-portfolio'
     | '/insights/keno-somriddhite-biniyog'
@@ -238,6 +261,7 @@ export interface FileRouteTypes {
     | '/insights/sme-halal-biniyog'
     | '/opportunities/$id'
     | '/admin/'
+    | '/blog/'
     | '/insights/'
     | '/opportunities/'
     | '/api/public/reveal-details'
@@ -252,8 +276,10 @@ export interface RootRouteChildren {
   ReviewsRoute: typeof ReviewsRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
   AdminLoginRoute: typeof AdminLoginRoute
+  BlogSlugRoute: typeof BlogSlugRoute
   OpportunitiesIdRoute: typeof OpportunitiesIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  BlogIndexRoute: typeof BlogIndexRoute
   OpportunitiesIndexRoute: typeof OpportunitiesIndexRoute
   ApiPublicRevealDetailsRoute: typeof ApiPublicRevealDetailsRoute
   AdminDashboardBlogNewRoute: typeof AdminDashboardBlogNewRoute
@@ -309,6 +335,20 @@ declare module '@tanstack/react-router' {
       path: '/admin/login'
       fullPath: '/admin/login'
       preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/': {
+      id: '/blog/'
+      path: '/blog'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/blog/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/insights/': {
@@ -420,8 +460,10 @@ const rootRouteChildren: RootRouteChildren = {
   ReviewsRoute: ReviewsRoute,
   AdminDashboardRoute: AdminDashboardRoute,
   AdminLoginRoute: AdminLoginRoute,
+  BlogSlugRoute: BlogSlugRoute,
   OpportunitiesIdRoute: OpportunitiesIdRoute,
   AdminIndexRoute: AdminIndexRoute,
+  BlogIndexRoute: BlogIndexRoute,
   OpportunitiesIndexRoute: OpportunitiesIndexRoute,
   ApiPublicRevealDetailsRoute: ApiPublicRevealDetailsRoute,
   AdminDashboardBlogNewRoute: AdminDashboardBlogNewRoute,
