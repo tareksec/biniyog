@@ -24,6 +24,8 @@ import { Route as InsightsSmeHalalBiniyogRouteImport } from './routes/insights/s
 import { Route as OpportunitiesIndexRouteImport } from './routes/opportunities.index'
 import { Route as OpportunitiesIdRouteImport } from './routes/opportunities.$id'
 import { Route as ApiPublicRevealDetailsRouteImport } from './routes/api/public/reveal-details'
+import { Route as AdminDashboardBlogNewRouteImport } from './routes/admin/dashboard.blog.new'
+import { Route as AdminDashboardBlogPostIdEditRouteImport } from './routes/admin/dashboard.blog.$postId.edit'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -103,13 +105,24 @@ const ApiPublicRevealDetailsRoute = ApiPublicRevealDetailsRouteImport.update({
   path: '/api/public/reveal-details',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminDashboardBlogNewRoute = AdminDashboardBlogNewRouteImport.update({
+  id: '/blog/new',
+  path: '/blog/new',
+  getParentRoute: () => AdminDashboardRoute,
+} as any)
+const AdminDashboardBlogPostIdEditRoute =
+  AdminDashboardBlogPostIdEditRouteImport.update({
+    id: '/blog/$postId/edit',
+    path: '/blog/$postId/edit',
+    getParentRoute: () => AdminDashboardRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/insights': typeof InsightsRouteWithChildren
   '/reviews': typeof ReviewsRoute
-  '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/dashboard': typeof AdminDashboardRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/insights/inflation-portfolio': typeof InsightsInflationPortfolioRoute
   '/insights/keno-somriddhite-biniyog': typeof InsightsKenoSomriddhiteBiniyogRoute
@@ -120,12 +133,14 @@ export interface FileRoutesByFullPath {
   '/insights/': typeof InsightsIndexRoute
   '/opportunities/': typeof OpportunitiesIndexRoute
   '/api/public/reveal-details': typeof ApiPublicRevealDetailsRoute
+  '/admin/dashboard/blog/new': typeof AdminDashboardBlogNewRoute
+  '/admin/dashboard/blog/$postId/edit': typeof AdminDashboardBlogPostIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/reviews': typeof ReviewsRoute
-  '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/dashboard': typeof AdminDashboardRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/insights/inflation-portfolio': typeof InsightsInflationPortfolioRoute
   '/insights/keno-somriddhite-biniyog': typeof InsightsKenoSomriddhiteBiniyogRoute
@@ -136,6 +151,8 @@ export interface FileRoutesByTo {
   '/insights': typeof InsightsIndexRoute
   '/opportunities': typeof OpportunitiesIndexRoute
   '/api/public/reveal-details': typeof ApiPublicRevealDetailsRoute
+  '/admin/dashboard/blog/new': typeof AdminDashboardBlogNewRoute
+  '/admin/dashboard/blog/$postId/edit': typeof AdminDashboardBlogPostIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -143,7 +160,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/insights': typeof InsightsRouteWithChildren
   '/reviews': typeof ReviewsRoute
-  '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/dashboard': typeof AdminDashboardRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/insights/inflation-portfolio': typeof InsightsInflationPortfolioRoute
   '/insights/keno-somriddhite-biniyog': typeof InsightsKenoSomriddhiteBiniyogRoute
@@ -154,6 +171,8 @@ export interface FileRoutesById {
   '/insights/': typeof InsightsIndexRoute
   '/opportunities/': typeof OpportunitiesIndexRoute
   '/api/public/reveal-details': typeof ApiPublicRevealDetailsRoute
+  '/admin/dashboard/blog/new': typeof AdminDashboardBlogNewRoute
+  '/admin/dashboard/blog/$postId/edit': typeof AdminDashboardBlogPostIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -173,6 +192,8 @@ export interface FileRouteTypes {
     | '/insights/'
     | '/opportunities/'
     | '/api/public/reveal-details'
+    | '/admin/dashboard/blog/new'
+    | '/admin/dashboard/blog/$postId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -189,6 +210,8 @@ export interface FileRouteTypes {
     | '/insights'
     | '/opportunities'
     | '/api/public/reveal-details'
+    | '/admin/dashboard/blog/new'
+    | '/admin/dashboard/blog/$postId/edit'
   id:
     | '__root__'
     | '/'
@@ -206,6 +229,8 @@ export interface FileRouteTypes {
     | '/insights/'
     | '/opportunities/'
     | '/api/public/reveal-details'
+    | '/admin/dashboard/blog/new'
+    | '/admin/dashboard/blog/$postId/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -213,7 +238,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   InsightsRoute: typeof InsightsRouteWithChildren
   ReviewsRoute: typeof ReviewsRoute
-  AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminDashboardRoute: typeof AdminDashboardRouteWithChildren
   AdminLoginRoute: typeof AdminLoginRoute
   OpportunitiesIdRoute: typeof OpportunitiesIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -328,6 +353,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicRevealDetailsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/dashboard/blog/new': {
+      id: '/admin/dashboard/blog/new'
+      path: '/blog/new'
+      fullPath: '/admin/dashboard/blog/new'
+      preLoaderRoute: typeof AdminDashboardBlogNewRouteImport
+      parentRoute: typeof AdminDashboardRoute
+    }
+    '/admin/dashboard/blog/$postId/edit': {
+      id: '/admin/dashboard/blog/$postId/edit'
+      path: '/blog/$postId/edit'
+      fullPath: '/admin/dashboard/blog/$postId/edit'
+      preLoaderRoute: typeof AdminDashboardBlogPostIdEditRouteImport
+      parentRoute: typeof AdminDashboardRoute
+    }
   }
 }
 
@@ -351,12 +390,26 @@ const InsightsRouteWithChildren = InsightsRoute._addFileChildren(
   InsightsRouteChildren,
 )
 
+interface AdminDashboardRouteChildren {
+  AdminDashboardBlogNewRoute: typeof AdminDashboardBlogNewRoute
+  AdminDashboardBlogPostIdEditRoute: typeof AdminDashboardBlogPostIdEditRoute
+}
+
+const AdminDashboardRouteChildren: AdminDashboardRouteChildren = {
+  AdminDashboardBlogNewRoute: AdminDashboardBlogNewRoute,
+  AdminDashboardBlogPostIdEditRoute: AdminDashboardBlogPostIdEditRoute,
+}
+
+const AdminDashboardRouteWithChildren = AdminDashboardRoute._addFileChildren(
+  AdminDashboardRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
   InsightsRoute: InsightsRouteWithChildren,
   ReviewsRoute: ReviewsRoute,
-  AdminDashboardRoute: AdminDashboardRoute,
+  AdminDashboardRoute: AdminDashboardRouteWithChildren,
   AdminLoginRoute: AdminLoginRoute,
   OpportunitiesIdRoute: OpportunitiesIdRoute,
   AdminIndexRoute: AdminIndexRoute,

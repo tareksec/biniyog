@@ -278,6 +278,86 @@ export type Database = {
           }
         ];
       };
+      blog_categories: {
+        Row: {
+          id: string;
+          name: string;
+          slug: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          slug: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          slug?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      blog_posts: {
+        Row: {
+          id: string;
+          title: string;
+          slug: string;
+          excerpt: string | null;
+          content_html: string;
+          cover_image_url: string | null;
+          category_id: string | null;
+          status: "draft" | "published";
+          author_name: string | null;
+          meta_title: string | null;
+          meta_description: string | null;
+          published_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          slug: string;
+          excerpt?: string | null;
+          content_html: string;
+          cover_image_url?: string | null;
+          category_id?: string | null;
+          status?: "draft" | "published";
+          author_name?: string | null;
+          meta_title?: string | null;
+          meta_description?: string | null;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          slug?: string;
+          excerpt?: string | null;
+          content_html?: string;
+          cover_image_url?: string | null;
+          category_id?: string | null;
+          status?: "draft" | "published";
+          author_name?: string | null;
+          meta_title?: string | null;
+          meta_description?: string | null;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "blog_posts_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "blog_categories";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -311,4 +391,12 @@ export type OpportunityLegalCheckInsert = Database["public"]["Tables"]["opportun
 export type Testimonial = Database["public"]["Tables"]["testimonials"]["Row"];
 export type TestimonialInsert = Database["public"]["Tables"]["testimonials"]["Insert"];
 export type TestimonialUpdate = Database["public"]["Tables"]["testimonials"]["Update"];
+
+export type BlogCategory = Database["public"]["Tables"]["blog_categories"]["Row"];
+export type BlogCategoryInsert = Database["public"]["Tables"]["blog_categories"]["Insert"];
+export type BlogCategoryUpdate = Database["public"]["Tables"]["blog_categories"]["Update"];
+
+export type BlogPost = Database["public"]["Tables"]["blog_posts"]["Row"];
+export type BlogPostInsert = Database["public"]["Tables"]["blog_posts"]["Insert"];
+export type BlogPostUpdate = Database["public"]["Tables"]["blog_posts"]["Update"];
 

@@ -3,6 +3,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth, getAuthSnapshot } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
 import type { Opportunity, Testimonial, HomepageReview } from "@/lib/database.types";
+import { useBlogPosts, useBlogCategories } from "@/lib/blog";
+import type { BlogPost, BlogCategory } from "@/lib/database.types";
 import { OpportunityForm } from "@/components/admin/OpportunityForm";
 import { TestimonialForm } from "@/components/admin/TestimonialForm";
 import { HomepageReviewForm } from "@/components/admin/HomepageReviewForm";
@@ -40,6 +42,8 @@ import {
   Briefcase,
   Home,
   ChevronRight,
+  BookOpen,
+  Settings2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -109,7 +113,8 @@ function AdminDashboard() {
   }, [authLoading, user, navigate]);
 
   // ─── Active Tab State ───────────────────────────────────────────
-  const [activeTab, setActiveTab] = useState("opportunities");
+  const search = Route.useSearch() as any;
+  const [activeTab, setActiveTab] = useState(search.tab || "opportunities");
 
   // ─── Opportunities state ────────────────────────────────────────
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
@@ -134,6 +139,54 @@ function AdminDashboard() {
   const [editingHomeRev, setEditingHomeRev] = useState<HomepageReview | null>(null);
   const [deletingHomeRev, setDeletingHomeRev] = useState<HomepageReview | null>(null);
   const [deletingHomeRevLoading, setDeletingHomeRevLoading] = useState(false);
+
+  
+  // ─── Blog state ───────────────────────────────────────────────
+  const { data: blogPosts = [], isLoading: blogLoading, refetch: refetchBlogPosts } = useBlogPosts();
+  const { data: blogCategories = [], refetch: refetchCategories } = useBlogCategories();
+  
+  const [deletingPost, setDeletingPost] = useState<BlogPost | null>(null);
+  const [deletingPostLoading, setDeletingPostLoading] = useState(false);
+  const [categoryManagerOpen, setCategoryManagerOpen] = useState(false);
+  const [deletingCategory, setDeletingCategory] = useState<BlogCategory | null>(null);
+  const [deletingCategoryLoading, setDeletingCategoryLoading] = useState(false);
+
+  const handleDeletePost = async () => {
+    if (!deletingPost) return;
+    setDeletingPostLoading(true);
+    try {
+      const { error } = await supabase.from("blog_posts").delete().eq("id", deletingPost.id);
+      if (error) throw error;
+      toast.success("পোস্ট মুছে ফেলা হয়েছে");
+      setDeletingPost(null);
+      refetchBlogPosts();
+    } catch (err: any) {
+      toast.error(err?.message || "মুছতে সমস্যা হয়েছে");
+    } finally {
+      setDeletingPostLoading(false);
+    }
+  };
+
+  const handleDeleteCategory = async () => {
+    if (!deletingCategory) return;
+    setDeletingCategoryLoading(true);
+    try {
+      const { error } = await supabase.from("blog_categories").delete().eq("id", deletingCategory.id);
+      if (error) {
+        if (error.code === '23503') {
+          throw new Error("এই ক্যাটাগরিতে পোস্ট আছে, তাই মোছা যাবে না");
+        }
+        throw error;
+      }
+      toast.success("ক্যাটাগরি মুছে ফেলা হয়েছে");
+      setDeletingCategory(null);
+      refetchCategories();
+    } catch (err: any) {
+      toast.error(err?.message || "মুছতে সমস্যা হয়েছে");
+    } finally {
+      setDeletingCategoryLoading(false);
+    }
+  };
 
   // ─── Fetch functions ────────────────────────────────────────────
   const fetchOpportunities = useCallback(async () => {
@@ -294,7 +347,7 @@ function AdminDashboard() {
                  }}
                  className={`${(!oppFormOpen && !testFormOpen) ? "text-foreground font-semibold" : "hover:text-foreground transition-colors"}`}
                >
-                 {activeTab === 'opportunities' ? 'Opportunities' : 'Testimonials'}
+                 {activeTab === 'opportunities' ? 'Opportunities' : activeTab === 'blog' ? 'Blog' : 'Testimonials'}
                </button>
                
                {activeTab === 'opportunities' && oppFormOpen && (
@@ -373,6 +426,18 @@ function AdminDashboard() {
                 className="ml-1 h-5 min-w-5 rounded-full px-1.5 text-xs"
               >
                 {homepageReviews.length}
+              </Badge>
+            </TabsTrigger>
+          
+            <TabsTrigger value="blog" className="gap-2 px-4">
+              <BookOpen className="h-4 w-4" />
+              <span className="hidden sm:inline">ব্লগ</span>
+              <span className="sm:hidden">ব্লগ</span>
+              <Badge
+                variant="secondary"
+                className="ml-1 h-5 min-w-5 rounded-full px-1.5 text-xs"
+              >
+                {blogPosts.length}
               </Badge>
             </TabsTrigger>
           </TabsList>
@@ -694,6 +759,129 @@ function AdminDashboard() {
               )}
             </div>
           </TabsContent>
+
+          {/* ═══════════ BLOG TAB ═══════════ */}
+          <TabsContent value="blog" className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-foreground">
+                ব্লগ পোস্ট
+              </h2>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCategoryManagerOpen(true)}
+                  className="gap-2"
+                >
+                  <Settings2 className="h-4 w-4" />
+                  <span className="hidden sm:inline">ক্যাটাগরি</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => refetchBlogPosts()}
+                  disabled={blogLoading}
+                  className="gap-2"
+                >
+                  <RefreshCw
+                    className={`h-4 w-4 ${blogLoading ? "animate-spin" : ""}`}
+                  />
+                  <span className="hidden sm:inline">রিফ্রেশ</span>
+                </Button>
+                <Button
+                  size="sm"
+                  asChild
+                  className="gap-2"
+                >
+                  <Link to="/admin/dashboard/blog/new">
+                    <Plus className="h-4 w-4" />
+                    নতুন পোস্ট
+                  </Link>
+                </Button>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-border bg-white shadow-sm">
+              {blogLoading ? (
+                <div className="flex items-center justify-center py-16">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : blogPosts.length === 0 ? (
+                <div className="py-16 text-center text-sm text-muted-foreground">
+                  কোনো ব্লগ পোস্ট পাওয়া যায়নি। "নতুন পোস্ট" বাটনে ক্লিক করুন।
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="hover:bg-transparent">
+                        <TableHead className="w-[80px]">কভার</TableHead>
+                        <TableHead className="min-w-[200px]">শিরোনাম</TableHead>
+                        <TableHead className="min-w-[130px]">ক্যাটাগরি</TableHead>
+                        <TableHead className="min-w-[120px]">স্ট্যাটাস</TableHead>
+                        <TableHead className="min-w-[120px]">প্রকাশিত</TableHead>
+                        <TableHead className="w-[100px] text-right">অ্যাকশন</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {blogPosts.map((post) => (
+                        <TableRow key={post.id}>
+                          <TableCell>
+                            {post.cover_image_url ? (
+                              <img src={post.cover_image_url} alt="" className="h-10 w-16 object-cover rounded" />
+                            ) : (
+                              <div className="h-10 w-16 bg-muted rounded flex items-center justify-center">
+                                <span className="text-[10px] text-muted-foreground">No img</span>
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            <div className="line-clamp-2">{post.title}</div>
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            {post.category?.name || "—"}
+                          </TableCell>
+                          <TableCell>
+                            {post.status === "published" ? (
+                              <Badge variant="secondary" className="bg-green-100 text-green-800">Published</Badge>
+                            ) : (
+                              <Badge variant="secondary" className="bg-gray-100 text-gray-700">Draft</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-sm tabular text-muted-foreground">
+                            {post.published_at ? new Date(post.published_at).toLocaleDateString('bn-BD') : "—"}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                asChild
+                                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                              >
+                                <Link to={`/admin/dashboard/blog/${post.id}/edit`}>
+                                  <Pencil className="h-4 w-4" />
+                                </Link>
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setDeletingPost(post)}
+                                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
         </Tabs>
       </main>
 
@@ -824,6 +1012,97 @@ function AdminDashboard() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* ─── Delete Blog Post Confirmation ──────────────────────── */}
+      <AlertDialog
+        open={!!deletingPost}
+        onOpenChange={(open) => !open && setDeletingPost(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>পোস্ট মুছে ফেলতে চান?</AlertDialogTitle>
+            <AlertDialogDescription>
+              <strong>"{deletingPost?.title}"</strong> মুছে ফেললে ফেরানো যাবে না।
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingPostLoading}>বাতিল</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeletePost}
+              disabled={deletingPostLoading}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deletingPostLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              হ্যাঁ, মুছে ফেলুন
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* ─── Category Manager ──────────────────────────────────────── */}
+      <AlertDialog
+        open={categoryManagerOpen}
+        onOpenChange={setCategoryManagerOpen}
+      >
+        <AlertDialogContent className="sm:max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>ক্যাটাগরি ম্যানেজমেন্ট</AlertDialogTitle>
+            <AlertDialogDescription>
+              বিদ্যমান ক্যাটাগরিগুলো দেখুন এবং মুছুন।
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="max-h-[300px] overflow-y-auto pr-2 space-y-2 mt-4">
+            {blogCategories.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">কোনো ক্যাটাগরি নেই</p>
+            ) : (
+              blogCategories.map(cat => (
+                <div key={cat.id} className="flex items-center justify-between p-3 border rounded-md">
+                  <span className="font-medium text-sm">{cat.name}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                    onClick={() => setDeletingCategory(cat)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))
+            )}
+          </div>
+          <AlertDialogFooter className="mt-4">
+            <AlertDialogCancel>বন্ধ করুন</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* ─── Delete Category Confirmation ──────────────────────── */}
+      <AlertDialog
+        open={!!deletingCategory}
+        onOpenChange={(open) => !open && setDeletingCategory(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>ক্যাটাগরি মুছতে চান?</AlertDialogTitle>
+            <AlertDialogDescription>
+              <strong>"{deletingCategory?.name}"</strong> মুছে ফেললে ফেরানো যাবে না।
+              (এই ক্যাটাগরিতে কোনো পোস্ট থাকলে মোছা যাবে না)
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingCategoryLoading}>বাতিল</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteCategory}
+              disabled={deletingCategoryLoading}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deletingCategoryLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              হ্যাঁ, মুছে ফেলুন
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
     </div>
   );
 }
