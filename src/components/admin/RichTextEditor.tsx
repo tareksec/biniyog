@@ -219,6 +219,7 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
 
 export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorProps) {
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit.configure({
         heading: { levels: [2, 3] },
@@ -253,8 +254,13 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
 
   // Update editor content if value changes externally (e.g. form reset or data load)
   useEffect(() => {
-    if (editor && value !== editor.getHTML()) {
-      editor.commands.setContent(value);
+    if (!editor || editor.isDestroyed) return;
+    try {
+      if (value !== editor.getHTML()) {
+        editor.commands.setContent(value || '', false);
+      }
+    } catch {
+      // Safeguard against serialization timing issues
     }
   }, [value, editor]);
 

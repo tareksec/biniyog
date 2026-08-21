@@ -4,7 +4,7 @@ import { getAuthSnapshot } from "@/hooks/useAuth";
 import { useBlogPost } from "@/lib/blog";
 import { Loader2 } from "lucide-react";
 
-export const Route = createFileRoute("/admin/dashboard/blog/$postId/edit")({
+export const Route = createFileRoute("/admin/dashboard_/blog/$postId/edit")({
   beforeLoad: () => {
     const { user, loading } = getAuthSnapshot();
     if (!loading && !user) {
