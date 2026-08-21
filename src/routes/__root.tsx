@@ -348,11 +348,7 @@ function RootComponent() {
   // (no AnimatePresence / motion.div wrapper) so the server HTML and client
   // initial render produce identical DOM — preventing React error #418.
   // After hydration completes, enable page-transition animations.
-  const outletContent = (
-    <Suspense fallback={<FullPageLoader />}>
-      <Outlet />
-    </Suspense>
-  );
+  const outletContent = <Outlet />;
 
   return (
     <QueryClientProvider client={queryClient}>
