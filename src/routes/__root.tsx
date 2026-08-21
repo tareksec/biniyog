@@ -16,6 +16,15 @@ import { Footer } from "@/components/Footer";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "sonner";
+import { LumaSpin } from "@/components/ui/luma-spin";
+
+function FullPageLoader() {
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-background z-[9999]">
+      <LumaSpin size="lg" />
+    </div>
+  );
+}
 
 // Disable the browser's native scroll restoration as early as possible —
 // as soon as this module evaluates (before any navigation can occur). This
@@ -202,11 +211,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   }),
   shellComponent: RootShell,
   component: RootComponent,
-  pendingComponent: () => (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-    </div>
-  ),
+  pendingComponent: FullPageLoader,
+  pendingMs: 200,
+  pendingMinMs: 300,
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
 });
@@ -342,11 +349,7 @@ function RootComponent() {
   // initial render produce identical DOM — preventing React error #418.
   // After hydration completes, enable page-transition animations.
   const outletContent = (
-    <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-      </div>
-    }>
+    <Suspense fallback={<FullPageLoader />}>
       <Outlet />
     </Suspense>
   );
