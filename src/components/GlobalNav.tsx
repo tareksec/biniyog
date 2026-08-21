@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
-import { Home, GraduationCap, Briefcase, LayoutDashboard, Calculator } from "lucide-react";
+import { Home, GraduationCap, Briefcase, LayoutDashboard, Calculator, BookOpen } from "lucide-react";
 import { GlassDock, type DockItem } from "@/components/ui/glass-dock";
 
 export function GlobalNav() {
@@ -52,6 +52,7 @@ export function GlobalNav() {
     { title: "হোম", icon: Home, onClick: () => scrollTo("top") },
     { title: "এক্সপার্ট", icon: GraduationCap, onClick: () => scrollTo("expert") },
     { title: "ক্যালকুলেটর", icon: Calculator, onClick: () => scrollTo("calculator"), accent: true },
+    { title: "ব্লগ", icon: BookOpen, onClick: () => { setOpen(false); navigate({ to: "/blog" }); } },
     { title: "সক্রিয় সুযোগ", icon: Briefcase, onClick: () => { setOpen(false); navigate({ to: "/opportunities" }); }, highlight: true },
     { title: "ড্যাশবোর্ড", icon: LayoutDashboard, onClick: () => { setOpen(false); navigate({ to: "/dashboard" }); } },
   ];
@@ -101,7 +102,10 @@ export function GlobalNav() {
               {dockItems.map((item) => {
                 const id = item.title === "হোম" ? "top" : item.title === "এক্সপার্ট" ? "expert" : item.title === "ক্যালকুলেটর" ? "calculator" : "";
                 const isOpp = item.title === "সক্রিয় সুযোগ";
-                const isActive = (id && activeSection === id && router.location.pathname === '/') || (isOpp && router.location.pathname.startsWith('/opportunities'));
+                const isBlog = item.title === "ব্লগ";
+                const isActive = (id && activeSection === id && router.location.pathname === '/') || 
+                                 (isOpp && router.location.pathname.startsWith('/opportunities')) ||
+                                 (isBlog && router.location.pathname.startsWith('/blog'));
                 return (
                   <button
                     key={item.title}
