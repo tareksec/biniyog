@@ -24,7 +24,7 @@ export const Route = createFileRoute("/dashboard")({
   },
   head: () => ({
     meta: [
-      { title: "সুযোগসমূহ ওভারভিউ · সমৃদ্ধি" },
+      { title: "সুযোগসমূহ ওভারভিউ · বিনিয়োগ বৃদ্ধি" },
       {
         name: "description",
         content: "সব বিনিয়োগ সুযোগের সার্বিক চিত্র এবং অ্যানালিটিক্স।",

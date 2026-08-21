@@ -23,10 +23,10 @@ export const Route = createFileRoute("/opportunities/$id")({
   },
   head: ({ loaderData }) => {
     if (!loaderData) {
-      return { meta: [{ title: "Not found · সমৃদ্ধি" }, { name: "robots", content: "noindex" }] };
+      return { meta: [{ title: "Not found · বিনিয়োগ বৃদ্ধি" }, { name: "robots", content: "noindex" }] };
     }
     const p = loaderData.project;
-    const title = `${p.name} · সমৃদ্ধি`;
+    const title = `${p.name} · বিনিয়োগ বৃদ্ধি`;
     const desc = (p.description || "যাচাইকৃত বিনিয়োগের সুযোগ").slice(0, 155);
     return {
       meta: [
@@ -145,7 +145,7 @@ function OpportunityDetailsPage() {
             </svg>
             সব সুযোগ
           </button>
-          <img src="/logo.png" alt="সমৃদ্ধি" className="h-6 w-auto" />
+          <img src="/logo.png" alt="বিনিয়োগ বৃদ্ধি" className="h-6 w-auto" />
         </div>
       </header>
 

@@ -75,27 +75,18 @@ function LandingPage() {
 
   return (
     <div
-      className="homepage-bg min-h-screen text-foreground antialiased"
-      style={{
-        backgroundColor: "#f4fbf5",
-      }}
+      className="bg-background min-h-screen text-foreground antialiased"
     >
-      {/* Full-page readability overlay — sits between fixed BG image and all sections */}
-      <div
-        className="homepage-overlay pointer-events-none fixed inset-0 z-0"
-        style={{ background: "rgba(244, 251, 245, 0.45)" }}
-        aria-hidden
-      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "Organization",
-            name: "সমৃদ্ধি",
+            name: "বিনিয়োগ বৃদ্ধি",
             url: "https://samriddhi.techvrs.com",
             logo: "https://samriddhi.techvrs.com/favicon.svg",
-            description: "সমৃদ্ধি একটি বিশ্বস্ত ও নিরাপদ হালাল বিনিয়োগ প্ল্যাটফর্ম।",
+            description: "বিনিয়োগ বৃদ্ধি একটি বিশ্বস্ত ও নিরাপদ হালাল বিনিয়োগ প্ল্যাটফর্ম।",
             contactPoint: {
               "@type": "ContactPoint",
               telephone: "+880-1616-248740",
@@ -608,7 +599,7 @@ function Opportunities({ opportunities }: { opportunities: Opportunity[] }) {
 
 const insightsList = [
   {
-    title: "কেন সমৃদ্ধিতে বিনিয়োগ করবেন: একটি সম্পূর্ণ গাইড",
+    title: "কেন 'বিনিয়োগ বৃদ্ধি'-তে বিনিয়োগ করবেন: একটি সম্পূর্ণ গাইড",
     tag: "বিনিয়োগ গাইড",
     meta: "৩১ জুলাই ২০২৬ · ৮ মিনিট পড়া",
     excerpt: "বাংলাদেশে হালাল ও স্বচ্ছ উপায়ে SME ব্যবসায় বিনিয়োগের সুযোগ দিন দিন বাড়ছে। সঠিক প্ল্যাটফর্ম বেছে নেওয়ার গাইডলাইন...",

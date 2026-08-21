@@ -1,9 +1,9 @@
-# সমৃদ্ধি (Samriddhi) - Halal SME Investment Platform
+# বিনিয়োগ বৃদ্ধি (Samriddhi) - Halal SME Investment Platform
 
 > **AI System Note:** This file is intended to provide LLMs and AI crawlers with a structured overview of this site's purpose and contents.
 
 ## About the Platform
-Samriddhi (সমৃদ্ধি) is a reliable and Shariah-compliant (Halal) investment platform based in Bangladesh. It connects individual investors with verified SME businesses looking for growth capital. 
+Samriddhi (বিনিয়োগ বৃদ্ধি) is a reliable and Shariah-compliant (Halal) investment platform based in Bangladesh. It connects individual investors with verified SME businesses looking for growth capital. 
 
 The platform operates on a partnership and Mudarabah model, meaning there is no fixed interest (Riba). Investors and entrepreneurs share actual profits (and risks) transparently. All businesses are thoroughly vetted (financials, legal checks, entrepreneur background) before being listed.
 

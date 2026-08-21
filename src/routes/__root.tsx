@@ -164,20 +164,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "সমৃদ্ধি — স্বচ্ছ SME বিনিয়োগ প্ল্যাটফর্ম" },
+      { title: "বিনিয়োগ বৃদ্ধি — স্বচ্ছ SME বিনিয়োগ প্ল্যাটফর্ম" },
       {
         name: "description",
         content:
           "যাচাইকৃত SME এবং যাচাইকৃত ব্যবসা প্রতিষ্ঠানে স্বচ্ছ উপায়ে বিনিয়োগ করুন — আকর্ষণীয় লাভ।",
       },
-      { property: "og:title", content: "সমৃদ্ধি — স্বচ্ছ SME বিনিয়োগ প্ল্যাটফর্ম" },
+      { property: "og:title", content: "বিনিয়োগ বৃদ্ধি — স্বচ্ছ SME বিনিয়োগ প্ল্যাটফর্ম" },
       {
         property: "og:description",
         content: "যাচাইকৃত SME এবং যাচাইকৃত ব্যবসা প্রতিষ্ঠানে স্বচ্ছ উপায়ে বিনিয়োগ করুন — আকর্ষণীয় লাভ।",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "সমৃদ্ধি — স্বচ্ছ SME বিনিয়োগ প্ল্যাটফর্ম" },
+      { name: "twitter:title", content: "বিনিয়োগ বৃদ্ধি — স্বচ্ছ SME বিনিয়োগ প্ল্যাটফর্ম" },
       { name: "twitter:description", content: "যাচাইকৃত SME এবং যাচাইকৃত ব্যবসা প্রতিষ্ঠানে স্বচ্ছ উপায়ে বিনিয়োগ করুন — আকর্ষণীয় লাভ।" },
       { property: "og:image", content: "/og-image.jpg" },
       { name: "twitter:image", content: "/og-image.jpg" },

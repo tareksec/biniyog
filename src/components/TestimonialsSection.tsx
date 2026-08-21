@@ -210,7 +210,7 @@ export function TestimonialsSection() {
               __html: JSON.stringify({
                 "@context": "https://schema.org",
                 "@type": "Organization",
-                name: "সমৃদ্ধি",
+                name: "বিনিয়োগ বৃদ্ধি",
                 url: "https://samriddhi.techvrs.com",
                 review: testimonials.filter(t => t.rating).map(t => ({
                   "@type": "Review",

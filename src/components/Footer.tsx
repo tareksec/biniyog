@@ -13,7 +13,7 @@ export function Footer() {
           <div className="space-y-6 lg:col-span-1">
             <div>
               <Link to="/" className="inline-flex items-center gap-2">
-                <img src="/logo.png" alt="সমৃদ্ধি" className="h-10 sm:h-12 w-auto rounded-xl" />
+                <img src="/logo.png" alt="বিনিয়োগ বৃদ্ধি" className="h-10 sm:h-12 w-auto rounded-xl" />
               </Link>
             </div>
             <p className="text-white/70 text-[15px] leading-relaxed">
@@ -110,7 +110,7 @@ export function Footer() {
               </li>
               <li className="flex items-center gap-3 text-white/70">
                 <Mail className="h-5 w-5 text-[#8EB69B] shrink-0" />
-                <span className="text-[15px]">support@samriddhi.com</span>
+                <span className="text-[15px]">support@biniyogbriddhi.com</span>
               </li>
               <li className="flex items-center gap-3 text-white/70">
                 <Briefcase className="h-5 w-5 text-[#8EB69B] shrink-0" />
@@ -138,7 +138,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="mt-8 sm:mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm leading-relaxed text-white/50 text-center md:text-left">
-            © {currentYear} সমৃদ্ধি (Samriddhi). সর্বস্বত্ব সংরক্ষিত।
+            © {currentYear} বিনিয়োগ বৃদ্ধি. সর্বস্বত্ব সংরক্ষিত।
           </p>
           <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 text-sm text-white/50 font-medium mt-4 md:mt-0 relative z-20">
             <span>প্রকৃত ব্যবসা বিনিয়োগ</span>

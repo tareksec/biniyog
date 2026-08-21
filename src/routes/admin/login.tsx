@@ -76,13 +76,13 @@ function AdminLoginPage() {
         {/* Logo / Header */}
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-sm border border-border">
-            <img src="/logo.png" alt="সমৃদ্ধি" className="h-12 w-12 object-contain" />
+            <img src="/logo.png" alt="বিনিয়োগ বৃদ্ধি" className="h-12 w-12 object-contain" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">
             Admin Dashboard
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            সমৃদ্ধি — অ্যাডমিন প্যানেল
+            বিনিয়োগ বৃদ্ধি — অ্যাডমিন প্যানেল
           </p>
         </div>
 

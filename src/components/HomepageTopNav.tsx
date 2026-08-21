@@ -38,7 +38,7 @@ export function HomepageTopNav() {
         <div className="flex-shrink-0">
           <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2 outline-none">
             <span className="text-xl sm:text-2xl font-black font-display text-white drop-shadow-sm">
-              সমৃদ্ধি
+              বিনিয়োগ বৃদ্ধি
             </span>
           </Link>
         </div>
