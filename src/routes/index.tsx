@@ -17,10 +17,11 @@ import { InvestmentCalculator } from "@/components/InvestmentCalculator";
 import { FaqSection } from "@/components/FaqSection";
 import { PolicySection } from "@/components/PolicySection";
 import { WhyChooseSection } from "@/components/WhyChooseSection";
-import { Loader2, CalendarCheck, MapPin, Sparkles } from "lucide-react";
+import { Loader2, CalendarCheck, MapPin, Sparkles, ArrowRight } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { usePrefersReducedMotion, revealVariants, staggerContainer, scaleIn } from "@/lib/animations";
 import { FlipFadeText } from "@/components/ui/flip-fade-text";
+import { usePublishedBlogPosts } from "@/lib/blog";
 
 type OpportunitiesSearch = {
   category?: string;
@@ -104,6 +105,7 @@ function LandingPage() {
       <Hero stats={heroStats} opportunities={opportunities} />
       <WhyChooseSection />
       <PolicySection />
+      <LatestBlogSection />
       <InstructorSection />
       <Opportunities opportunities={opportunities} />
       <HowItWorks />
@@ -111,7 +113,6 @@ function LandingPage() {
         <InvestmentCalculator />
       </div>
       <TestimonialsSection />
-      <LatestInsightsSection />
       <FaqSection />
       <FinalCTA />
       
@@ -597,83 +598,162 @@ function Opportunities({ opportunities }: { opportunities: Opportunity[] }) {
   );
 }
 
-const insightsList = [
-  {
-    title: "কেন 'বিনিয়োগ বৃদ্ধি'-তে বিনিয়োগ করবেন: একটি সম্পূর্ণ গাইড",
-    tag: "বিনিয়োগ গাইড",
-    meta: "৩১ জুলাই ২০২৬ · ৮ মিনিট পড়া",
-    excerpt: "বাংলাদেশে হালাল ও স্বচ্ছ উপায়ে SME ব্যবসায় বিনিয়োগের সুযোগ দিন দিন বাড়ছে। সঠিক প্ল্যাটফর্ম বেছে নেওয়ার গাইডলাইন...",
-    link: "/insights/keno-somriddhite-biniyog"
-  },
-  {
-    title: "এসএমই (SME) খাতে হালাল বিনিয়োগের নিয়মাবলী",
-    tag: "শরীয়াহ গাইড",
-    meta: "১৫ আগস্ট ২০২৬ · ৫ মিনিট পড়া",
-    excerpt: "ছোট ও মাঝারি ব্যবসায় হালাল উপায়ে কীভাবে বিনিয়োগ করবেন এবং শরীয়াহ সম্মত মুনাফা নিশ্চিত করবেন তার বিস্তারিত দিকনির্দেশনা।",
-    link: "/insights"
-  },
-  {
-    title: "বিনিয়োগের ঝুঁকি কমানোর কার্যকরী কৌশল",
-    tag: "ঝুঁকি ব্যবস্থাপনা",
-    meta: "২৫ আগস্ট ২০২৬ · ৬ মিনিট পড়া",
-    excerpt: "যে কোনো ব্যবসায় বিনিয়োগে ঝুঁকি থাকে। সঠিক বিশ্লেষণ ও পোর্টফোলিও বৈচিত্র্যকরণের মাধ্যমে কীভাবে ঝুঁকি কমানো যায় তা জেনে নিন।",
-    link: "/insights"
-  }
-];
+function toBanglaDigits(num: number | string): string {
+  const bnDigits = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
+  return num.toString().replace(/\d/g, (d) => bnDigits[parseInt(d, 10)]);
+}
 
-function LatestInsightsSection() {
+function calculateBlogReadingTime(html?: string): string {
+  if (!html) return "২ মিনিট";
+  const text = html.replace(/<[^>]*>/g, "");
+  const words = text.trim().split(/\s+/).length;
+  const minutes = Math.max(1, Math.ceil(words / 180));
+  return `${toBanglaDigits(minutes)} মিনিট পড়া`;
+}
+
+function formatBlogDateBengali(dateString?: string | null): string {
+  if (!dateString) return "";
+  try {
+    const d = new Date(dateString);
+    const day = toBanglaDigits(d.getDate());
+    const year = toBanglaDigits(d.getFullYear());
+    const monthsBn = [
+      "জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন",
+      "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর"
+    ];
+    const month = monthsBn[d.getMonth()];
+    return `${day} ${month} ${year}`;
+  } catch {
+    return dateString;
+  }
+}
+
+function LatestBlogSection() {
   const prefersReduced = usePrefersReducedMotion();
+  const { data: dbPosts = [], isLoading } = usePublishedBlogPosts();
+
+  const posts = useMemo(() => {
+    if (dbPosts.length > 0) {
+      return dbPosts.slice(0, 3).map((post) => ({
+        id: post.id,
+        title: post.title,
+        tag: post.category?.name || "ব্লগ",
+        date: formatBlogDateBengali(post.published_at || post.created_at),
+        readTime: calculateBlogReadingTime(post.content_html),
+        excerpt: post.excerpt || "",
+        image: post.cover_image_url || "https://images.unsplash.com/photo-1579532537598-459ecdaf39cc?q=80&w=800&auto=format&fit=crop",
+        link: `/blog/${post.slug}`,
+      }));
+    }
+    // Fallback articles if database has no posts yet
+    return [
+      {
+        id: "fallback-1",
+        title: "কেন 'বিনিয়োগ বৃদ্ধি'-তে বিনিয়োগ করবেন: একটি সম্পূর্ণ গাইড",
+        tag: "বিনিয়োগ গাইড",
+        date: "৩১ জুলাই ২০২৬",
+        readTime: "৮ মিনিট পড়া",
+        excerpt: "বাংলাদেশে হালাল ও স্বচ্ছ উপায়ে SME ব্যবসায় বিনিয়োগের সুযোগ দিন দিন বাড়ছে। সঠিক প্ল্যাটফর্ম বেছে নেওয়ার গাইডলাইন...",
+        image: "https://images.unsplash.com/photo-1579532537598-459ecdaf39cc?q=80&w=800&auto=format&fit=crop",
+        link: "/insights/keno-somriddhite-biniyog",
+      },
+      {
+        id: "fallback-2",
+        title: "এসএমই (SME) খাতে হালাল বিনিয়োগের নিয়মাবলী",
+        tag: "শরীয়াহ গাইড",
+        date: "১৫ আগস্ট ২০২৬",
+        readTime: "৫ মিনিট পড়া",
+        excerpt: "ছোট ও মাঝারি ব্যবসায় হালাল উপায়ে কীভাবে বিনিয়োগ করবেন এবং শরীয়াহ সম্মত মুনাফা নিশ্চিত করবেন তার বিস্তারিত দিকনির্দেশনা।",
+        image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=800&auto=format&fit=crop",
+        link: "/insights/sme-halal-biniyog",
+      },
+      {
+        id: "fallback-3",
+        title: "বিনিয়োগের ঝুঁকি কমানোর কার্যকরী কৌশল",
+        tag: "ঝুঁকি ব্যবস্থাপনা",
+        date: "২৫ আগস্ট ২০২৬",
+        readTime: "৬ মিনিট পড়া",
+        excerpt: "যে কোনো ব্যবসায় বিনিয়োগে ঝুঁকি থাকে। সঠিক বিশ্লেষণ ও পোর্টফোলিও বৈচিত্র্যকরণের মাধ্যমে কীভাবে ঝুঁকি কমানো যায় তা জেনে নিন।",
+        image: "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?q=80&w=800&auto=format&fit=crop",
+        link: "/insights/krishi-khate-biniyog",
+      }
+    ];
+  }, [dbPosts]);
+
   return (
-    <section id="insights-preview" className="relative overflow-hidden border-t border-border bg-surface/75 backdrop-blur-[2px]">
-      <div className="mx-auto max-w-7xl px-5 py-24 sm:px-8 sm:py-28">
+    <section id="blog-preview" className="relative overflow-hidden border-t border-border bg-surface/75 backdrop-blur-[2px]">
+      <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-28">
         <SectionHeader
-          eyebrow="সাম্প্রতিক ইনসাইটস"
-          title="বিনিয়োগ সম্পর্কিত সর্বশেষ আর্টিকেল"
+          eyebrow="সর্বশেষ ব্লগ ও ইনসাইটস"
+          title="বিনিয়োগ ও ব্যবসা সম্পর্কিত সর্বশেষ ব্লগ"
           align="center"
         />
         
-        <motion.div
-          variants={staggerContainer}
-          initial={prefersReduced ? "show" : "hidden"}
-          whileInView="show"
-          viewport={{ once: true, amount: 0.1 }}
-          className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 sm:gap-6"
-        >
-          {insightsList.map((insight, i) => (
-            <motion.div key={i} variants={revealVariants}>
-              <Link to={insight.link} className="block h-full relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)] card-hover sm:p-8 group">
-                <div className="flex items-center gap-3 mb-5">
-                  <span className="pill bg-primary/10 text-primary font-semibold border-none text-[11px] px-2.5 py-1">
-                    {insight.tag}
-                  </span>
-                  <span className="text-xs text-muted-foreground font-medium">{insight.meta.split(' · ')[0]}</span>
-                </div>
-                <h3 className="text-lg sm:text-xl font-bold leading-tight group-hover:text-primary transition-colors duration-300">
-                  {insight.title}
-                </h3>
-                <p className="mt-3 text-[14px] leading-relaxed text-muted-foreground">
-                  {insight.excerpt}
-                </p>
-                <div className="mt-6 flex items-center gap-2 text-[13.5px] font-semibold text-primary">
-                  বিস্তারিত পড়ুন 
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="transition-transform duration-300 group-hover:translate-x-1">
-                    <path d="M5 12h14M13 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </motion.div>
-
-        <div className="mt-16 flex justify-center">
-          <Link
-            to="/insights"
-            className="inline-flex items-center gap-2 rounded-full border-2 border-primary bg-background px-8 py-3.5 text-[15px] font-bold text-primary shadow-sm btn-hover hover:bg-primary hover:text-primary-foreground"
+        {isLoading ? (
+          <div className="mt-12 flex justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <motion.div
+            variants={staggerContainer}
+            initial={prefersReduced ? "show" : "hidden"}
+            whileInView="show"
+            viewport={{ once: true, amount: 0.1 }}
+            className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 sm:gap-8"
           >
-            সব ইনসাইট দেখুন
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M5 12h14M13 5l7 7-7 7" />
-            </svg>
+            {posts.map((post) => (
+              <motion.div key={post.id} variants={revealVariants}>
+                <Link
+                  to={post.link}
+                  className="flex flex-col h-full overflow-hidden rounded-3xl border border-border bg-card shadow-[var(--shadow-card)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[var(--shadow-elevated)] group"
+                >
+                  <div className="relative aspect-video overflow-hidden bg-muted">
+                    <img
+                      src={post.image}
+                      alt={post.title}
+                      loading="lazy"
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute top-3.5 left-3.5">
+                      <span className="pill bg-white/95 dark:bg-zinc-900/90 backdrop-blur-md text-primary font-bold shadow-sm border-none text-[11px] px-3 py-1">
+                        {post.tag}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-1 flex-col p-6">
+                    <div className="flex items-center gap-2.5 text-xs text-muted-foreground font-medium mb-3">
+                      <span>{post.date}</span>
+                      <span className="h-1 w-1 rounded-full bg-border" />
+                      <span>{post.readTime}</span>
+                    </div>
+                    
+                    <h3 className="text-lg sm:text-xl font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2 mb-2.5">
+                      {post.title}
+                    </h3>
+                    
+                    <p className="text-sm leading-relaxed text-muted-foreground line-clamp-3 mb-4">
+                      {post.excerpt}
+                    </p>
+
+                    <div className="mt-auto pt-4 flex items-center justify-between border-t border-border/50 text-[13.5px] font-semibold text-primary">
+                      <span>বিস্তারিত পড়ুন</span>
+                      <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    </div>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+
+        <div className="mt-14 flex justify-center">
+          <Link
+            to="/blog"
+            className="inline-flex items-center gap-2 rounded-full border-2 border-primary bg-background px-8 py-3.5 text-[15px] font-bold text-primary shadow-sm btn-hover hover:bg-primary hover:text-primary-foreground transition-all"
+          >
+            সব ব্লগ পোস্ট দেখুন
+            <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
       </div>
