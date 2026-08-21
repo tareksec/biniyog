@@ -17,6 +17,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as InsightsIndexRouteImport } from './routes/insights/index'
+import { Route as InsightsSlugRouteImport } from './routes/insights/$slug'
 import { Route as InsightsInflationPortfolioRouteImport } from './routes/insights/inflation-portfolio'
 import { Route as InsightsKenoSomriddhiteBiniyogRouteImport } from './routes/insights/keno-somriddhite-biniyog'
 import { Route as InsightsKrishiKhateBiniyogRouteImport } from './routes/insights/krishi-khate-biniyog'
@@ -65,6 +66,11 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
 const InsightsIndexRoute = InsightsIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => InsightsRoute,
+} as any)
+const InsightsSlugRoute = InsightsSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
   getParentRoute: () => InsightsRoute,
 } as any)
 const InsightsInflationPortfolioRoute =
@@ -124,6 +130,7 @@ export interface FileRoutesByFullPath {
   '/reviews': typeof ReviewsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/login': typeof AdminLoginRoute
+  '/insights/$slug': typeof InsightsSlugRoute
   '/insights/inflation-portfolio': typeof InsightsInflationPortfolioRoute
   '/insights/keno-somriddhite-biniyog': typeof InsightsKenoSomriddhiteBiniyogRoute
   '/insights/krishi-khate-biniyog': typeof InsightsKrishiKhateBiniyogRoute
@@ -142,6 +149,7 @@ export interface FileRoutesByTo {
   '/reviews': typeof ReviewsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/login': typeof AdminLoginRoute
+  '/insights/$slug': typeof InsightsSlugRoute
   '/insights/inflation-portfolio': typeof InsightsInflationPortfolioRoute
   '/insights/keno-somriddhite-biniyog': typeof InsightsKenoSomriddhiteBiniyogRoute
   '/insights/krishi-khate-biniyog': typeof InsightsKrishiKhateBiniyogRoute
@@ -162,6 +170,7 @@ export interface FileRoutesById {
   '/reviews': typeof ReviewsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/login': typeof AdminLoginRoute
+  '/insights/$slug': typeof InsightsSlugRoute
   '/insights/inflation-portfolio': typeof InsightsInflationPortfolioRoute
   '/insights/keno-somriddhite-biniyog': typeof InsightsKenoSomriddhiteBiniyogRoute
   '/insights/krishi-khate-biniyog': typeof InsightsKrishiKhateBiniyogRoute
@@ -183,6 +192,7 @@ export interface FileRouteTypes {
     | '/reviews'
     | '/admin/dashboard'
     | '/admin/login'
+    | '/insights/$slug'
     | '/insights/inflation-portfolio'
     | '/insights/keno-somriddhite-biniyog'
     | '/insights/krishi-khate-biniyog'
@@ -201,6 +211,7 @@ export interface FileRouteTypes {
     | '/reviews'
     | '/admin/dashboard'
     | '/admin/login'
+    | '/insights/$slug'
     | '/insights/inflation-portfolio'
     | '/insights/keno-somriddhite-biniyog'
     | '/insights/krishi-khate-biniyog'
@@ -220,6 +231,7 @@ export interface FileRouteTypes {
     | '/reviews'
     | '/admin/dashboard'
     | '/admin/login'
+    | '/insights/$slug'
     | '/insights/inflation-portfolio'
     | '/insights/keno-somriddhite-biniyog'
     | '/insights/krishi-khate-biniyog'
@@ -306,6 +318,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InsightsIndexRouteImport
       parentRoute: typeof InsightsRoute
     }
+    '/insights/$slug': {
+      id: '/insights/$slug'
+      path: '/$slug'
+      fullPath: '/insights/$slug'
+      preLoaderRoute: typeof InsightsSlugRouteImport
+      parentRoute: typeof InsightsRoute
+    }
     '/insights/inflation-portfolio': {
       id: '/insights/inflation-portfolio'
       path: '/inflation-portfolio'
@@ -373,6 +392,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface InsightsRouteChildren {
+  InsightsSlugRoute: typeof InsightsSlugRoute
   InsightsInflationPortfolioRoute: typeof InsightsInflationPortfolioRoute
   InsightsKenoSomriddhiteBiniyogRoute: typeof InsightsKenoSomriddhiteBiniyogRoute
   InsightsKrishiKhateBiniyogRoute: typeof InsightsKrishiKhateBiniyogRoute
@@ -381,6 +401,7 @@ interface InsightsRouteChildren {
 }
 
 const InsightsRouteChildren: InsightsRouteChildren = {
+  InsightsSlugRoute: InsightsSlugRoute,
   InsightsInflationPortfolioRoute: InsightsInflationPortfolioRoute,
   InsightsKenoSomriddhiteBiniyogRoute: InsightsKenoSomriddhiteBiniyogRoute,
   InsightsKrishiKhateBiniyogRoute: InsightsKrishiKhateBiniyogRoute,

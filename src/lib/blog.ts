@@ -51,6 +51,60 @@ export function useBlogPosts() {
   });
 }
 
+export async function fetchPublishedBlogPosts(): Promise<(BlogPost & { category: BlogCategory | null })[]> {
+  const { data, error } = await supabase
+    .from("blog_posts")
+    .select(`
+      *,
+      category:blog_categories(*)
+    `)
+    .eq("status", "published")
+    .order("published_at", { ascending: false });
+
+  if (error) {
+    console.warn("[fetchPublishedBlogPosts] Supabase error:", error.message);
+    return [];
+  }
+
+  return (data || []) as any;
+}
+
+export function usePublishedBlogPosts() {
+  return useQuery({
+    queryKey: ["published_blog_posts"],
+    queryFn: fetchPublishedBlogPosts,
+    staleTime: 1000 * 60 * 1, // 1 min
+  });
+}
+
+export async function fetchBlogPostBySlug(slug: string): Promise<(BlogPost & { category: BlogCategory | null }) | null> {
+  const { data, error } = await supabase
+    .from("blog_posts")
+    .select(`
+      *,
+      category:blog_categories(*)
+    `)
+    .eq("slug", slug)
+    .eq("status", "published")
+    .maybeSingle();
+
+  if (error) {
+    console.warn("[fetchBlogPostBySlug] Supabase error:", error.message);
+    return null;
+  }
+
+  return data as any;
+}
+
+export function useBlogPostBySlug(slug?: string) {
+  return useQuery({
+    queryKey: ["blog_post_by_slug", slug],
+    queryFn: () => fetchBlogPostBySlug(slug!),
+    enabled: !!slug,
+    staleTime: 1000 * 60 * 1,
+  });
+}
+
 export async function fetchBlogPost(id: string): Promise<BlogPost | null> {
   const { data, error } = await supabase
     .from("blog_posts")
@@ -74,3 +128,4 @@ export function useBlogPost(id?: string) {
     staleTime: 1000 * 60 * 1,
   });
 }
+
