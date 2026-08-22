@@ -72,10 +72,10 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="/#policy" className="text-white/70 hover:text-white transition-colors inline-flex items-center gap-2">
+                <Link to="/privacy" className="text-white/70 hover:text-white transition-colors inline-flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#8EB69B]"></span>
                   আমাদের নীতিমালা
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -92,16 +92,16 @@ export function Footer() {
               </li>
 
               <li>
-                <a href="/#policy" className="text-white/70 hover:text-white transition-colors inline-flex items-center gap-2">
+                <Link to="/terms" className="text-white/70 hover:text-white transition-colors inline-flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#8EB69B]"></span>
                   শর্তাবলী (Terms)
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/#policy" className="text-white/70 hover:text-white transition-colors inline-flex items-center gap-2">
+                <Link to="/privacy" className="text-white/70 hover:text-white transition-colors inline-flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#8EB69B]"></span>
                   গোপনীয়তা নীতি (Privacy)
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
