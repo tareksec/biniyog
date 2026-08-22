@@ -58,26 +58,24 @@ export function GlobalNav() {
   ];
 
   const leftContent = (
-    <button onClick={() => scrollTo("top")} className="flex items-center gap-2 transition-transform hover:scale-105">
-      <img src="/logo.png" alt="বিনিয়োগ বৃদ্ধি" className="h-8 sm:h-10 w-auto rounded-lg" />
+    <button onClick={() => scrollTo("top")} className="flex items-center transition-transform hover:scale-105">
+      <img src="/logo.png" alt="বিনিয়োগ বৃদ্ধি" className="h-7 sm:h-10 w-auto rounded-lg shrink-0" />
     </button>
   );
 
   const rightContent = (
-    <div className="flex items-center gap-2 sm:gap-3">
-
-      
+    <div className="flex items-center">
       {/* Mobile hamburger */}
       <button
-        className="grid h-[36px] w-[36px] sm:h-10 sm:w-10 shrink-0 place-items-center rounded-full bg-muted/50 text-foreground transition hover:bg-muted active:scale-95 md:hidden"
+        className="grid h-8 w-8 sm:h-10 sm:w-10 shrink-0 place-items-center rounded-full bg-muted/50 text-foreground transition hover:bg-muted active:scale-95 md:hidden"
         aria-label={open ? "মেনু বন্ধ করুন" : "মেনু খুলুন"}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
       >
         {open ? (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12" /></svg>
+          <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12" /></svg>
         ) : (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><path d="M4 12h16M4 6h16M4 18h16" /></svg>
+          <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><path d="M4 12h16M4 6h16M4 18h16" /></svg>
         )}
       </button>
     </div>
@@ -85,13 +83,15 @@ export function GlobalNav() {
 
   return (
     <>
-      <div className="fixed left-0 right-0 bottom-4 sm:bottom-6 z-50 flex justify-center px-4 transition-all duration-300">
-        <GlassDock 
-          items={dockItems} 
-          leftContent={leftContent} 
-          rightContent={rightContent} 
-          className="mx-auto" 
-        />
+      <div className="fixed left-0 right-0 bottom-4 sm:bottom-6 z-50 flex justify-center px-2 sm:px-4 transition-all duration-300 pointer-events-none">
+        <div className="pointer-events-auto">
+          <GlassDock 
+            items={dockItems} 
+            leftContent={leftContent} 
+            rightContent={rightContent} 
+            className="mx-auto" 
+          />
+        </div>
       </div>
 
       {/* Mobile dropdown */}

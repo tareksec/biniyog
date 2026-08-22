@@ -379,7 +379,7 @@ export const GlassDock = React.forwardRef<HTMLDivElement, GlassDockProps>(
             >
                 <div
                     className={cn(
-                        "glass-dock relative flex gap-1.5 sm:gap-4 items-center px-2.5 py-1.5 sm:px-6 sm:py-3 rounded-full",
+                        "glass-dock relative flex gap-1 sm:gap-4 items-center px-3 py-1.5 sm:px-6 sm:py-3 rounded-full",
                         "glass-border bg-background/80",
                         "backdrop-blur-xl shadow-xl border border-border/50",
                         dockClassName
@@ -390,10 +390,10 @@ export const GlassDock = React.forwardRef<HTMLDivElement, GlassDockProps>(
                     }}
                 >
                     {leftContent && (
-                        <div className="flex-shrink-0 mr-1.5 sm:mr-4 flex items-center">{leftContent}</div>
+                        <div className="flex-shrink-0 mr-1 sm:mr-3 flex items-center">{leftContent}</div>
                     )}
                     
-                    <div className="flex gap-0.5 sm:gap-4 items-center relative">
+                    <div className="flex gap-0.5 sm:gap-2 md:gap-4 items-center relative">
 
 
                     {items.map((el, index) => {
@@ -418,7 +418,7 @@ export const GlassDock = React.forwardRef<HTMLDivElement, GlassDockProps>(
                                     key={el.title}
                                     onMouseEnter={() => handleMouseEnter(index)}
                                     onClick={handleClick}
-                                    className="relative h-9 sm:h-10 flex items-center justify-center cursor-pointer"
+                                    className="relative h-8 w-8 sm:h-10 sm:w-auto flex items-center justify-center cursor-pointer shrink-0"
                                     role="button"
                                     tabIndex={0}
                                     onKeyDown={(e) => {
@@ -435,13 +435,13 @@ export const GlassDock = React.forwardRef<HTMLDivElement, GlassDockProps>(
                                         }}
                                         transition={{ duration: 0.25, ease: "easeOut" }}
                                         className={cn(
-                                            "flex h-9 sm:h-10 items-center gap-1.5 sm:gap-2 px-3 sm:px-4 rounded-full font-bold shadow-md transition-all",
+                                            "flex h-8 w-8 sm:h-10 sm:w-auto items-center justify-center gap-1.5 sm:gap-2 px-0 sm:px-4 rounded-full font-bold shadow-md transition-all",
                                             "bg-primary text-primary-foreground shadow-primary/25 hover:bg-primary/90 hover:shadow-primary/40"
                                         )}
                                         style={{ background: "var(--gradient-primary)" }}
                                     >
-                                        <Icon className="h-[15px] w-[15px] sm:h-[18px] sm:w-[18px] shrink-0 text-primary-foreground" />
-                                        <span className="text-[12px] sm:text-[13.5px] font-bold whitespace-nowrap tracking-wide text-primary-foreground">
+                                        <Icon className="h-4 w-4 sm:h-[18px] sm:w-[18px] shrink-0 text-primary-foreground" />
+                                        <span className="hidden sm:inline text-[12px] sm:text-[13.5px] font-bold whitespace-nowrap tracking-wide text-primary-foreground">
                                             {el.title}
                                         </span>
                                     </motion.div>
@@ -454,7 +454,7 @@ export const GlassDock = React.forwardRef<HTMLDivElement, GlassDockProps>(
                                 key={el.title}
                                 onMouseEnter={() => handleMouseEnter(index)}
                                 onClick={handleClick}
-                                className="relative w-10 h-10 flex items-center justify-center cursor-pointer"
+                                className="relative w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center cursor-pointer shrink-0"
                                 role="button"
                                 tabIndex={0}
                                 onKeyDown={(e) => {
@@ -471,7 +471,7 @@ export const GlassDock = React.forwardRef<HTMLDivElement, GlassDockProps>(
                                     }}
                                     transition={{ duration: 0.25, ease: "easeOut" }}
                                     className={cn(
-                                        "flex h-[36px] w-[36px] sm:h-10 sm:w-10 items-center justify-center rounded-full transition-colors relative",
+                                        "flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full transition-colors relative",
                                         el.accent && !isHovered && "bg-primary/15",
                                         isHovered 
                                             ? (el.accent ? "bg-primary shadow-lg shadow-primary/40" : "bg-primary/10") 
@@ -482,7 +482,7 @@ export const GlassDock = React.forwardRef<HTMLDivElement, GlassDockProps>(
                                         <div className="absolute inset-0 rounded-full bg-primary/40 animate-ping opacity-20" style={{ animationDuration: '2.5s' }} />
                                     )}
                                     {el.accent && (
-                                        <span className="absolute -top-1.5 -right-2 flex h-4 items-center justify-center rounded-full bg-red-500 px-1.5 text-[9px] font-bold text-white shadow-sm ring-2 ring-background z-20">
+                                        <span className="absolute -top-1 -right-1 sm:-top-1.5 sm:-right-2 flex h-3.5 sm:h-4 items-center justify-center rounded-full bg-red-500 px-1 sm:px-1.5 text-[8px] sm:text-[9px] font-bold text-white shadow-sm ring-1 sm:ring-2 ring-background z-20">
                                             নতুন
                                         </span>
                                     )}
@@ -493,7 +493,7 @@ export const GlassDock = React.forwardRef<HTMLDivElement, GlassDockProps>(
                                             onClick={handleClick}
                                             onMouseEnter={() => { }}
                                             className={cn(
-                                                'h-[17px] w-[17px] sm:h-[20px] sm:w-[20px] transition-colors duration-200 relative z-10',
+                                                'h-4 w-4 sm:h-[20px] sm:w-[20px] transition-colors duration-200 relative z-10',
                                                 el.accent 
                                                     ? (isHovered ? 'text-primary-foreground' : 'text-primary')
                                                     : (isHovered ? 'text-primary' : 'text-muted-foreground')
@@ -502,7 +502,7 @@ export const GlassDock = React.forwardRef<HTMLDivElement, GlassDockProps>(
                                     ) : (
                                         <Icon
                                             className={cn(
-                                                'h-[17px] w-[17px] sm:h-[20px] sm:w-[20px] transition-colors duration-200 relative z-10',
+                                                'h-4 w-4 sm:h-[20px] sm:w-[20px] transition-colors duration-200 relative z-10',
                                                 el.accent 
                                                     ? (isHovered ? 'text-primary-foreground' : 'text-primary')
                                                     : (isHovered ? 'text-primary' : 'text-muted-foreground')
@@ -553,7 +553,7 @@ export const GlassDock = React.forwardRef<HTMLDivElement, GlassDockProps>(
                     </div>
                     
                     {rightContent && (
-                        <div className="flex-shrink-0 ml-2 sm:ml-4 flex items-center">{rightContent}</div>
+                        <div className="flex-shrink-0 ml-1 sm:ml-3 flex items-center">{rightContent}</div>
                     )}
                 </div>
             </div>
