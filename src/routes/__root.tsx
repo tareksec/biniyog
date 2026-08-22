@@ -388,6 +388,13 @@ function RootComponent() {
 }
 
 function FloatingWhatsAppButton() {
+  const router = useRouter();
+  const pathname = router.state.location.pathname;
+
+  if (pathname.startsWith("/admin")) {
+    return null;
+  }
+
   return (
     <a
       href="https://wa.me/8801316110209"

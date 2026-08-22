@@ -658,10 +658,10 @@ function AdminDashboard() {
                   <Plus className="h-4 w-4" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm text-[#051F20] group-hover:text-[#235347] transition-colors leading-tight">
+                  <h3 className="font-bold text-sm text-[#051F20] group-hover:text-[#235347] transition-colors leading-tight card-title">
                     নতুন প্রজেক্ট
                   </h3>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">সুযোগ যোগ করুন</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5 card-description">সুযোগ যোগ করুন</p>
                 </div>
               </button>
 
@@ -674,10 +674,10 @@ function AdminDashboard() {
                   <BookOpen className="h-4 w-4" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm text-[#051F20] group-hover:text-purple-800 transition-colors leading-tight">
+                  <h3 className="font-bold text-sm text-[#051F20] group-hover:text-purple-800 transition-colors leading-tight card-title">
                     নতুন ব্লগ
                   </h3>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">আর্টিকেল প্রকাশ</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5 card-description">আর্টিকেল প্রকাশ</p>
                 </div>
               </Link>
 
@@ -693,10 +693,10 @@ function AdminDashboard() {
                   <MessageSquareQuote className="h-4 w-4" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm text-[#051F20] group-hover:text-amber-800 transition-colors leading-tight">
+                  <h3 className="font-bold text-sm text-[#051F20] group-hover:text-amber-800 transition-colors leading-tight card-title">
                     প্রশংসাপত্র
                   </h3>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">নতুন রিভিউ যোগ</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5 card-description">নতুন রিভিউ যোগ</p>
                 </div>
               </button>
 
@@ -712,10 +712,10 @@ function AdminDashboard() {
                   <Star className="h-4 w-4" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm text-[#051F20] group-hover:text-rose-800 transition-colors leading-tight">
+                  <h3 className="font-bold text-sm text-[#051F20] group-hover:text-rose-800 transition-colors leading-tight card-title">
                     হোম রিভিউ
                   </h3>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">ফিচার্ড রিভিউ</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5 card-description">ফিচার্ড রিভিউ</p>
                 </div>
               </button>
 
@@ -987,12 +987,12 @@ function AdminDashboard() {
                           setSelectedBlogCategory(selectedBlogCategory === catName ? "all" : catName);
                         }
                       }}
-                      className={`px-4 py-2 rounded-2xl text-xs font-bold shrink-0 transition-all duration-200 border flex items-center gap-2 ${style.bg} ${style.text} ${style.border} ${
+                      className={`px-4 py-2 rounded-2xl text-xs font-bold shrink-0 transition-all duration-200 border flex items-center gap-2 max-w-[200px] ${style.bg} ${style.text} ${style.border} ${
                         isSelected ? style.active : "hover:shadow-2xs hover:scale-102"
                       }`}
                     >
-                      <span>{catName}</span>
-                      <span className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded-full ${style.badgeBg}`}>
+                      <span className="truncate break-words">{catName}</span>
+                      <span className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded-full shrink-0 ${style.badgeBg}`}>
                         {count}
                       </span>
                     </button>
@@ -1005,41 +1005,41 @@ function AdminDashboard() {
           {/* ─── Featured Highlight Hero Card (Reference "Featured Doctor" Style) ─── */}
           {activeTab === "opportunities" && featuredOpportunity && selectedOppCategory === "all" && !searchQuery && (
             <div className="bg-gradient-to-br from-[#EAF5EE] via-[#F4F9F5] to-[#FCF8EE] rounded-[2.2rem] p-5 sm:p-6 border border-emerald-800/10 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden group">
-              <div className="flex items-start gap-4 z-10 max-w-xl">
+              <div className="flex items-start gap-4 z-10 max-w-xl min-w-0 flex-1">
                 <div className="w-16 h-16 rounded-2xl bg-[#0B2B26] text-[#DAF1DE] flex items-center justify-center font-bold text-2xl shrink-0 shadow-md">
                   <Briefcase className="h-8 w-8" />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="bg-emerald-700 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                    <span className="bg-emerald-700 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider shrink-0">
                       ফিচার্ড প্রজেক্ট
                     </span>
                     {statusBadge(featuredOpportunity.status)}
                     {featuredOpportunity.category && (
-                      <span className="text-xs font-semibold text-muted-foreground">
+                      <span className="text-xs font-semibold text-muted-foreground truncate max-w-[180px]">
                         • {featuredOpportunity.category}
                       </span>
                     )}
                   </div>
-                  <h2 className="text-xl font-bold text-[#051F20] tracking-tight line-clamp-1">
+                  <h2 className="text-xl font-bold text-[#051F20] tracking-tight card-title">
                     {featuredOpportunity.name}
                   </h2>
-                  <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                  <p className="text-xs text-muted-foreground leading-relaxed card-description">
                     {featuredOpportunity.description || "এই প্রজেক্টের বিস্তারিত তথ্য ও বিনিয়োগ সুযোগ উপলব্ধ রয়েছে।"}
                   </p>
                 </div>
               </div>
 
               {/* Data & Actions on Right */}
-              <div className="flex items-center gap-6 z-10 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 pt-3 md:pt-0 border-emerald-800/10">
+              <div className="flex items-center gap-6 z-10 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 pt-3 md:pt-0 border-emerald-800/10 shrink-0">
                 <div className="flex items-center gap-4 text-left">
-                  <div className="bg-white/80 backdrop-blur-xs px-4 py-2 rounded-2xl border border-emerald-900/5 shadow-2xs">
+                  <div className="bg-white/80 backdrop-blur-xs px-4 py-2 rounded-2xl border border-emerald-900/5 shadow-2xs min-w-0">
                     <div className="text-[10px] text-muted-foreground font-semibold">বিনিয়োগ লক্ষ্য</div>
-                    <div className="text-sm font-bold text-[#0B2B26]">{featuredOpportunity.investment_amount || "—"}</div>
+                    <div className="text-sm font-bold text-[#0B2B26] truncate max-w-[140px]">{featuredOpportunity.investment_amount || "—"}</div>
                   </div>
-                  <div className="bg-white/80 backdrop-blur-xs px-4 py-2 rounded-2xl border border-emerald-900/5 shadow-2xs">
+                  <div className="bg-white/80 backdrop-blur-xs px-4 py-2 rounded-2xl border border-emerald-900/5 shadow-2xs min-w-0">
                     <div className="text-[10px] text-muted-foreground font-semibold">প্রত্যাশিত লাভ</div>
-                    <div className="text-sm font-bold text-emerald-700">{featuredOpportunity.expected_profit || "—"}</div>
+                    <div className="text-sm font-bold text-emerald-700 truncate max-w-[140px]">{featuredOpportunity.expected_profit || "—"}</div>
                   </div>
                 </div>
 
@@ -1109,20 +1109,20 @@ function AdminDashboard() {
                     >
                       {/* Card Top: Thumbnail + Status Badge */}
                       <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
                           <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-[#0B2B26] border border-emerald-100 flex items-center justify-center font-bold text-lg shrink-0 shadow-2xs">
                             {opp.name ? opp.name.charAt(0) : "ব"}
                           </div>
-                          <div>
-                            <h3 className="font-bold text-base text-[#051F20] line-clamp-1 group-hover:text-[#235347] transition-colors">
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-bold text-base text-[#051F20] group-hover:text-[#235347] transition-colors card-title">
                               {opp.name}
                             </h3>
-                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
-                              <span>/{opp.slug}</span>
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5 min-w-0 flex-wrap">
+                              <span className="truncate max-w-[120px]">/{opp.slug}</span>
                               {opp.category && (
                                 <>
                                   <span>•</span>
-                                  <span className="font-medium text-emerald-800">{opp.category}</span>
+                                  <span className="font-medium text-emerald-800 truncate max-w-[140px]">{opp.category}</span>
                                 </>
                               )}
                             </div>
@@ -1135,23 +1135,23 @@ function AdminDashboard() {
 
                       {/* 2-Column Key Metrics Sub-card */}
                       <div className="bg-[#F8FAF9] rounded-2xl p-3 border border-emerald-900/5 grid grid-cols-2 gap-2 text-left">
-                        <div>
+                        <div className="min-w-0">
                           <span className="text-[10px] text-muted-foreground font-semibold block">বিনিয়োগ লক্ষ্য</span>
-                          <span className="text-xs font-bold text-[#051F20]">{opp.investment_amount || "—"}</span>
+                          <span className="text-xs font-bold text-[#051F20] truncate block">{opp.investment_amount || "—"}</span>
                         </div>
-                        <div>
+                        <div className="min-w-0">
                           <span className="text-[10px] text-muted-foreground font-semibold block">প্রত্যাশিত লাভ</span>
-                          <span className="text-xs font-bold text-emerald-700">{opp.expected_profit || "—"}</span>
+                          <span className="text-xs font-bold text-emerald-700 truncate block">{opp.expected_profit || "—"}</span>
                         </div>
                       </div>
 
                       {/* Bottom Action Dock: Small Dark Circular Buttons */}
                       <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                        <span className="text-[11px] text-muted-foreground">
+                        <span className="text-[11px] text-muted-foreground truncate max-w-[140px]">
                           {opp.profit_period ? `মেয়াদ: ${opp.profit_period}` : "মেয়াদ: সাধারণ"}
                         </span>
                         
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 shrink-0">
                           {/* Live view button */}
                           <Button
                             variant="ghost"
@@ -1201,7 +1201,7 @@ function AdminDashboard() {
                       key={post.id}
                       className="bg-white rounded-[1.8rem] p-5 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between gap-4 group"
                     >
-                      <div className="space-y-3">
+                      <div className="space-y-3 min-w-0">
                         {/* Cover Image */}
                         <div className="h-32 w-full rounded-2xl overflow-hidden bg-slate-100 relative">
                           {post.cover_image_url ? (
@@ -1229,27 +1229,32 @@ function AdminDashboard() {
                         </div>
 
                         {/* Title & Category */}
-                        <div>
-                          <div className="text-[11px] font-bold text-purple-700 uppercase tracking-wider">
+                        <div className="min-w-0">
+                          <div className="text-[11px] font-bold text-purple-700 uppercase tracking-wider truncate max-w-full">
                             {post.category?.name || "সাধারণ"}
                           </div>
-                          <h3 className="font-bold text-base text-[#051F20] line-clamp-2 mt-1 group-hover:text-purple-800 transition-colors">
+                          <h3 className="font-bold text-base text-[#051F20] mt-1 group-hover:text-purple-800 transition-colors card-title">
                             {post.title}
                           </h3>
+                          {post.excerpt && (
+                            <p className="text-xs text-muted-foreground mt-1.5 card-description leading-relaxed">
+                              {post.excerpt}
+                            </p>
+                          )}
                         </div>
                       </div>
 
                       {/* 2-Column Key Metrics Sub-card */}
                       <div className="bg-[#F9F7FC] rounded-2xl p-3 border border-purple-900/5 grid grid-cols-2 gap-2 text-left">
-                        <div>
+                        <div className="min-w-0">
                           <span className="text-[10px] text-muted-foreground font-semibold block">প্রকাশের তারিখ</span>
-                          <span className="text-xs font-bold text-[#051F20]">
+                          <span className="text-xs font-bold text-[#051F20] truncate block">
                             {post.published_at ? new Date(post.published_at).toLocaleDateString("bn-BD") : "ড্রাফট"}
                           </span>
                         </div>
-                        <div>
+                        <div className="min-w-0">
                           <span className="text-[10px] text-muted-foreground font-semibold block">ভিউ সংখ্যা</span>
-                          <span className="text-xs font-bold text-purple-800">
+                          <span className="text-xs font-bold text-purple-800 truncate block">
                             {post.views_count ? `${post.views_count} বার` : "০"}
                           </span>
                         </div>
@@ -1261,7 +1266,7 @@ function AdminDashboard() {
                           /{post.slug || "post"}
                         </span>
                         
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 shrink-0">
                           {/* Live post link */}
                           <Button
                             variant="ghost"
@@ -1310,41 +1315,41 @@ function AdminDashboard() {
                       key={t.id}
                       className="bg-white rounded-[1.8rem] p-5 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between gap-4 group"
                     >
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-3">
+                      <div className="space-y-3 min-w-0">
+                        <div className="flex items-center gap-3 min-w-0">
                           <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-900 border border-amber-100 flex items-center justify-center font-bold text-lg shrink-0 shadow-2xs">
                             {t.name ? t.name.charAt(0) : "ক"}
                           </div>
-                          <div>
-                            <h3 className="font-bold text-base text-[#051F20] line-clamp-1">{t.name}</h3>
-                            <div className="text-xs text-muted-foreground">
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-bold text-base text-[#051F20] card-title">{t.name}</h3>
+                            <div className="text-xs text-muted-foreground truncate max-w-full">
                               {t.role_title || "বিনিয়োগকারী"} {t.brand_name && `• ${t.brand_name}`}
                             </div>
                           </div>
                         </div>
 
-                        <p className="text-xs text-slate-700 italic bg-amber-50/40 p-3 rounded-2xl border border-amber-100/60 line-clamp-3 leading-relaxed">
+                        <p className="text-xs text-slate-700 italic bg-amber-50/40 p-3 rounded-2xl border border-amber-100/60 leading-relaxed card-description">
                           "{t.quote}"
                         </p>
                       </div>
 
                       {/* 2-Column Key Metrics Sub-card */}
                       <div className="bg-[#FAF8F5] rounded-2xl p-3 border border-amber-900/5 grid grid-cols-2 gap-2 text-left">
-                        <div>
+                        <div className="min-w-0">
                           <span className="text-[10px] text-muted-foreground font-semibold block">লোকেশন</span>
-                          <span className="text-xs font-bold text-[#051F20]">{t.location || "ঢাকা, বাংলাদেশ"}</span>
+                          <span className="text-xs font-bold text-[#051F20] truncate block">{t.location || "ঢাকা, বাংলাদেশ"}</span>
                         </div>
-                        <div>
+                        <div className="min-w-0">
                           <span className="text-[10px] text-muted-foreground font-semibold block">ব্র্যান্ড / কোম্পানি</span>
-                          <span className="text-xs font-bold text-amber-800">{t.brand_name || "ব্যক্তিগত"}</span>
+                          <span className="text-xs font-bold text-amber-800 truncate block">{t.brand_name || "ব্যক্তিগত"}</span>
                         </div>
                       </div>
 
                       {/* Bottom Action Dock */}
                       <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                        <span className="text-[11px] text-muted-foreground">প্রশংসাপত্র</span>
+                        <span className="text-[11px] text-muted-foreground truncate max-w-[140px]">প্রশংসাপত্র</span>
                         
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 shrink-0">
                           <Button
                             variant="ghost"
                             size="icon"
@@ -1379,33 +1384,33 @@ function AdminDashboard() {
                       key={r.id}
                       className="bg-white rounded-[1.8rem] p-5 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between gap-4 group"
                     >
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
+                      <div className="space-y-3 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
                             <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-900 border border-rose-100 flex items-center justify-center font-bold text-lg shrink-0 shadow-2xs">
                               {r.name ? r.name.charAt(0) : "র"}
                             </div>
-                            <div>
-                              <h3 className="font-bold text-base text-[#051F20] line-clamp-1">{r.name}</h3>
-                              <div className="text-xs text-muted-foreground">{r.location || "বাংলাদেশ"}</div>
+                            <div className="min-w-0 flex-1">
+                              <h3 className="font-bold text-base text-[#051F20] card-title">{r.name}</h3>
+                              <div className="text-xs text-muted-foreground truncate max-w-full">{r.location || "বাংলাদেশ"}</div>
                             </div>
                           </div>
                           
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 shrink-0">
                             Order: {r.sort_order}
                           </span>
                         </div>
 
-                        <p className="text-xs text-slate-700 italic bg-rose-50/40 p-3 rounded-2xl border border-rose-100/60 line-clamp-3 leading-relaxed">
+                        <p className="text-xs text-slate-700 italic bg-rose-50/40 p-3 rounded-2xl border border-rose-100/60 leading-relaxed card-description">
                           "{r.quote}"
                         </p>
                       </div>
 
                       {/* Bottom Action Dock */}
                       <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                        <span className="text-[11px] text-muted-foreground">হোম রিভিউ</span>
+                        <span className="text-[11px] text-muted-foreground truncate max-w-[140px]">হোম রিভিউ</span>
                         
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 shrink-0">
                           <Button
                             variant="ghost"
                             size="icon"
@@ -1612,12 +1617,12 @@ function AdminDashboard() {
               <p className="text-sm text-muted-foreground text-center py-4">কোনো ক্যাটাগরি নেই</p>
             ) : (
               blogCategories.map((cat) => (
-                <div key={cat.id} className="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl">
-                  <span className="font-semibold text-sm text-[#051F20]">{cat.name}</span>
+                <div key={cat.id} className="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl gap-3">
+                  <span className="font-semibold text-sm text-[#051F20] truncate max-w-[280px] break-words">{cat.name}</span>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                    className="h-8 w-8 p-0 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
                     onClick={() => setDeletingCategory(cat)}
                   >
                     <Trash2 className="h-4 w-4" />
