@@ -52,8 +52,21 @@ import {
   FileText,
   User,
   Quote,
+  Users,
+  Mail,
+  Phone,
+  Copy,
+  ShieldAlert,
 } from "lucide-react";
 import { toast } from "sonner";
+
+export interface DashboardUser {
+  id: string;
+  email: string | null;
+  full_name: string | null;
+  phone: string | null;
+  created_at: string;
+}
 
 export const Route = createFileRoute("/admin/dashboard")({
   beforeLoad: () => {
@@ -164,12 +177,12 @@ function AdminDashboard() {
 
   // ─── Active Tab State ───────────────────────────────────────────
   const search = Route.useSearch() as any;
-  const [activeTab, setActiveTab] = useState<"opportunities" | "blog" | "testimonials" | "homepage_reviews">(
+  const [activeTab, setActiveTab] = useState<"opportunities" | "blog" | "testimonials" | "homepage_reviews" | "users">(
     search?.tab || "opportunities"
   );
 
   useEffect(() => {
-    if (search?.tab && ["opportunities", "blog", "testimonials", "homepage_reviews"].includes(search.tab)) {
+    if (search?.tab && ["opportunities", "blog", "testimonials", "homepage_reviews", "users"].includes(search.tab)) {
       setActiveTab(search.tab);
     }
   }, [search?.tab]);
@@ -203,6 +216,12 @@ function AdminDashboard() {
   const [editingHomeRev, setEditingHomeRev] = useState<HomepageReview | null>(null);
   const [deletingHomeRev, setDeletingHomeRev] = useState<HomepageReview | null>(null);
   const [deletingHomeRevLoading, setDeletingHomeRevLoading] = useState(false);
+
+  // ─── Users state ──────────────────────────────────────────────────
+  const [dashboardUsers, setDashboardUsers] = useState<DashboardUser[]>([]);
+  const [usersLoading, setUsersLoading] = useState(true);
+  const [deletingUser, setDeletingUser] = useState<DashboardUser | null>(null);
+  const [deletingUserLoading, setDeletingUserLoading] = useState(false);
 
   // ─── Blog state ───────────────────────────────────────────────
   const { data: blogPosts = [], isLoading: blogLoading, refetch: refetchBlogPosts } = useBlogPosts();
@@ -264,13 +283,47 @@ function AdminDashboard() {
     setHomeRevLoading(false);
   }, []);
 
+  const fetchDashboardUsers = useCallback(async () => {
+    setUsersLoading(true);
+    try {
+      // Call public.get_all_users() RPC function
+      const { data, error } = await supabase.rpc("get_all_users" as any);
+      if (error) {
+        console.warn("get_all_users RPC failed, trying profiles table directly:", error.message);
+        const { data: profileData, error: profileErr } = await supabase
+          .from("profiles")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (profileErr) throw profileErr;
+        setDashboardUsers(
+          (profileData || []).map((p: any) => ({
+            id: p.id,
+            email: "—",
+            full_name: p.full_name,
+            phone: p.phone,
+            created_at: p.created_at,
+          }))
+        );
+      } else {
+        setDashboardUsers((data as DashboardUser[]) || []);
+      }
+    } catch (err: any) {
+      console.error("Error fetching dashboard users:", err);
+      toast.error("ব্যবহারকারীদের তথ্য লোড করতে সমস্যা হয়েছে");
+    } finally {
+      setUsersLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (user) {
       fetchOpportunities();
       fetchTestimonials();
       fetchHomepageReviews();
+      fetchDashboardUsers();
     }
-  }, [user, fetchOpportunities, fetchTestimonials, fetchHomepageReviews]);
+  }, [user, fetchOpportunities, fetchTestimonials, fetchHomepageReviews, fetchDashboardUsers]);
 
   // ─── Delete handlers ────────────────────────────────────────────
   const handleDeleteOpp = async () => {
@@ -367,6 +420,44 @@ function AdminDashboard() {
     }
   };
 
+  const handleDeleteUser = async () => {
+    if (!deletingUser) return;
+    setDeletingUserLoading(true);
+    try {
+      const session = (await supabase.auth.getSession()).data.session;
+      const token = session?.access_token;
+
+      const res = await fetch("/api/admin/delete-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ userId: deletingUser.id }),
+      });
+
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        // Fallback: try RPC function admin_delete_user
+        const { error: rpcErr } = await supabase.rpc("admin_delete_user" as any, {
+          target_user_id: deletingUser.id,
+        });
+        if (rpcErr) {
+          throw new Error(json.error || rpcErr.message || "ব্যবহারকারী মুছে ফেলা সম্ভব হয়নি");
+        }
+      }
+
+      toast.success("ব্যবহারকারী সফলভাবে মুছে ফেলা হয়েছে");
+      setDeletingUser(null);
+      fetchDashboardUsers();
+    } catch (err: any) {
+      console.error("Error deleting user:", err);
+      toast.error(err?.message || "মুছতে সমস্যা হয়েছে");
+    } finally {
+      setDeletingUserLoading(false);
+    }
+  };
+
   const handleSignOut = async () => {
     await signOut();
     navigate({ to: "/admin/login" });
@@ -441,6 +532,19 @@ function AdminDashboard() {
     });
   }, [homepageReviews, searchQuery]);
 
+  const filteredUsers = useMemo(() => {
+    return dashboardUsers.filter((u) => {
+      if (!searchQuery) return true;
+      const q = searchQuery.toLowerCase();
+      return (
+        (u.full_name && u.full_name.toLowerCase().includes(q)) ||
+        (u.email && u.email.toLowerCase().includes(q)) ||
+        (u.phone && u.phone.toLowerCase().includes(q)) ||
+        (u.id && u.id.toLowerCase().includes(q))
+      );
+    });
+  }, [dashboardUsers, searchQuery]);
+
   // Highlight Featured Item (Latest / Top Opportunity or Blog Post)
   const featuredOpportunity = opportunities[0] || null;
   const featuredBlogPost = blogPosts[0] || null;
@@ -450,19 +554,22 @@ function AdminDashboard() {
     activeTab === "opportunities" ? filteredOpportunities.length :
     activeTab === "blog" ? filteredBlogPosts.length :
     activeTab === "testimonials" ? filteredTestimonials.length :
-    filteredHomepageReviews.length;
+    activeTab === "homepage_reviews" ? filteredHomepageReviews.length :
+    filteredUsers.length;
 
   const currentLoading = 
     activeTab === "opportunities" ? oppLoading :
     activeTab === "blog" ? blogLoading :
     activeTab === "testimonials" ? testLoading :
-    homeRevLoading;
+    activeTab === "homepage_reviews" ? homeRevLoading :
+    usersLoading;
 
   const handleRefreshCurrent = () => {
     if (activeTab === "opportunities") fetchOpportunities();
     else if (activeTab === "blog") { refetchBlogPosts(); refetchCategories(); }
     else if (activeTab === "testimonials") fetchTestimonials();
     else if (activeTab === "homepage_reviews") fetchHomepageReviews();
+    else if (activeTab === "users") fetchDashboardUsers();
   };
 
   // ─── Loading / Auth guard ──────────────────────────────────────
@@ -592,6 +699,22 @@ function AdminDashboard() {
               >
                 <Star className="h-5 w-5" />
                 {activeTab === "homepage_reviews" && (
+                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-[#0B2B26]" />
+                )}
+              </button>
+
+              {/* Users Tab */}
+              <button
+                onClick={() => setActiveTab("users")}
+                className={`group relative w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
+                  activeTab === "users"
+                    ? "bg-[#DAF1DE] text-[#0B2B26] font-bold shadow-lg shadow-[#DAF1DE]/20 ring-4 ring-[#DAF1DE]/25 scale-105"
+                    : "text-slate-300 hover:text-white hover:bg-white/10"
+                }`}
+                title="ব্যবহারকারীগণ"
+              >
+                <Users className="h-5 w-5" />
+                {activeTab === "users" && (
                   <span className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-[#0B2B26]" />
                 )}
               </button>
@@ -761,7 +884,28 @@ function AdminDashboard() {
                 </span>
               </button>
 
-              {/* Card 7: Category Manager */}
+              {/* Card 7: Users Deck Selector */}
+              <button
+                onClick={() => {
+                  setActiveTab("users");
+                  setMobileMenuOpen(false);
+                }}
+                className={`p-3 rounded-2xl text-left transition-all duration-200 flex items-center justify-between border ${
+                  activeTab === "users"
+                    ? "bg-[#DAF1DE]/80 border-[#235347]/30 shadow-sm"
+                    : "bg-white border-slate-200/60 hover:bg-slate-50"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Users className={`h-4 w-4 ${activeTab === "users" ? "text-[#0B2B26]" : "text-muted-foreground"}`} />
+                  <span className="font-semibold text-xs text-[#051F20]">ব্যবহারকারী</span>
+                </div>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white text-[#0B2B26] border border-slate-200 shadow-2xs">
+                  {dashboardUsers.length}
+                </span>
+              </button>
+
+              {/* Card 8: Category Manager */}
               <button
                 onClick={() => setCategoryManagerOpen(true)}
                 className="p-3 rounded-2xl text-left bg-white border border-slate-200/60 hover:bg-slate-50 transition-all duration-200 flex items-center justify-between"
@@ -774,19 +918,6 @@ function AdminDashboard() {
                   {blogCategories.length}
                 </span>
               </button>
-
-              {/* Card 8: View Live Site */}
-              <Link
-                to="/"
-                target="_blank"
-                className="p-3 rounded-2xl text-left bg-white border border-slate-200/60 hover:bg-slate-50 transition-all duration-200 flex items-center justify-between"
-              >
-                <div className="flex items-center gap-2">
-                  <ExternalLink className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-semibold text-xs text-[#051F20]">লাইভ সাইট</span>
-                </div>
-                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-              </Link>
             </div>
           </div>
 
@@ -803,18 +934,22 @@ function AdminDashboard() {
               </span>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 pt-1 border-t border-slate-100 text-center">
+            <div className="grid grid-cols-4 gap-1.5 pt-1 border-t border-slate-100 text-center">
               <div>
-                <div className="text-base font-bold text-[#051F20]">{opportunities.length}</div>
-                <div className="text-[10px] text-muted-foreground">প্রজেক্ট</div>
+                <div className="text-sm font-bold text-[#051F20]">{opportunities.length}</div>
+                <div className="text-[9px] text-muted-foreground">প্রজেক্ট</div>
               </div>
               <div>
-                <div className="text-base font-bold text-[#051F20]">{blogPosts.length}</div>
-                <div className="text-[10px] text-muted-foreground">ব্লগ</div>
+                <div className="text-sm font-bold text-[#051F20]">{blogPosts.length}</div>
+                <div className="text-[9px] text-muted-foreground">ব্লগ</div>
               </div>
               <div>
-                <div className="text-base font-bold text-[#051F20]">{testimonials.length + homepageReviews.length}</div>
-                <div className="text-[10px] text-muted-foreground">রিভিউ</div>
+                <div className="text-sm font-bold text-[#051F20]">{testimonials.length + homepageReviews.length}</div>
+                <div className="text-[9px] text-muted-foreground">রিভিউ</div>
+              </div>
+              <div>
+                <div className="text-sm font-bold text-[#051F20]">{dashboardUsers.length}</div>
+                <div className="text-[9px] text-muted-foreground">ইউজার</div>
               </div>
             </div>
           </div>
@@ -832,6 +967,7 @@ function AdminDashboard() {
                   {activeTab === "blog" && "ব্লগ পোস্ট ও আর্টিকেল"}
                   {activeTab === "testimonials" && "প্রশংসাপত্র ব্যবস্থাপনা"}
                   {activeTab === "homepage_reviews" && "হোমপেজ রিভিউ সমূহ"}
+                  {activeTab === "users" && "ব্যবহারকারী তালিকা"}
                 </h1>
                 <Badge variant="secondary" className="bg-[#DAF1DE] text-[#0B2B26] font-bold text-xs px-2.5 py-0.5 rounded-full border-none">
                   {currentCount} টি
@@ -842,6 +978,7 @@ function AdminDashboard() {
                 {activeTab === "blog" && "ওয়েবসাইটের প্রকাশনা, ড্রাফট ও ক্যাটাগরি কনফিগারেশন"}
                 {activeTab === "testimonials" && "গ্রাহক ও অংশীদারদের রিভিউ ও কোটস"}
                 {activeTab === "homepage_reviews" && "হোমপেজের মূল রিভিউ সেকশনের কার্ডসমূহ"}
+                {activeTab === "users" && "নিবন্ধিত সকল গ্রাহক ও বিনিয়োগকারীদের প্রোফাইল ও তথ্য"}
               </p>
             </div>
 
@@ -1073,6 +1210,7 @@ function AdminDashboard() {
                 {activeTab === "blog" && "সকল ব্লগ পোস্ট"}
                 {activeTab === "testimonials" && "প্রশংসাপত্র তালিকা"}
                 {activeTab === "homepage_reviews" && "হোমপেজ রিভিউ তালিকা"}
+                {activeTab === "users" && "সকল ব্যবহারকারী তালিকা"}
               </h2>
               <span className="text-xs text-muted-foreground">
                 ফিল্টারকৃত রেকর্ড: {currentCount} টি
@@ -1438,6 +1576,95 @@ function AdminDashboard() {
                     </div>
                   ))}
 
+                {/* ═══════════ USERS TABLE ═══════════ */}
+                {activeTab === "users" && (
+                  <div className="col-span-full overflow-hidden rounded-[1.8rem] bg-white border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs sm:text-sm">
+                        <thead className="bg-[#EBF2ED]/60 border-b border-emerald-900/5 text-[#0B2B26] font-bold text-[11px] uppercase tracking-wider">
+                          <tr>
+                            <th className="px-5 py-4">ব্যবহারকারী</th>
+                            <th className="px-5 py-4">ইমেইল</th>
+                            <th className="px-5 py-4">মোবাইল নম্বর</th>
+                            <th className="px-5 py-4">ইউজার আইডি</th>
+                            <th className="px-5 py-4">নিবন্ধনের তারিখ</th>
+                            <th className="px-5 py-4 text-right">অ্যাকশন</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {filteredUsers.map((u) => (
+                            <tr key={u.id} className="hover:bg-emerald-50/20 transition-colors group">
+                              {/* Full Name & Avatar */}
+                              <td className="px-5 py-4">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-9 h-9 rounded-full bg-emerald-100 text-[#0B2B26] font-bold text-xs flex items-center justify-center shrink-0 border border-emerald-200 shadow-2xs">
+                                    {u.full_name ? u.full_name.charAt(0).toUpperCase() : (u.email ? u.email.charAt(0).toUpperCase() : "U")}
+                                  </div>
+                                  <div className="min-w-0">
+                                    <div className="font-bold text-[#051F20] text-sm">
+                                      {u.full_name || "নাম অপ্রদানকৃত"}
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+
+                              {/* Email */}
+                              <td className="px-5 py-4">
+                                <div className="flex items-center gap-1.5 text-slate-700 font-medium">
+                                  <Mail className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                  <span>{u.email || "—"}</span>
+                                </div>
+                              </td>
+
+                              {/* Phone */}
+                              <td className="px-5 py-4">
+                                <div className="flex items-center gap-1.5 text-slate-700 font-medium">
+                                  <Phone className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                  <span>{u.phone || "—"}</span>
+                                </div>
+                              </td>
+
+                              {/* User ID */}
+                              <td className="px-5 py-4">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(u.id);
+                                    toast.success("User ID কপি হয়েছে");
+                                  }}
+                                  className="group/copy inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-[11px] font-mono text-slate-600 transition-colors cursor-pointer"
+                                  title="ক্লিক করে সম্পূর্ণ আইডি কপি করুন"
+                                >
+                                  <span>{u.id.slice(0, 8)}...{u.id.slice(-4)}</span>
+                                  <Copy className="h-3 w-3 text-muted-foreground group-hover/copy:text-[#0B2B26]" />
+                                </button>
+                              </td>
+
+                              {/* Created At */}
+                              <td className="px-5 py-4 text-slate-600 text-xs font-medium">
+                                {u.created_at ? new Date(u.created_at).toLocaleDateString("bn-BD", { year: "numeric", month: "short", day: "numeric" }) : "—"}
+                              </td>
+
+                              {/* Action */}
+                              <td className="px-5 py-4 text-right">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => setDeletingUser(u)}
+                                  className="w-8 h-8 rounded-full bg-red-50 text-red-600 hover:bg-red-600 hover:text-white shadow-2xs transition-colors cursor-pointer"
+                                  title="ব্যবহারকারী মুছে ফেলুন"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
               </div>
             )}
           </div>
@@ -1661,6 +1888,47 @@ function AdminDashboard() {
             >
               {deletingCategoryLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               হ্যাঁ, মুছে ফেলুন
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* ─── Delete User Confirmation ─────────────────────────────── */}
+      <AlertDialog
+        open={!!deletingUser}
+        onOpenChange={(open) => !open && setDeletingUser(null)}
+      >
+        <AlertDialogContent className="rounded-3xl p-6">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-bold">ব্যবহারকারী মুছে ফেলতে চান?</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm text-muted-foreground mt-2">
+              আপনি কি নিশ্চিত যে আপনি <strong>"{deletingUser?.full_name || deletingUser?.email || "এই ব্যবহারকারী"}"</strong> এর অ্যাকাউন্ট ও প্রোফাইল মুছে ফেলতে চান?
+              এই কাজটি পূর্বাবস্থায় ফিরিয়ে আনা যাবে না।
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-4 gap-2">
+            <AlertDialogCancel disabled={deletingUserLoading} className="rounded-2xl">
+              বাতিল
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleDeleteUser();
+              }}
+              disabled={deletingUserLoading}
+              className="bg-red-600 hover:bg-red-700 text-white rounded-2xl gap-2"
+            >
+              {deletingUserLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  মুছে ফেলা হচ্ছে...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4" />
+                  হ্যাঁ, মুছে ফেলুন
+                </>
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

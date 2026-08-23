@@ -32,6 +32,7 @@ import { Route as InsightsKrishiKhateBiniyogRouteImport } from './routes/insight
 import { Route as InsightsSmeHalalBiniyogRouteImport } from './routes/insights/sme-halal-biniyog'
 import { Route as OpportunitiesIndexRouteImport } from './routes/opportunities.index'
 import { Route as OpportunitiesIdRouteImport } from './routes/opportunities.$id'
+import { Route as ApiAdminDeleteUserRouteImport } from './routes/api/admin/delete-user'
 import { Route as ApiPublicRevealDetailsRouteImport } from './routes/api/public/reveal-details'
 import { Route as AdminDashboardBlogNewRouteImport } from './routes/admin/dashboard_.blog.new'
 import { Route as AdminDashboardBlogPostIdEditRouteImport } from './routes/admin/dashboard_.blog.$postId.edit'
@@ -154,6 +155,11 @@ const OpportunitiesIdRoute = OpportunitiesIdRouteImport.update({
   path: '/opportunities/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminDeleteUserRoute = ApiAdminDeleteUserRouteImport.update({
+  id: '/api/admin/delete-user',
+  path: '/api/admin/delete-user',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicRevealDetailsRoute = ApiPublicRevealDetailsRouteImport.update({
   id: '/api/public/reveal-details',
   path: '/api/public/reveal-details',
@@ -195,6 +201,7 @@ export interface FileRoutesByFullPath {
   '/blog/': typeof BlogIndexRoute
   '/insights/': typeof InsightsIndexRoute
   '/opportunities/': typeof OpportunitiesIndexRoute
+  '/api/admin/delete-user': typeof ApiAdminDeleteUserRoute
   '/api/public/reveal-details': typeof ApiPublicRevealDetailsRoute
   '/admin/dashboard/blog/new': typeof AdminDashboardBlogNewRoute
   '/admin/dashboard/blog/$postId/edit': typeof AdminDashboardBlogPostIdEditRoute
@@ -222,6 +229,7 @@ export interface FileRoutesByTo {
   '/blog': typeof BlogIndexRoute
   '/insights': typeof InsightsIndexRoute
   '/opportunities': typeof OpportunitiesIndexRoute
+  '/api/admin/delete-user': typeof ApiAdminDeleteUserRoute
   '/api/public/reveal-details': typeof ApiPublicRevealDetailsRoute
   '/admin/dashboard/blog/new': typeof AdminDashboardBlogNewRoute
   '/admin/dashboard/blog/$postId/edit': typeof AdminDashboardBlogPostIdEditRoute
@@ -251,6 +259,7 @@ export interface FileRoutesById {
   '/blog/': typeof BlogIndexRoute
   '/insights/': typeof InsightsIndexRoute
   '/opportunities/': typeof OpportunitiesIndexRoute
+  '/api/admin/delete-user': typeof ApiAdminDeleteUserRoute
   '/api/public/reveal-details': typeof ApiPublicRevealDetailsRoute
   '/admin/dashboard_/blog/new': typeof AdminDashboardBlogNewRoute
   '/admin/dashboard_/blog/$postId/edit': typeof AdminDashboardBlogPostIdEditRoute
@@ -281,6 +290,7 @@ export interface FileRouteTypes {
     | '/blog/'
     | '/insights/'
     | '/opportunities/'
+    | '/api/admin/delete-user'
     | '/api/public/reveal-details'
     | '/admin/dashboard/blog/new'
     | '/admin/dashboard/blog/$postId/edit'
@@ -308,6 +318,7 @@ export interface FileRouteTypes {
     | '/blog'
     | '/insights'
     | '/opportunities'
+    | '/api/admin/delete-user'
     | '/api/public/reveal-details'
     | '/admin/dashboard/blog/new'
     | '/admin/dashboard/blog/$postId/edit'
@@ -336,6 +347,7 @@ export interface FileRouteTypes {
     | '/blog/'
     | '/insights/'
     | '/opportunities/'
+    | '/api/admin/delete-user'
     | '/api/public/reveal-details'
     | '/admin/dashboard_/blog/new'
     | '/admin/dashboard_/blog/$postId/edit'
@@ -359,6 +371,7 @@ export interface RootRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
   BlogIndexRoute: typeof BlogIndexRoute
   OpportunitiesIndexRoute: typeof OpportunitiesIndexRoute
+  ApiAdminDeleteUserRoute: typeof ApiAdminDeleteUserRoute
   ApiPublicRevealDetailsRoute: typeof ApiPublicRevealDetailsRoute
   AdminDashboardBlogNewRoute: typeof AdminDashboardBlogNewRoute
   AdminDashboardBlogPostIdEditRoute: typeof AdminDashboardBlogPostIdEditRoute
@@ -527,6 +540,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OpportunitiesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/delete-user': {
+      id: '/api/admin/delete-user'
+      path: '/api/admin/delete-user'
+      fullPath: '/api/admin/delete-user'
+      preLoaderRoute: typeof ApiAdminDeleteUserRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/reveal-details': {
       id: '/api/public/reveal-details'
       path: '/api/public/reveal-details'
@@ -591,6 +611,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
   BlogIndexRoute: BlogIndexRoute,
   OpportunitiesIndexRoute: OpportunitiesIndexRoute,
+  ApiAdminDeleteUserRoute: ApiAdminDeleteUserRoute,
   ApiPublicRevealDetailsRoute: ApiPublicRevealDetailsRoute,
   AdminDashboardBlogNewRoute: AdminDashboardBlogNewRoute,
   AdminDashboardBlogPostIdEditRoute: AdminDashboardBlogPostIdEditRoute,
