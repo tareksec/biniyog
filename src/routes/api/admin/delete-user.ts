@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
+import { isAdminEmail } from "@/lib/admin";
 
 export const Route = createFileRoute("/api/admin/delete-user")({
   server: {
@@ -22,7 +23,7 @@ export const Route = createFileRoute("/api/admin/delete-user")({
             return Response.json({ error: "Unauthorized: Missing auth token" }, { status: 401 });
           }
 
-          // Verify user identity with Supabase Auth
+          // Verify caller identity with Supabase Auth
           const authClient = createClient(supabaseUrl, anonKey);
           const { data: { user }, error: authErr } = await authClient.auth.getUser(token);
 
@@ -30,18 +31,34 @@ export const Route = createFileRoute("/api/admin/delete-user")({
             return Response.json({ error: "Unauthorized: Invalid session" }, { status: 401 });
           }
 
+          // Verify caller is an authorized admin
+          if (!isAdminEmail(user.email)) {
+            return Response.json({ error: "Unauthorized: Only administrators can delete accounts" }, { status: 403 });
+          }
+
           const body = await request.json().catch(() => ({}));
-          const { userId } = body;
+          const { userId, targetEmail } = body;
 
           if (!userId || typeof userId !== "string") {
             return Response.json({ error: "Invalid userId provided" }, { status: 400 });
           }
 
-          // If service role key is available, use Supabase admin API
+          // Check if target user email is an admin email
+          if (targetEmail && isAdminEmail(targetEmail)) {
+            return Response.json({ error: "Admin account cannot be deleted" }, { status: 400 });
+          }
+
+          // If service role key is available, inspect target user and use Supabase admin API
           if (serviceRoleKey) {
             const adminClient = createClient(supabaseUrl, serviceRoleKey, {
               auth: { autoRefreshToken: false, persistSession: false },
             });
+
+            // Fetch target user to check email
+            const { data: targetUserData } = await adminClient.auth.admin.getUserById(userId);
+            if (targetUserData?.user?.email && isAdminEmail(targetUserData.user.email)) {
+              return Response.json({ error: "Admin account cannot be deleted" }, { status: 400 });
+            }
 
             const { error: delErr } = await adminClient.auth.admin.deleteUser(userId);
             if (delErr) {
@@ -51,7 +68,7 @@ export const Route = createFileRoute("/api/admin/delete-user")({
             return Response.json({ success: true, message: "User deleted successfully" });
           }
 
-          // If service role key is not yet set in environment, execute database RPC admin_delete_user
+          // Fallback: execute database RPC admin_delete_user
           const { error: rpcErr } = await authClient.rpc("admin_delete_user", {
             target_user_id: userId,
           });

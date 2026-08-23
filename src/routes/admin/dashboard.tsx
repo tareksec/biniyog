@@ -487,6 +487,11 @@ function AdminDashboard() {
 
   const handleDeleteUser = async () => {
     if (!deletingUser) return;
+    if (isAdminEmail(deletingUser.email)) {
+      toast.error("Admin account cannot be deleted");
+      setDeletingUser(null);
+      return;
+    }
     setDeletingUserLoading(true);
     try {
       const session = (await supabase.auth.getSession()).data.session;
@@ -498,18 +503,15 @@ function AdminDashboard() {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ userId: deletingUser.id }),
+        body: JSON.stringify({
+          userId: deletingUser.id,
+          targetEmail: deletingUser.email,
+        }),
       });
 
+      const json = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const json = await res.json().catch(() => ({}));
-        // Fallback: try RPC function admin_delete_user
-        const { error: rpcErr } = await supabase.rpc("admin_delete_user" as any, {
-          target_user_id: deletingUser.id,
-        });
-        if (rpcErr) {
-          throw new Error(json.error || rpcErr.message || "ব্যবহারকারী মুছে ফেলা সম্ভব হয়নি");
-        }
+        throw new Error(json.error || "ব্যবহারকারী মুছে ফেলা সম্ভব হয়নি");
       }
 
       toast.success("ব্যবহারকারী সফলভাবে মুছে ফেলা হয়েছে");
@@ -1744,12 +1746,15 @@ function AdminDashboard() {
                           ) : (
                             filteredUsers.map((u) => {
                               const isPending = (u.status || "pending") === "pending";
+                              const isUserAdmin = isAdminEmail(u.email);
                               return (
                                 <tr
                                   key={u.id}
                                   className={`transition-colors group ${
                                     isPending
                                       ? "bg-amber-50/50 hover:bg-amber-50/80 border-l-4 border-l-amber-500"
+                                      : isUserAdmin
+                                      ? "bg-emerald-50/30 hover:bg-emerald-50/50 border-l-4 border-l-emerald-600"
                                       : "hover:bg-emerald-50/20"
                                   }`}
                                 >
@@ -1758,7 +1763,9 @@ function AdminDashboard() {
                                     <div className="flex items-center gap-3">
                                       <div
                                         className={`w-9 h-9 rounded-full font-bold text-xs flex items-center justify-center shrink-0 border shadow-2xs ${
-                                          isPending
+                                          isUserAdmin
+                                            ? "bg-[#0B2B26] text-white border-[#0B2B26]"
+                                            : isPending
                                             ? "bg-amber-100 text-amber-900 border-amber-300"
                                             : "bg-emerald-100 text-[#0B2B26] border-emerald-200"
                                         }`}
@@ -1770,9 +1777,14 @@ function AdminDashboard() {
                                           : "U"}
                                       </div>
                                       <div className="min-w-0">
-                                        <div className="font-bold text-[#051F20] text-sm flex items-center gap-2">
+                                        <div className="font-bold text-[#051F20] text-sm flex items-center gap-2 flex-wrap">
                                           <span>{u.full_name || "নাম অপ্রদানকৃত"}</span>
-                                          {isPending && (
+                                          {isUserAdmin && (
+                                            <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-[#0B2B26] text-emerald-100 shadow-2xs">
+                                              এডমিন
+                                            </span>
+                                          )}
+                                          {isPending && !isUserAdmin && (
                                             <span className="inline-flex sm:hidden px-1.5 py-0.5 text-[9px] font-bold rounded bg-amber-200 text-amber-900">
                                               Pending
                                             </span>
@@ -1800,7 +1812,12 @@ function AdminDashboard() {
 
                                   {/* Status Badge */}
                                   <td className="px-5 py-4">
-                                    {isPending ? (
+                                    {isUserAdmin ? (
+                                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#0B2B26] text-emerald-200 border border-emerald-900 shadow-2xs">
+                                        <CheckCircle2 className="h-3 w-3 text-emerald-400" />
+                                        <span>অ্যাডমিনিস্ট্রেটর</span>
+                                      </span>
+                                    ) : isPending ? (
                                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 shadow-2xs">
                                         <Clock className="h-3 w-3 text-amber-700 animate-pulse" />
                                         <span>অপেক্ষমান</span>
@@ -1843,7 +1860,7 @@ function AdminDashboard() {
                                   {/* Action Buttons */}
                                   <td className="px-5 py-4 text-right">
                                     <div className="flex items-center justify-end gap-2">
-                                      {isPending ? (
+                                      {!isUserAdmin && isPending && (
                                         <Button
                                           size="sm"
                                           onClick={() => handleUpdateUserStatus(u.id, "approved")}
@@ -1863,7 +1880,9 @@ function AdminDashboard() {
                                             </>
                                           )}
                                         </Button>
-                                      ) : (
+                                      )}
+
+                                      {!isUserAdmin && !isPending && (
                                         <Button
                                           variant="outline"
                                           size="sm"
@@ -1877,15 +1896,18 @@ function AdminDashboard() {
                                         </Button>
                                       )}
 
-                                      <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() => setDeletingUser(u)}
-                                        className="w-8 h-8 rounded-full bg-red-50 text-red-600 hover:bg-red-600 hover:text-white shadow-2xs transition-colors cursor-pointer"
-                                        title="ব্যবহারকারী মুছে ফেলুন"
-                                      >
-                                        <Trash2 className="h-3.5 w-3.5" />
-                                      </Button>
+                                      {/* Only show Delete button if NOT admin */}
+                                      {!isUserAdmin && (
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          onClick={() => setDeletingUser(u)}
+                                          className="w-8 h-8 rounded-full bg-red-50 text-red-600 hover:bg-red-600 hover:text-white shadow-2xs transition-colors cursor-pointer"
+                                          title="ব্যবহারকারী মুছে ফেলুন"
+                                        >
+                                          <Trash2 className="h-3.5 w-3.5" />
+                                        </Button>
+                                      )}
                                     </div>
                                   </td>
                                 </tr>
