@@ -84,6 +84,14 @@ function RegisterPage() {
       const msg = err?.message || "";
       if (msg.includes("already registered") || msg.includes("User already registered")) {
         setError("এই ইমেইল দিয়ে ইতিমধ্যে একটি অ্যাকাউন্ট রয়েছে। লগইন করুন।");
+      } else if (
+        msg.includes("Signups not allowed") ||
+        msg.includes("signup_disabled") ||
+        msg.includes("Signups not allowed for this instance")
+      ) {
+        setError(
+          "নতুন রেজিস্ট্রেশন বর্তমানে বন্ধ রয়েছে (Signups not allowed for this instance)। Supabase ড্যাশবোর্ড থেকে Signup সক্রিয় করুন অথবা লগইন করুন।",
+        );
       } else if (msg.includes("weak")) {
         setError("পাসওয়ার্ডটি খুব সহজ। একটি শক্তিশালী পাসওয়ার্ড দিন।");
       } else {
