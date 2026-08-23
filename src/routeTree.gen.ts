@@ -12,8 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as InsightsRouteImport } from './routes/insights'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as LogoutRouteImport } from './routes/logout'
 import { Route as PolicyRouteImport } from './routes/policy'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ReviewsRouteImport } from './routes/reviews'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
@@ -48,6 +51,16 @@ const InsightsRoute = InsightsRouteImport.update({
   path: '/insights',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LogoutRoute = LogoutRouteImport.update({
+  id: '/logout',
+  path: '/logout',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PolicyRoute = PolicyRouteImport.update({
   id: '/policy',
   path: '/policy',
@@ -56,6 +69,11 @@ const PolicyRoute = PolicyRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReviewsRoute = ReviewsRouteImport.update({
@@ -157,8 +175,11 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/insights': typeof InsightsRouteWithChildren
+  '/login': typeof LoginRoute
+  '/logout': typeof LogoutRoute
   '/policy': typeof PolicyRoute
   '/privacy': typeof PrivacyRoute
+  '/register': typeof RegisterRoute
   '/reviews': typeof ReviewsRoute
   '/terms': typeof TermsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
@@ -181,8 +202,11 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/login': typeof LoginRoute
+  '/logout': typeof LogoutRoute
   '/policy': typeof PolicyRoute
   '/privacy': typeof PrivacyRoute
+  '/register': typeof RegisterRoute
   '/reviews': typeof ReviewsRoute
   '/terms': typeof TermsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
@@ -207,8 +231,11 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/insights': typeof InsightsRouteWithChildren
+  '/login': typeof LoginRoute
+  '/logout': typeof LogoutRoute
   '/policy': typeof PolicyRoute
   '/privacy': typeof PrivacyRoute
+  '/register': typeof RegisterRoute
   '/reviews': typeof ReviewsRoute
   '/terms': typeof TermsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
@@ -234,8 +261,11 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/insights'
+    | '/login'
+    | '/logout'
     | '/policy'
     | '/privacy'
+    | '/register'
     | '/reviews'
     | '/terms'
     | '/admin/dashboard'
@@ -258,8 +288,11 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/dashboard'
+    | '/login'
+    | '/logout'
     | '/policy'
     | '/privacy'
+    | '/register'
     | '/reviews'
     | '/terms'
     | '/admin/dashboard'
@@ -283,8 +316,11 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/insights'
+    | '/login'
+    | '/logout'
     | '/policy'
     | '/privacy'
+    | '/register'
     | '/reviews'
     | '/terms'
     | '/admin/dashboard'
@@ -309,8 +345,11 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
   InsightsRoute: typeof InsightsRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  LogoutRoute: typeof LogoutRoute
   PolicyRoute: typeof PolicyRoute
   PrivacyRoute: typeof PrivacyRoute
+  RegisterRoute: typeof RegisterRoute
   ReviewsRoute: typeof ReviewsRoute
   TermsRoute: typeof TermsRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
@@ -348,6 +387,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InsightsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/logout': {
+      id: '/logout'
+      path: '/logout'
+      fullPath: '/logout'
+      preLoaderRoute: typeof LogoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/policy': {
       id: '/policy'
       path: '/policy'
@@ -360,6 +413,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reviews': {
@@ -517,8 +577,11 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
   InsightsRoute: InsightsRouteWithChildren,
+  LoginRoute: LoginRoute,
+  LogoutRoute: LogoutRoute,
   PolicyRoute: PolicyRoute,
   PrivacyRoute: PrivacyRoute,
+  RegisterRoute: RegisterRoute,
   ReviewsRoute: ReviewsRoute,
   TermsRoute: TermsRoute,
   AdminDashboardRoute: AdminDashboardRoute,

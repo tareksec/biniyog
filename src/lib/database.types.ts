@@ -358,6 +358,27 @@ export type Database = {
           }
         ];
       };
+      profiles: {
+        Row: {
+          id: string;
+          full_name: string | null;
+          phone: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id: string;
+          full_name?: string | null;
+          phone?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          full_name?: string | null;
+          phone?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -399,4 +420,8 @@ export type BlogCategoryUpdate = Database["public"]["Tables"]["blog_categories"]
 export type BlogPost = Database["public"]["Tables"]["blog_posts"]["Row"];
 export type BlogPostInsert = Database["public"]["Tables"]["blog_posts"]["Insert"];
 export type BlogPostUpdate = Database["public"]["Tables"]["blog_posts"]["Update"];
+
+export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
+export type ProfileInsert = Database["public"]["Tables"]["profiles"]["Insert"];
+export type ProfileUpdate = Database["public"]["Tables"]["profiles"]["Update"];
 

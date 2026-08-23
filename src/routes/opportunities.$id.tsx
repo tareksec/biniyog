@@ -2,12 +2,14 @@ import { useState } from "react";
 import { createFileRoute, Link, notFound, useRouter, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/hooks/useAuth";
 import type { Testimonial } from "@/lib/database.types";
 import { TestimonialCard } from "@/components/TestimonialsSection";
 import { fetchOpportunitiesSSR, fetchOpportunities, isFullyFunded, statusLabel, parseLinks, getRiskLevel, resolveImageUrl, resolveImageUrls, getStatusConfig, fetchOpportunitySubsections, fetchTestimonialsSSR, type Opportunity, type OpportunityRisk, type OpportunityPayout, type OpportunityLegalCheck } from "@/lib/projects";
 import { InvestmentCalculator } from "@/components/InvestmentCalculator";
 import { motion } from "framer-motion";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { Lock, Building2, Copy, Check, ShieldCheck, ArrowRight } from "lucide-react";
 
 export const Route = createFileRoute("/opportunities/$id")({
   loader: async ({ params, context }) => {
@@ -308,38 +310,7 @@ function OpportunityDetailsPage() {
 
         <OpportunityTestimonials project={project} />
 
-        <section className="mt-12 border-t border-border/80 pt-10 rounded-2xl border border-dashed border-border bg-surface/70 p-6 sm:p-8">
-          <div className="flex items-center gap-3 border-l-4 border-primary pl-3.5">
-            <h3 className="font-display text-xl font-bold text-foreground sm:text-2xl">যোগাযোগ ও ব্যাংক তথ্য</h3>
-          </div>
-          <p className="mt-3 text-base leading-relaxed text-muted-foreground font-medium">
-            {funded
-              ? "এই রাউন্ডের বিনিয়োগ সম্পন্ন।"
-              : "ব্যাংক তথ্য ও বিনিয়োগের বিস্তারিত জানতে নিচের লিংকে ভিজিট করুন।"}
-          </p>
-          
-          <div className="mt-6">
-            <a
-              href="https://docs.google.com/spreadsheets/d/1HsSR7t_2zZaNbvqmbhWiuYikfYsF8rfzcQK2gmfIB4U/edit?gid=0#gid=0"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group inline-flex items-center gap-3 rounded-xl px-6 py-4 text-base font-semibold text-primary-foreground shadow-[var(--shadow-elevated)] transition hover:scale-[1.02]"
-              style={{ background: "var(--gradient-primary)" }}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <polyline points="14 2 14 8 20 8" />
-                <line x1="16" y1="13" x2="8" y2="13" />
-                <line x1="16" y1="17" x2="8" y2="17" />
-                <polyline points="10 9 9 9 8 9" />
-              </svg>
-              <span>সকল প্রজেক্টের যোগাযোগ ও ব্যাংক তথ্য দেখুন (গুগল শিট)</span>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="transition-transform group-hover:translate-x-1">
-                <path d="M5 12h14M13 5l7 7-7 7" />
-              </svg>
-            </a>
-          </div>
-        </section>
+        <BankDetailsSection project={project} funded={funded} />
 
         <div className="mt-12">
           <Link to="/" className="text-sm text-muted-foreground hover:text-primary">← আরও বিনিয়োগ সুযোগ দেখুন</Link>
@@ -606,6 +577,125 @@ function OpportunityTestimonials({ project }: { project: Opportunity }) {
           রিভিউ দিন
         </a>
       </div>
+    </section>
+  );
+}
+
+function BankDetailsSection({ project, funded }: { project: Opportunity; funded: boolean }) {
+  const { user, loading: authLoading } = useAuth();
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    if (project.bank_details) {
+      navigator.clipboard.writeText(project.bank_details);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const redirectPath = `/opportunities/${project.slug || project.id}`;
+
+  return (
+    <section className="mt-12 border-t border-border/80 pt-10 rounded-2xl border border-dashed border-border bg-surface/70 p-6 sm:p-8">
+      <div className="flex items-center gap-3 border-l-4 border-primary pl-3.5">
+        <h3 className="font-display text-xl font-bold text-foreground sm:text-2xl">যোগাযোগ ও ব্যাংক তথ্য</h3>
+      </div>
+
+      {authLoading ? (
+        <div className="mt-6 py-8 flex items-center justify-center">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        </div>
+      ) : user ? (
+        <div className="mt-6 space-y-5">
+          <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3.5 py-1.5 rounded-full w-fit">
+            <ShieldCheck className="h-4 w-4" />
+            <span>লগইনকৃত বিনিয়োগকারী ভিউ — ব্যাংক বিবরণ দৃশ্যমান</span>
+          </div>
+
+          <div className="rounded-xl border border-primary/20 bg-card p-5 sm:p-6 shadow-sm">
+            <div className="flex items-center justify-between border-b border-border/70 pb-3.5 mb-4">
+              <div className="flex items-center gap-2.5 text-foreground font-bold text-base sm:text-lg">
+                <Building2 className="h-5 w-5 text-primary" />
+                <span>ব্যাংক অ্যাকাউন্ট ও অর্থ প্রদানের বিবরণ</span>
+              </div>
+              {project.bank_details && (
+                <button
+                  type="button"
+                  onClick={handleCopy}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted transition-colors cursor-pointer"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <span className="text-emerald-600 dark:text-emerald-400 font-semibold">কপি হয়েছে</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span>কপি করুন</span>
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+
+            {project.bank_details ? (
+              <div className="whitespace-pre-wrap font-sans text-sm sm:text-base leading-relaxed text-foreground/90 bg-muted/40 p-4 sm:p-5 rounded-xl border border-border/50">
+                {project.bank_details}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                এই প্রজেক্টের জন্য ব্যাংক বিবরণ শীঘ্রই যুক্ত করা হবে অথবা গুগল শিটে বিস্তারিত দেখুন।
+              </p>
+            )}
+          </div>
+
+          <div className="pt-2">
+            <a
+              href="https://docs.google.com/spreadsheets/d/1HsSR7t_2zZaNbvqmbhWiuYikfYsF8rfzcQK2gmfIB4U/edit?gid=0#gid=0"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group inline-flex items-center gap-3 rounded-xl px-5 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition hover:scale-[1.01]"
+              style={{ background: "var(--gradient-primary)" }}
+            >
+              <Building2 className="h-4 w-4" />
+              <span>সকল প্রজেক্টের যোগাযোগ ও ব্যাংক তথ্য গুগল শিটে দেখুন</span>
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </a>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-6 rounded-2xl border border-border bg-card p-6 sm:p-8 text-center space-y-4 shadow-sm">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary border border-primary/20">
+            <Lock className="h-7 w-7" />
+          </div>
+
+          <div className="space-y-1.5 max-w-md mx-auto">
+            <h4 className="text-lg sm:text-xl font-bold text-foreground">ব্যাংক অ্যাকাউন্ট বিবরণী দেখতে লগইন প্রয়োজন</h4>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              উদ্যোক্তা ও বিনিয়োগকারীদের তথ্যের সুরক্ষার্থে ব্যাংক অ্যাকাউন্ট নম্বর ও লেনদেনের গোপনীয় তথ্য শুধুমাত্র লগইন করা সদস্যদের জন্য উন্মুক্ত।
+            </p>
+          </div>
+
+          <div className="pt-3 flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto">
+            <Link
+              to="/login"
+              search={{ redirect: redirectPath }}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm sm:text-base font-semibold text-primary-foreground shadow-md transition-transform hover:scale-[1.02] cursor-pointer w-full sm:w-auto"
+            >
+              <span>🔒 ব্যাংক বিস্তারিত দেখতে Login করুন</span>
+            </Link>
+
+            <Link
+              to="/register"
+              search={{ redirect: redirectPath }}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-5 py-3.5 text-sm font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer w-full sm:w-auto"
+            >
+              <span>নতুন রেজিস্ট্রেশন</span>
+            </Link>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

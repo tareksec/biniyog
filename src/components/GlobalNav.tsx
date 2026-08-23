@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
-import { Home, GraduationCap, Briefcase, LayoutDashboard, Calculator, BookOpen } from "lucide-react";
+import { Home, GraduationCap, Briefcase, LayoutDashboard, Calculator, BookOpen, User, LogOut, LogIn } from "lucide-react";
 import { GlassDock, type DockItem } from "@/components/ui/glass-dock";
+import { useAuth } from "@/hooks/useAuth";
 
 export function GlobalNav() {
   const [open, setOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("");
+  const { user } = useAuth();
   const navigate = useNavigate();
   const router = useRouterState();
   
@@ -120,7 +122,41 @@ export function GlobalNav() {
               })}
             </div>
             
-
+            <div className="mt-3 pt-3 border-t border-border/60 flex flex-col gap-2">
+              {user ? (
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    navigate({ to: "/logout" });
+                  }}
+                  className="rounded-2xl px-5 py-3 transition-colors text-left text-destructive hover:bg-destructive/10 flex items-center justify-between text-sm font-medium"
+                >
+                  <span className="truncate max-w-[200px]">লগআউট ({user.email})</span>
+                  <LogOut className="h-4 w-4 shrink-0" />
+                </button>
+              ) : (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setOpen(false);
+                      navigate({ to: "/login" });
+                    }}
+                    className="flex-1 rounded-2xl px-4 py-3 bg-primary text-primary-foreground text-center text-sm font-semibold shadow-sm hover:opacity-90 transition-opacity"
+                  >
+                    লগইন
+                  </button>
+                  <button
+                    onClick={() => {
+                      setOpen(false);
+                      navigate({ to: "/register" });
+                    }}
+                    className="flex-1 rounded-2xl px-4 py-3 bg-muted border border-border text-foreground text-center text-sm font-semibold hover:bg-muted/80 transition-colors"
+                  >
+                    রেজিস্ট্রেশন
+                  </button>
+                </div>
+              )}
+            </div>
           </nav>
         </div>
       )}
