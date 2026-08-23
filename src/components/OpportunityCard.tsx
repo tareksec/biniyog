@@ -1,3 +1,4 @@
+import { useState, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Heart } from "lucide-react";
@@ -15,7 +16,7 @@ import {
    Category icon map — maps common Bengali category keywords
    to small SVG icons
    ──────────────────────────────────────────────────────────── */
-export function getCategoryIcon(category: string | null): { icon: JSX.Element; bg: string; fg: string } {
+export function getCategoryIcon(category: string | null): { icon: ReactNode; bg: string; fg: string } {
   const c = (category || "").toLowerCase();
 
   if (c.includes("এগ্রো") || c.includes("কৃষি") || c.includes("খামার") || c.includes("মাছ") || c.includes("ডেইরি"))
@@ -123,6 +124,7 @@ export function OpportunityCard({
   isComparing?: boolean;
   onCompareToggle?: () => void;
 }) {
+  const [imgError, setImgError] = useState(false);
   const { isBookmarked, toggleBookmark } = useBookmarks();
   const saved = isBookmarked(project.id);
   const navigate = useNavigate();
@@ -140,6 +142,10 @@ export function OpportunityCard({
   const catIcon = getCategoryIcon(project.category);
   const profitData = formatProfit(project.expected_profit || "", project.profit_period);
 
+  const cardImage =
+    (project.image_urls && project.image_urls.length > 0 && project.image_urls[0]?.trim()) ||
+    resolveImageUrl(project);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -150,49 +156,95 @@ export function OpportunityCard({
     >
       <div
         onClick={handleCardClick}
-        className={`group relative flex h-full flex-col overflow-hidden rounded-[1.75rem] bg-muted/40 p-2 card-hover cursor-pointer ${
+        className={`group relative flex h-full flex-col overflow-hidden rounded-[1.5rem] bg-card border border-border/80 card-hover cursor-pointer shadow-sm transition-all duration-300 ${
           funded ? "opacity-75 hover:opacity-100" : ""
         } ${isComparing ? "ring-2 ring-primary bg-primary/5" : ""}`}
         style={{ boxShadow: "0 8px 30px rgba(0,0,0,0.06)" }}
       >
-        <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
-          <button
-            onClick={(e) => { e.stopPropagation(); toggleBookmark(project.id); }}
-            className="h-11 w-11 flex items-center justify-center rounded-full bg-background/80 backdrop-blur-sm border border-border/60 btn-hover-sm shadow-sm"
-          >
-            <Heart className={`h-4 w-4 ${saved ? "fill-primary text-primary" : "text-muted-foreground hover:text-foreground"}`} />
-          </button>
-          
-          {onCompareToggle && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onCompareToggle(); }}
-              className={`h-11 w-11 flex items-center justify-center rounded-full backdrop-blur-sm border btn-hover-sm shadow-sm ${
-                isComparing 
-                  ? "bg-primary text-primary-foreground border-primary" 
-                  : "bg-background/80 border-border/60 text-muted-foreground hover:bg-background hover:text-foreground"
-              }`}
-              title={isComparing ? "তুলনা থেকে সরান" : "তুলনা করুন"}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5" />
-              </svg>
-            </button>
+        {/* ── Top Image Section (h-48, full width, rounded top) ── */}
+        <div className="relative w-full h-48 bg-gradient-to-br from-green-600 via-emerald-700 to-teal-900 overflow-hidden rounded-t-[1.5rem]">
+          {!imgError && cardImage ? (
+            <img
+              src={cardImage}
+              alt={project.name || "Opportunity image"}
+              className="h-48 w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+              loading="lazy"
+              decoding="async"
+              onError={() => setImgError(true)}
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-white/30">
+              <span className="text-4xl">{catIcon.icon}</span>
+            </div>
           )}
+
+          {/* Live / Status Badge (Top-Left corner over image) */}
+          <div className="absolute top-3 left-3 z-10">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-black/60 backdrop-blur-md px-3 py-1 text-xs font-semibold text-white shadow-md border border-white/10">
+              <span className="relative flex h-2 w-2">
+                {active && (
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                )}
+                <span
+                  className={`relative inline-flex h-2 w-2 rounded-full ${
+                    active ? "bg-emerald-400" : "bg-zinc-400"
+                  }`}
+                />
+              </span>
+              <span>{statusLabel(project)}</span>
+            </span>
+          </div>
+
+          {/* Heart / Favourite icon & Compare button (Top-Right corner over image) */}
+          <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
+            {onCompareToggle && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onCompareToggle();
+                }}
+                className={`h-9 w-9 flex items-center justify-center rounded-full backdrop-blur-md shadow-md transition-all ${
+                  isComparing
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-white/90 text-zinc-700 hover:bg-white dark:bg-zinc-900/90 dark:text-zinc-200"
+                }`}
+                title={isComparing ? "তুলনা থেকে সরান" : "তুলনা করুন"}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5" />
+                </svg>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleBookmark(project.id);
+              }}
+              className="h-9 w-9 flex items-center justify-center rounded-full bg-white shadow-md backdrop-blur-md transition-all hover:scale-105 active:scale-95 text-zinc-700 hover:text-rose-600 dark:bg-zinc-900/90 dark:text-zinc-200"
+              title={saved ? "সংরক্ষণ থেকে সরান" : "সংরক্ষণ করুন"}
+            >
+              <Heart
+                className={`h-4 w-4 transition-colors ${
+                  saved ? "fill-rose-500 text-rose-500" : "text-zinc-600 hover:text-rose-500 dark:text-zinc-300"
+                }`}
+              />
+            </button>
+          </div>
         </div>
-        {/* Inner card — the "card floating on card" effect */}
-        <div
-          className="flex flex-1 flex-col rounded-[1.35rem] bg-card p-5 sm:p-6"
-          style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}
-        >
-          {/* ── Header Row ── */}
+
+        {/* ── Inner card content below image ── */}
+        <div className="flex flex-1 flex-col p-5 sm:p-6">
+          {/* Header Row: Category Icon & Title */}
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
-              {/* Category icon in tinted circle */}
               <span className={`flex-shrink-0 grid h-10 w-10 place-items-center rounded-xl ${catIcon.bg} ${catIcon.fg}`}>
                 {catIcon.icon}
               </span>
               <div className="min-w-0">
-                <h3 className="font-display text-[17px] sm:text-lg font-bold leading-snug text-foreground line-clamp-2">
+                <h3 className="font-display text-[17px] sm:text-lg font-bold leading-snug text-foreground line-clamp-2 group-hover:text-primary transition-colors">
                   {project.name || "—"}
                 </h3>
                 {project.owner_name && (
@@ -202,38 +254,9 @@ export function OpportunityCard({
                 )}
               </div>
             </div>
-
-            {/* Avatar / image circle */}
-            <div className="flex-shrink-0 h-10 w-10 rounded-full overflow-hidden ring-2 ring-border/30 bg-muted">
-              <img
-                src={resolveImageUrl(project)}
-                alt=""
-                className="h-full w-full object-cover"
-                loading="lazy"
-                decoding="async"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src =
-                    "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=80&auto=format&fit=crop";
-                }}
-              />
-            </div>
           </div>
 
-          {/* ── Status badge ── */}
-          <div className="mt-4">
-            <span
-              className={`pill text-[11px] font-semibold tracking-wide shadow-none ${
-                active
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800"
-                  : "bg-muted text-muted-foreground border-border/60"
-              }`}
-            >
-              <span className={`h-1.5 w-1.5 rounded-full ${active ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground/50"}`} />
-              {statusLabel(project)}
-            </span>
-          </div>
-
-          {/* ── Primary Metric + Ring ── */}
+          {/* Primary Metric */}
           <div className="mt-5 flex items-center justify-between gap-4">
             <div className="min-w-0 flex-1">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">নুন্যতম বিনিয়োগ</p>
@@ -245,11 +268,9 @@ export function OpportunityCard({
                 <span className="text-[11px] font-medium text-muted-foreground">{profitData.freq} মুনাফা</span>
               </div>
             </div>
-
-
           </div>
 
-          {/* ── Info Chips ── */}
+          {/* Info Chips */}
           <div className="mt-5 flex flex-wrap gap-2">
             {/* Category chip */}
             <span className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold ${catIcon.bg} ${catIcon.fg}`}>
@@ -277,6 +298,7 @@ export function OpportunityCard({
             </span>
           </div>
 
+          {/* Actions */}
           <div className="mt-6 flex flex-col gap-2">
             <Link
               to="/opportunities/$id"
