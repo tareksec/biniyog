@@ -18,6 +18,8 @@ BEGIN
 END $$;
 
 -- 2. Update get_all_users() function to return status
+DROP FUNCTION IF EXISTS public.get_all_users();
+
 CREATE OR REPLACE FUNCTION public.get_all_users()
 RETURNS TABLE (
   id uuid,
@@ -70,3 +72,6 @@ END;
 $$;
 
 GRANT EXECUTE ON FUNCTION public.admin_update_user_status(uuid, text) TO authenticated;
+
+-- 4. Reload PostgREST schema cache immediately
+NOTIFY pgrst, 'reload schema';
