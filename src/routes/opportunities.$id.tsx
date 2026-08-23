@@ -582,8 +582,20 @@ function OpportunityTestimonials({ project }: { project: Opportunity }) {
 }
 
 function BankDetailsSection({ project, funded }: { project: Opportunity; funded: boolean }) {
-  const { user, loading: authLoading } = useAuth();
+  const { user, session, loading: authLoading } = useAuth();
   const [copied, setCopied] = useState(false);
+
+  // Debug session / user state as required
+  useEffect(() => {
+    console.log("[BankDetailsSection] Auth Check Debug:", {
+      isLoggedIn: !!user,
+      userId: user?.id,
+      email: user?.email,
+      sessionExists: !!session,
+      authLoading,
+      bankDetails: project.bank_details ? `${project.bank_details.slice(0, 30)}...` : "None",
+    });
+  }, [user, session, authLoading, project.bank_details]);
 
   const handleCopy = () => {
     if (project.bank_details) {

@@ -59,6 +59,7 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import { toast } from "sonner";
+import { isAdminEmail } from "@/lib/admin";
 
 export interface DashboardUser {
   id: string;
@@ -71,8 +72,13 @@ export interface DashboardUser {
 export const Route = createFileRoute("/admin/dashboard")({
   beforeLoad: () => {
     const { user, loading } = getAuthSnapshot();
-    if (!loading && !user) {
-      throw redirect({ to: "/admin/login" });
+    if (!loading) {
+      if (!user) {
+        throw redirect({ to: "/admin/login" });
+      }
+      if (!isAdminEmail(user.email)) {
+        throw redirect({ to: "/" });
+      }
     }
   },
   component: AdminDashboard,
@@ -168,10 +174,15 @@ function AdminDashboard() {
   const { user, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect if not logged in
+  // Redirect if not logged in or not admin
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate({ to: "/admin/login" });
+    if (!authLoading) {
+      if (!user) {
+        navigate({ to: "/admin/login" });
+      } else if (!isAdminEmail(user.email)) {
+        toast.error("শুধুমাত্র অনুমোদিত অ্যাডমিন এই ড্যাশবোর্ড অ্যাক্সেস করতে পারেন।");
+        navigate({ to: "/" });
+      }
     }
   }, [authLoading, user, navigate]);
 

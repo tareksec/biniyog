@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useSyncExternalStore } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 import { supabase } from "@/lib/supabase";
 import type { Session, User } from "@supabase/supabase-js";
 
@@ -7,19 +7,22 @@ import type { Session, User } from "@supabase/supabase-js";
 // Subsequent calls to useAuth() read from this in-memory cache instantly
 // (no async re-check), eliminating the flash-of-broken-state on navigation.
 
-interface AuthSnapshot {
+export interface AuthSnapshot {
   session: Session | null;
   user: User | null;
   loading: boolean;
 }
 
 let snapshot: AuthSnapshot = { session: null, user: null, loading: true };
-let listeners: Set<() => void> = new Set();
+const listeners: Set<() => void> = new Set();
 let initialized = false;
 
-function emitChange() {
-  // Create new reference so useSyncExternalStore detects the change
-  snapshot = { ...snapshot };
+function setSnapshot(session: Session | null) {
+  snapshot = {
+    session,
+    user: session?.user ?? null,
+    loading: false,
+  };
   listeners.forEach((l) => l());
 }
 
@@ -37,19 +40,26 @@ if (typeof window !== "undefined" && !initialized) {
   initialized = true;
 
   // Get initial session
-  supabase.auth.getSession().then(({ data: { session } }) => {
-    snapshot.session = session;
-    snapshot.user = session?.user ?? null;
-    snapshot.loading = false;
-    emitChange();
-  });
+  supabase.auth
+    .getSession()
+    .then(({ data: { session }, error }) => {
+      if (error) {
+        console.error("[useAuth] getSession error:", error);
+      }
+      setSnapshot(session);
+    })
+    .catch((err) => {
+      console.error("[useAuth] getSession unexpected error:", err);
+      setSnapshot(null);
+    });
 
-  // Listen for auth state changes (login, logout, token refresh)
-  supabase.auth.onAuthStateChange((_event, session) => {
-    snapshot.session = session;
-    snapshot.user = session?.user ?? null;
-    snapshot.loading = false;
-    emitChange();
+  // Listen for auth state changes (SIGNED_IN, SIGNED_OUT, TOKEN_REFRESHED, USER_UPDATED, INITIAL_SESSION)
+  supabase.auth.onAuthStateChange((event, session) => {
+    console.log(`[useAuth] onAuthStateChange event: ${event}`, {
+      userId: session?.user?.id,
+      email: session?.user?.email,
+    });
+    setSnapshot(session);
   });
 }
 
@@ -59,8 +69,6 @@ if (typeof window !== "undefined" && !initialized) {
 export function getAuthSnapshot(): AuthSnapshot {
   return snapshot;
 }
-
-// ─── Hook ────────────────────────────────────────────────────────────
 
 // Cached server snapshot to avoid React's "getServerSnapshot should be cached" warning
 const serverSnapshot: AuthSnapshot = Object.freeze({
@@ -72,23 +80,21 @@ const serverSnapshot: AuthSnapshot = Object.freeze({
 export function useAuth() {
   const state = useSyncExternalStore(subscribe, getSnapshot, () => serverSnapshot);
 
-  const signIn = useCallback(
-    async (email: string, password: string) => {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) throw error;
-      return data;
-    },
-    [],
-  );
+  const signIn = useCallback(async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) throw error;
+    setSnapshot(data.session);
+    return data;
+  }, []);
 
   const signUp = useCallback(
     async (
       email: string,
       password: string,
-      metadata?: { full_name?: string; phone?: string },
+      metadata?: { full_name?: string; phone?: string }
     ) => {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -98,15 +104,36 @@ export function useAuth() {
         },
       });
       if (error) throw error;
+      if (data.session) {
+        setSnapshot(data.session);
+      }
       return data;
     },
-    [],
+    []
   );
 
   const signOut = useCallback(async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
+    setSnapshot(null);
   }, []);
 
-  return { ...state, signIn, signUp, signOut };
+  const refreshSession = useCallback(async () => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    setSnapshot(session);
+    return session;
+  }, []);
+
+  return {
+    ...state,
+    session: state.session,
+    user: state.user,
+    loading: state.loading,
+    signIn,
+    signUp,
+    signOut,
+    refreshSession,
+  };
 }

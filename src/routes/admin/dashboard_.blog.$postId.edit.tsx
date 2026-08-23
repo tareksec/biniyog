@@ -1,14 +1,22 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { BlogPostForm } from "@/components/admin/BlogPostForm";
-import { getAuthSnapshot } from "@/hooks/useAuth";
+import { useAuth, getAuthSnapshot } from "@/hooks/useAuth";
+import { isAdminEmail } from "@/lib/admin";
 import { useBlogPost } from "@/lib/blog";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/dashboard_/blog/$postId/edit")({
   beforeLoad: () => {
     const { user, loading } = getAuthSnapshot();
-    if (!loading && !user) {
-      throw redirect({ to: "/admin/login" });
+    if (!loading) {
+      if (!user) {
+        throw redirect({ to: "/admin/login" });
+      }
+      if (!isAdminEmail(user.email)) {
+        throw redirect({ to: "/" });
+      }
     }
   },
   component: BlogEditRoute,
@@ -17,6 +25,19 @@ export const Route = createFileRoute("/admin/dashboard_/blog/$postId/edit")({
 function BlogEditRoute() {
   const { postId } = Route.useParams();
   const { data: post, isLoading } = useBlogPost(postId);
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!authLoading) {
+      if (!user) {
+        navigate({ to: "/admin/login" });
+      } else if (!isAdminEmail(user.email)) {
+        toast.error("শুধুমাত্র অনুমোদিত অ্যাডমিন এই পেজটি অ্যাক্সেস করতে পারেন।");
+        navigate({ to: "/" });
+      }
+    }
+  }, [authLoading, user, navigate]);
 
   if (isLoading) {
     return (

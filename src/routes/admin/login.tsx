@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate, Link, redirect } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useAuth, getAuthSnapshot } from "@/hooks/useAuth";
+import { isAdminEmail } from "@/lib/admin";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,7 +10,7 @@ import { Lock, Mail, Eye, EyeOff, Loader2, Home } from "lucide-react";
 export const Route = createFileRoute("/admin/login")({
   beforeLoad: () => {
     const { user, loading } = getAuthSnapshot();
-    if (!loading && user) {
+    if (!loading && user && isAdminEmail(user.email)) {
       throw redirect({ to: "/admin/dashboard" });
     }
   },
@@ -17,7 +18,7 @@ export const Route = createFileRoute("/admin/login")({
 });
 
 function AdminLoginPage() {
-  const { signIn, user, loading: authLoading } = useAuth();
+  const { signIn, signOut, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
@@ -26,10 +27,12 @@ function AdminLoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // If already logged in, redirect to dashboard
+  // If already logged in as admin, redirect to dashboard
   useEffect(() => {
     if (!authLoading && user) {
-      navigate({ to: "/admin/dashboard" });
+      if (isAdminEmail(user.email)) {
+        navigate({ to: "/admin/dashboard" });
+      }
     }
   }, [authLoading, user, navigate]);
 
@@ -39,20 +42,25 @@ function AdminLoginPage() {
     setLoading(true);
 
     try {
-      await signIn(email, password);
+      const data = await signIn(email, password);
+      if (!isAdminEmail(data.user?.email)) {
+        await signOut();
+        setError("এই অ্যাকাউন্টটি অ্যাডমিন হিসেবে অনুমোদিত নয়।");
+        return;
+      }
       navigate({ to: "/admin/dashboard" });
     } catch (err: any) {
       setError(
         err?.message === "Invalid login credentials"
           ? "ইমেইল বা পাসওয়ার্ড ভুল হয়েছে।"
-          : err?.message || "লগইনে সমস্যা হয়েছে। আবার চেষ্টা করুন।",
+          : err?.message || "লগইনে সমস্যা হয়েছে। আবার চেষ্টা করুন।"
       );
     } finally {
       setLoading(false);
     }
   };
 
-  if (authLoading || user) {
+  if (authLoading || (user && isAdminEmail(user.email))) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#f8faf8]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
