@@ -68,5 +68,625 @@
     "avatar_url": null,
     "sort_order": 0,
     "created_at": "2026-07-30T13:25:01.532733+00:00"
+  },
+  {
+    "id": "c9215e7a-121f-4d5a-aafd-5b9fc6ffd473",
+    "name": "প্রাইভেট জব",
+    "location": null,
+    "quote": "বেস্ট",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 7,
+    "created_at": "2026-08-23T16:02:06.048Z"
+  },
+  {
+    "id": "0c1fd8f0-96c9-425e-9895-6807eb3dd715",
+    "name": "আমি একজন অবসরপ্রাপ্ত কর্মকর্তা",
+    "location": null,
+    "quote": "খুবই ভালো উদ্যোগ",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 8,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "ba16132b-8855-4e74-b7cd-dea55ded9ef9",
+    "name": "চাকরি",
+    "location": null,
+    "quote": "অনেক ভালো উদ্যোগ",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 9,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "c4eb7524-820d-432b-820d-17ab8bbdb4b0",
+    "name": "উন্নয়ন সংস্থায় কাজ করি।",
+    "location": null,
+    "quote": "বিনিয়োগ কৃত ব্যবসা সম্পর্কে নিয়মিত তথ্য দরকার।",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 10,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "0c66a4b0-2aac-498a-9f61-c39fc7a3608b",
+    "name": "ইঞ্জিনিয়ার হিসেবে একটা সার কম্পানিতে আছি।।",
+    "location": null,
+    "quote": "আলহামদুলিল্লাহ।। এত সহজ এ সুদের বাহিরে ইনভেস্ট করা যায়।। এই ধারণা নিয়ে আসার জন্য ধন্যবাদ।। আবার তাও বাস্তবিকভাবেই প্রয়োগ ও হচ্ছে।।",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 11,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "d019b001-8bc6-4925-b9f2-04465a54d352",
+    "name": "আমি প্রবাসী",
+    "location": null,
+    "quote": "আল্লাহ আপনাকে জাযা দান করবেন ইনশাআল্লাহ। আমি ব্যাংকে টাকা রাখবনা ভাবতেছিলাম।কিন্তু বিশ্বসস্থ কোন মাধ্যম পাচ্ছিলাম না।এই মাধ্যমের বাইরে শেয়ার বাজারে বিনিয়োগ করছি রিটার্ন কম।৩১৩ কোয়াকাটায় করছি।এক বছর প্রায় এখনো পর্যন্ত কোন রিটার্ন পাইনি এমন কি লাভ লস এর কোন আপডেট। শুধু বলে জানাবে জানাবে। এখান থেকে ওয়ান উম্মাহ এবং আমার ফুডে বিনিয়োগ করেছি আলহামদুলিল্লাহ ভাল রিটার্ন পেয়েছি।",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 12,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "730ea714-5fe6-4ce5-b49d-dfbb8985b539",
+    "name": "সৌদি প্রবাসি।।",
+    "location": null,
+    "quote": "দিন দিন সচ্ছলতা দিকে যাচ্ছে। তারা বিনিয়োগ কারির আমানত রক্ষা জন্য  নতুন নতুন রিপোর্ট তৈরি করে বিনিয়োগ কারিদের বিশ্বাস যোগ্য অর্জন করতেছে।পাশাপাশি সুদ থেকে মানুষ কে ব্যবসার জন্য সুযোগ তৈরি করে দিচ্ছে। বিনিয়োগ কোম্পানি গুলো কে জবাব দিহিতার মধ্যে রাখার চেষ্টা করতেছে",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 13,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "77aa49fa-2a90-4a2b-893c-85c128be8038",
+    "name": "Md Emdadul Hoque",
+    "location": "Pharmacist, Australia.",
+    "quote": "আপনারা যেসব কোম্পানির জন্য ইনভেস্টমেন্টের প্রপোজাল চান, সেগুলোর মালিক হেলদি এবং ফিট কিনা—এটা যদি ভালোভাবে ব্যাকগ্রাউন্ড চেক করতেন, তাহলে আরও ভালো হতো। বিশেষ করে মালিক শারীরিকভাবে ব্যবসা পরিচালনার জন্য ফিট কিনা, সেটাও বিবেচনা করা প্রয়োজন। কারণ মালিকের সক্ষমতার ওপর ব্যবসার ভবিষ্যৎ অনেকাংশে নির্ভর করে। যদি এ বিষয়ে কোনো সমস্যা থাকে, তাহলে ব্যবসা বেশি দূর এগিয়ে যাওয়া কঠিন হতে পারে। এতে আমরা যারা বিনিয়োগ করি, তাদের জন্য ঝুঁকি অনেক বেড়ে যায়।",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 14,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "512e44aa-a670-4d8d-8132-e6e338b57600",
+    "name": "একটা রেপুটেড গার্মেন্টস ইন্ডাস্ট্রিতে অডিট ডিপার্টমেন্টে  কর্মরত আছি",
+    "location": null,
+    "quote": "প্রথমেই অসংখ্য ধন্যবাদ পাটোয়ারী ভাইকে বিনিয়োগের এমন একটা মহৎ উদ্যোগ নেয়ার জন্য।",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 15,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "98a4bd5f-3310-445c-9c53-359e80a684e7",
+    "name": "ডেপুটি কন্ট্রোলার অফ এক্সাম",
+    "location": "প্রাইভেট ইউনিভার্সিটি",
+    "quote": "আলহামদুলিল্লাহ, ভালো।",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 16,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "ae97a33c-e57d-4b88-85d7-bccc358d8dd0",
+    "name": "আমার বাসা",
+    "location": "নোয়াখালি। বর্তমানে সাউথ কোরিয়াতে কর্মরত আছি।",
+    "quote": "অন্তর থেকে আপনার প্রতি দুআ এবং ভালোবাসা থাকবে।আল্লাহ্ আপনার ভালো করুক,আপনার মাধ্যমে আমরা ভালো কিছু করার সুযোগ পাচ্ছি, আপনারা যে কাজটা করে দিচ্ছেন কোম্পানি যাচাই বাছাই এটা আমাদের পক্ষে কখনও সম্ভব হতো না। আপনারা যদি আমাদের জন্য এই কাজটুকু করে না দিতেন তাহলে আমরা হয়তো ভুল জায়গায় বিনিয়োগ করতাম আমাদের পুঁজি সহ কিছু হারাতো। আর বিনিয়োগ না করে ব্যাংকে রেখে দিলে সুদের সাথে জড়া লাগতো। আলহামদুলিল্লাহি সুদ বাঁচতে পারতেছি আপনাদের এই উদ্যোগের কারণে। একটা সার্ভিস যদি আপনারা চালু করতেন তাহলে ভালো হতো,টাকা আপনাদের কাছে নিয়ে তারপর ইনভেস্ট করা,তাহলে আমরা নিশ্চিতে থাকতে পারতাম। তাও যেটুকু করে দিচ্ছেন সেইটুকুর জন্য আপনাদের কাছে চির কৃতজ্ঞ থাকবো।",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 17,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "3cc97d27-b914-4d11-b3e0-7666557fad92",
+    "name": "চাকুরীজীবী",
+    "location": null,
+    "quote": "আমি খুবি  আশাবাদী",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 18,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "104ca2b7-8bc0-4687-a512-e9eb4d14f8f9",
+    "name": "Story teller and copy writing. Also running a digital marketing agency. agency",
+    "location": null,
+    "quote": "Keep going. May Allah SWT give more barakah with speed. Just make sure honesty in every choosen company. InshAllah you will be milestone for Bangladesh. Love and respect for all team members including our loving Muhaimin bhai.",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 19,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "3c206870-eba5-4dcf-97db-f8fbc73ded25",
+    "name": "Students",
+    "location": null,
+    "quote": "Vlo but",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 20,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "37b6e08e-6c31-4960-9c30-21c168b74f3b",
+    "name": "Textile technologist job",
+    "location": null,
+    "quote": "এই যে এত কোম্পানির নাম আপনারা দিচ্ছেন, কিন্তু তাদের সাথে যোগাযোগ করার ঠিকানা আপনাদের ওয়েবসাইটে কিন্তু পাই নি!!",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 21,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "f5c88eee-6280-4853-a72f-144e8c7a68d6",
+    "name": "শিক্ষা ক্যাডার(সহকারী অধ্যাপক)",
+    "location": null,
+    "quote": "প্রতিনিয়ত আস্থা বাড়িয়ে দিচ্ছে।",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 22,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "7fcd24d6-6f43-4796-a39e-22ff3d4afcbf",
+    "name": "Govt job",
+    "location": null,
+    "quote": "Amra jara shud thekw dure thakte chai and bank theleo tader jonno erokom ekta platform blessings er moto, jeta khub joruri silo. Sobai trust achieve korte pare na ,  biniog bridhi perese. Thank you for opening this opportunity.  Jajakallaah khairun",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 23,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "b275635b-8acf-42f7-b28c-98d35f8f1df6",
+    "name": "চাকুরী",
+    "location": null,
+    "quote": "প্রশংসনীয় উদ্যোগ",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 24,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "d1719d59-93b9-4f20-b5d8-94d5325f6195",
+    "name": "Job,",
+    "location": null,
+    "quote": "R o onk source dorkar jekahne investment kora jay jate kore sob dim ek jorite na pore...",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 25,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "acc1d560-7d4b-4c01-9568-b7cd98b65faf",
+    "name": "বেসরকারি চাকুরিজীবি",
+    "location": null,
+    "quote": "অনেক ভালো",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 26,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "192df805-ed4b-4ef4-ba78-c9be2b556620",
+    "name": "I am doing job in research organization and finding my way to start business.",
+    "location": null,
+    "quote": "It's a great initiative, time demanding platform as the recommendation from this platform works as security for small investors.",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 27,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "55b3ca41-8923-4499-8d76-c2045eee5ca0",
+    "name": "Ami akjon Textile Engineer. Halal uparjon khuji always",
+    "location": null,
+    "quote": "Alhamdulillah valo uddog, Ami personality onk upokito hoise. Allah jaza khayar dan korun",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 28,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "fb3623b8-2220-420f-8387-df56299f4260",
+    "name": "কফি শপ এ কাজ করি",
+    "location": null,
+    "quote": "ভালো",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 29,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "d8585b89-9bc0-4a2a-aea3-eb4c415fdf50",
+    "name": "ছাত্র+ টিউশন",
+    "location": null,
+    "quote": "ইনশাআল্লাহ  আপনাদের কাজ নিসন্দেহে প্রশংসার দাবিদার।।।।। যারা হালাল ভাবে টাকা রাখতে চায় কিন্তু বিশ্বাস পায় না।।।তাদের জন্য ভালো উদ্যোগ",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 30,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "ddd744a3-2664-44ba-b061-aae344524630",
+    "name": "বিনিয়োগকারী",
+    "location": null,
+    "quote": "এগিয়ে যান, পাশে আছি।",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 31,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "8b1a0e61-d650-47b8-b016-a481c995080c",
+    "name": "Textile  job kori",
+    "location": null,
+    "quote": "Shothik Karjokrom",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 32,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "228a6070-6359-49b6-9359-f84c1c1c6231",
+    "name": "আমার নাম ইয়াছির আরেফিন তুষার। পেশায় আমি একজন সফটওয়্যার ইঞ্জিনিয়ার। আমেরিকান একটা সফটওয়্যার কোম্পানি তে কর্মরত আছি (remote)।",
+    "location": null,
+    "quote": "খুবই ভালো উদ্যোগ।",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 33,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "6d91985f-1b51-4699-98aa-895137c80b4e",
+    "name": "পড়াশোনা করতেছি",
+    "location": null,
+    "quote": "আপনারা আমাদের জন্য ভালো ভালো কিছু নিয়ে আসছেন আপনাদেরকে ধন্যবাদ আরো যদি ভালো কিছু নিয়ে আসা যায় আর আপনারা কোম্পানিতে থেকে যদি আমাদেরকে আরেকটু কোম্পানি সম্বন্ধে আশ্বস্ত করতে পারেন তাহলে আমরা আরেকটু বিনিয়োগ করতে আরো বেশি ইচ্ছে পোষন করতাম",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 34,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "92b4e6fc-7ce3-4e1a-8184-0904267091fb",
+    "name": "ইঞ্জিনিয়ার",
+    "location": null,
+    "quote": "আপনাদের এর সার্ভে গুলোর জন্য ভালো লাগে। সুদ মুক্ত বিনিয়োগে আপনাদের এই উদ্যোগ সত্যি প্রশংসার দাবিদার।",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 35,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "2141abbc-3e5b-4bdb-8bba-faf37e721ce0",
+    "name": "সৌদি আরবের চাকরি করছি",
+    "location": null,
+    "quote": "সময়োপযোগী একটা উদ্যোগ",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 36,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "bf4521d7-8d53-4698-95cb-ef9355a81f74",
+    "name": "চাকরি করছি",
+    "location": null,
+    "quote": "আপনারা আল্লাহর পক্ষে, সুদের বিপক্ষে যুদ্ধে আছেন বলে আমার বিশ্বাস। হক্কানী আলেমদের পরামর্শ নিয়ে প্রতিষ্ঠানে কি ভাবে আরও দ্বীনি পরিবেশ তৈরি করা যায়, এবং রিভিউ করার সময় যদি আলেমদের কেউ প্যানেলে থাকে, তাহলে আরও আরও চমৎকার হবে ইনশাআল্লাহ। (আমি বিনিয়োগ করতে গিয়ে কোম্পানির ইন্সুরেন্স থাকা নিয়ে দ্বিধাদ্বন্দে পড়েছিলাম, যে এটা হালাল না হারাম।",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 37,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "56eb17cf-de0a-475a-ad04-4252ce0e51fc",
+    "name": "Software Engineer",
+    "location": null,
+    "quote": "বিনিয়োগ বৃদ্ধির জন্য এটি একটি চমৎকার প্ল্যাটফর্ম। এখানে ইসলামিক নিয়ম অনুসরণ করে বিনিয়োগ করা যায়, ব্যাংকিং সিস্টেমের সুদ ছাড়াই।",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 38,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "5db8c924-b0f2-4aa8-8313-466dd5e2ea58",
+    "name": "সরজুল",
+    "location": "জব, 01850670172",
+    "quote": "আমি বিনিয়োগ করেছি কিন্তু আমার এখনও ভয় কাজ করে, কেউ যে েকোন সময়ে প্রতারনা করতে পারে। সেই সুযোগ আছে, যারা টাকা নিচ্ছে।",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 39,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "9cba7693-779a-4188-b2a4-921310c3514f",
+    "name": "আমদানি",
+    "location": "রপ্তানি বানিজ্যের সাথে যুক্ত",
+    "quote": "আলহামদুলিল্লাহ",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 40,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "c1565bc5-607e-4d66-a8d5-19a4eba6b0cf",
+    "name": "student",
+    "location": null,
+    "quote": "খুবই ভাল উদ্যোগ",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 41,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "ac9d7282-4c38-4dc1-9aa3-0fd94cc59dd8",
+    "name": "আমি একজন বেসরকারি চাকুরিজীবী",
+    "location": null,
+    "quote": "আমি এখনো একজন অবজারভার",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 42,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "be2b0852-99c6-4d64-a90b-c0963d66f07a",
+    "name": "চাকুরী",
+    "location": null,
+    "quote": "নির্ভরযোগ্য প্রতিষ্ঠান এর একটা গ্রুুপ তৈরি করা এবং তাদের ডিটেইলস আপডেট দেয়া।",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 43,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "b24ef789-4f0a-4db1-8f59-ab05d45b3fde",
+    "name": "Md.Sanowar Hossain",
+    "location": "Veterinarian & worked in Kazi farms Limited.",
+    "quote": "Very good initiative for those people who want to avoid interest system.",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 44,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "dad0562f-dcd5-49f3-a83f-9499fbfcf7e0",
+    "name": "আমি একটি ব্রিডার ফার্মে এক্সিকিউটিভ হিসাবে কর্মরত আছি।",
+    "location": null,
+    "quote": "ইনশাল্লাহ কিছু টাকা জমালেই করব।",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 45,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "af6bdad1-3645-4145-8c7b-6c22e753eb89",
+    "name": "শিক্ষক।",
+    "location": null,
+    "quote": "অত্যন্ত ভালো।আপনাদের ইনফরমেশন এর জন্য অনেক কোম্পানি সম্পর্কে সহজে জানতে পারছি ও বিনিয়োগ করা ও আগ্রহ প্রকাশ করতে পারছি।এই ধারা অব্যাহত থাকবে আশা করছি।",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 46,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "18de24ba-e22d-4c7b-93d9-8146f7530e67",
+    "name": "চাকরিজীবী প্লাস ব্যবসায়ী,",
+    "location": null,
+    "quote": "মহৎ উদ্যোগ, তবে আপনাদের ওয়েবসাইটে যারা বিনিয়োগ গ্রহণ করবে তাদের পূর্ণ ঠিকানা লিস্ট কোম্পানির পরিচয় একটা চার্জ থাকলে ভালো হয়,",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 47,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "2e1f756d-0681-44bd-9395-e2ad7d64a053",
+    "name": "Job. Learn business",
+    "location": null,
+    "quote": "একটা  company create করতে পারেন।",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 48,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "8b5badb8-aff7-419d-a226-d326b23e4151",
+    "name": "বিনিয়োগকারী",
+    "location": null,
+    "quote": "অসাধারণ",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 49,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "b1786c0a-848a-464c-8126-2188c64773c9",
+    "name": "বেসরকারি চাকুরিজীবি।",
+    "location": null,
+    "quote": "আমি এখনো বিনিয়োগ করিনি। করার ইচ্ছা আছে। এখন পর্যন্ত আপনাদের কাজ ভালো লেগেছে।",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 50,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "6005ee82-d3a9-4e35-b96e-bbdc9e98f426",
+    "name": "সাধারণ প্রবাসী",
+    "location": null,
+    "quote": "আমরা বিনিয়োগ বিষয়ে জ্ঞান খুব কম রাখি, তবে মোমেন পাটওয়ারী স্যার কে আল্লাহর জন্য ভালোবাসি এবং বিশ্বাস করি স্যার যে ভাবে সুদের বিরুদ্ধে দাড়িয়েছেন এবং সুদখোর মানুষ বা ব্যাংকাররা স্যারের প্রতি নারাজ, আমাদের উচিত সুদ থেকে দুরে থাকা,  আল্লাহ আমাদের সহায়ক হোন আমীন",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 51,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "a21bf632-21ac-425c-939e-eed235832c39",
+    "name": "ফার্মাসিউটিক্যাল প্রতিষ্ঠানে কোয়ালিটি কন্ট্রোল সিনিয়র এক্সিকিউটিভ হিসেবে কর্মরত।",
+    "location": null,
+    "quote": "খুব গুরুত্বপূর্ণ ও সময়োপযোগী প্ল্যাটফর্ম। আশা করব, আমাদের মত বিনিয়োগকারীদের জন্য আস্থাবান ও নির্ভরযোগ্য হবে, ইনশাআল্লাহ!",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 52,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "c32f44fc-05d9-4f8b-9ec2-6b28880b74f0",
+    "name": "বিনিয়োগকারী",
+    "location": null,
+    "quote": "আসসালামু আলাইকুম, আমি সৌদি প্রবাসি, আমি প্রতিনিয়ত আপনাকে ফলো করছি, আমার কিছু ভিসা জটিলতার কারণে বর্তমানে বিনিয়োগ করতে পারছিনা তবে ইনশাআল্লাহ দ্রুত এই সমস্যা কেটে যাবে এবং আপনার মাধ্যমে আমি বিনিয়োগ করবো ইনশাআল্লাহ, আপাতত কাছ থেকে শিখছি  দোয়া করি আপনি যেন আরো বেশি মানুষকে সঠিক গাইডলাইন দিতে পারেন আল্লাহ তায়ালা যেন আপনাকে সেই তাওফিক দান করে।",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 53,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "15f3e99e-1390-4752-ba49-58bdd1229422",
+    "name": "আমি একজন ব্যাংক কর্মকর্তা",
+    "location": null,
+    "quote": "এখনও পর্যন্ত বলবো দারুন একটা প্লাটফর্ম। আমরা যারা ক্ষুদ্র বিনিয়োগকারী তাদেরকে সুদ থেকে বের করে আনার একটা চমৎকার উদ্যোগ। মোহাইমিন ভাইকে হৃদয়ের অন্তঃস্থল হতে ধন্যবাদ জানাই এ ধরণের উদ্দ্যোগ নেয়ার জন্য।",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 54,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "d32bee6f-4889-4769-ab65-b2e35682d206",
+    "name": "Job",
+    "location": null,
+    "quote": "Good initiative",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 55,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "79e3c02f-7cb1-4d7f-94ad-5d68e1d50371",
+    "name": "চাকরি (এর পাশাপাশি বিভিন্ন জায়গায় বিনিয়োগ)",
+    "location": null,
+    "quote": "স্রোতে গা না ভাসিয়ে অভিনব চিন্তার ফলাফল হচ্ছে এই বিনিয়োগ বৃদ্ধি। সুদ ব্যবস্থার বাইরে গিয়ে ব্যবসায়ী ও বিনিয়োগকারী উভয়ের যুগপৎ ও অংশীদারত্বমূলক লাভের একটি সুন্দর প্লাটফর্ম তৈরি করতে পারাই জনাব মোহাইমিন পাটোয়ারী ও তাঁর টিমের সবচেয়ে বড় কৃতিত্ব। তবে এখনো যেতে হবে বহুদূর। বিশেষ করে নিয়মিত অডিট, মনিটরিং, বিনিয়োগকারীদের ফিডব্যাক গ্রহণ, সেগুলোর টেইক কেয়ার করা ইত্যাদি বড় চ্যালেঞ্জ। আল্লাহ সর্বদা আপনাদের সহায় হোন, আমিন।",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 56,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "6029573b-b5d0-4732-8a3d-826713e96ea4",
+    "name": "Md Zahidul Islam",
+    "location": "Business- Computer Training Center, Location- Chasara, Narayanganj",
+    "quote": "I appreciate your job. Just need a support team from your side.",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 57,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "38d13566-ca04-4414-987e-ba839d34b18a",
+    "name": "শিল্প মন্ত্রণালয়ের স্বায়ত্তশাসিত প্রতিষ্ঠানে চাকুরি",
+    "location": null,
+    "quote": "Positive",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 58,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "bb5ee1e7-b0e3-493b-a8b9-2520551f5c09",
+    "name": "গার্মেন্টস সেক্টরে আছি",
+    "location": "সেন্ট্রাল প্লানিং এ সিনিয়র ম্যানেজার হিসেবে",
+    "quote": "প্রশংশনীয় উদ্যোগ। সুদের বিরুদ্ধে অর্থনৈতিক উন্নয়নের প্রচেষ্টায় আল্লাহ আপনাদের উপর রহমত দান কারুন",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 59,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "a0eeafc6-34c0-49b4-8a99-ddbc242e060d",
+    "name": "ব্যবসা",
+    "location": null,
+    "quote": "আলহামদুলিল্লাহ এখন পর্যন্ত ভালো কার্যক্রম চলছে",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 60,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "e8a8d883-c295-496e-8dee-0a2b8c862fb7",
+    "name": "Private Job",
+    "location": null,
+    "quote": "If any one try he  can  be reached to his Goal",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 61,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "93d066b6-7c91-47b9-8f9d-ea993bf3e504",
+    "name": "Post doctoral research scholar. South korea",
+    "location": null,
+    "quote": "You are doing good job. And we are getting some courage to jnvest and to do business in the future as well",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 62,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "827b8644-a921-42fe-8dad-c443fba83157",
+    "name": "প্রাইভেট চাকুরী",
+    "location": null,
+    "quote": "আলহামদুলিল্লাহ।। আল্লাহ পাক আপনাদের ভালো কাজ গুলো তে আরও বারাকাহ দান করুক।",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 63,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "c267d3b4-18a9-46d0-9548-436803f6028e",
+    "name": "Nazmul Hasan (Private Service Holder)",
+    "location": null,
+    "quote": "This is Excellent service I have ever seen.",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 64,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "596f7a31-b518-4782-8729-0ba717eef33b",
+    "name": "ব্যবসা",
+    "location": null,
+    "quote": "বিনিয়োগকারীদের স্বার্থ রক্ষার ব্যাপারে সর্বোচ্চ সচেতনতা।",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 65,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "e444c3f2-defc-4036-aba6-0c04c4875709",
+    "name": "প্রাইভেট জব।",
+    "location": null,
+    "quote": "খুবই ভাল উদ্যোগ।",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 66,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "99602228-c227-4fcf-bc02-ba5f0f5bd32d",
+    "name": "প্রবাসী ব্যবসায়ী।",
+    "location": null,
+    "quote": "ভালো,",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 67,
+    "created_at": "2026-08-23T16:02:06.049Z"
+  },
+  {
+    "id": "33169520-dff0-481b-97f3-4b4427d6246e",
+    "name": "একটা প্রাইভেট কোম্পানিতে (IT) কর্মরত আছি",
+    "location": null,
+    "quote": "আল্লাহ আপনাদের মাধ্যমে অনেককে সুদ মুক্ত জীবন পরিচালনা করার তৌফিক দান করুক। আপনাদের জন্য মন থেকে দোয়া",
+    "rating": 5,
+    "avatar_url": null,
+    "sort_order": 68,
+    "created_at": "2026-08-23T16:02:06.049Z"
   }
 ]
