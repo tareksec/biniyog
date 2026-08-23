@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/lib/supabase";
@@ -180,14 +180,23 @@ export function TestimonialsSection() {
     return null; // Don't show the section if no testimonials exist
   }
 
+  // Feature a curated set of up to 12 reviews on the homepage for smooth scrolling and optimal performance
+  const featuredReviews = useMemo(() => {
+    if (testimonials.length <= 12) return testimonials;
+    return testimonials.slice(0, 12);
+  }, [testimonials]);
+
   // Build rows with duplicated data for seamless looping
-  const row1Items = getMarqueeItems(testimonials, 6);
+  const row1Items = getMarqueeItems(featuredReviews, 6);
   
   // Shift/offset Row 2 base array by 1 index so cards don't vertically align with Row 1
-  const row2Base = testimonials.length > 1 
-    ? [...testimonials.slice(1), testimonials[0]] 
-    : testimonials;
+  const row2Base = featuredReviews.length > 1 
+    ? [...featuredReviews.slice(1), featuredReviews[0]] 
+    : featuredReviews;
   const row2Items = getMarqueeItems(row2Base, 6);
+
+  // Dynamic duration ensures consistent, smooth reading speed regardless of count
+  const marqueeDuration = Math.max(55, (row1Items.length / 2) * 5.5);
 
   return (
     <section 
@@ -274,7 +283,10 @@ export function TestimonialsSection() {
           <div className="flex overflow-hidden">
             <div 
               className="animate-marquee-left flex gap-6 pr-6 sm:gap-8 sm:pr-8"
-              style={{ animationPlayState: isTouching ? "paused" : undefined }}
+              style={{ 
+                animationDuration: `${marqueeDuration}s`,
+                animationPlayState: isTouching ? "paused" : undefined 
+              }}
             >
               {row1Items.map((item, idx) => (
                 <HomepageReviewCard key={`r1-${item.id || idx}-${idx}`} item={item} index={idx} />
@@ -286,7 +298,10 @@ export function TestimonialsSection() {
           <div className="flex overflow-hidden">
             <div 
               className="animate-marquee-right flex gap-6 pr-6 sm:gap-8 sm:pr-8"
-              style={{ animationPlayState: isTouching ? "paused" : undefined }}
+              style={{ 
+                animationDuration: `${marqueeDuration}s`,
+                animationPlayState: isTouching ? "paused" : undefined 
+              }}
             >
               {row2Items.map((item, idx) => (
                 <HomepageReviewCard key={`r2-${item.id || idx}-${idx}`} item={item} index={idx} />
