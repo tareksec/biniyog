@@ -1,8 +1,8 @@
 -- ============================================================
--- Migration: Create profiles table and auto-creation trigger
+-- Migration: Create profiles table and auto-creation trigger (Idempotent)
 -- ============================================================
 
--- 1. Create profiles table
+-- 1. Create profiles table if it doesn't exist
 create table if not exists public.profiles (
   id uuid references auth.users(id) on delete cascade primary key,
   full_name text,
@@ -13,19 +13,22 @@ create table if not exists public.profiles (
 -- 2. Enable Row Level Security (RLS)
 alter table public.profiles enable row level security;
 
--- Policies for Authenticated Users
+-- Policies for Authenticated Users (safe to re-run)
+drop policy if exists "users can view own profile" on public.profiles;
 create policy "users can view own profile"
   on public.profiles
   for select
   to authenticated
   using (auth.uid() = id);
 
+drop policy if exists "users can insert own profile" on public.profiles;
 create policy "users can insert own profile"
   on public.profiles
   for insert
   to authenticated
   with check (auth.uid() = id);
 
+drop policy if exists "users can update own profile" on public.profiles;
 create policy "users can update own profile"
   on public.profiles
   for update
