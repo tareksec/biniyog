@@ -49,6 +49,14 @@ function RegisterPage() {
     e.preventDefault();
     setError(null);
 
+    const cleanedPhone = phone.trim().replace(/[\s-]/g, "");
+    const bdPhoneRegex = /^01[3-9]\d{8}$/;
+
+    if (!cleanedPhone || !bdPhoneRegex.test(cleanedPhone)) {
+      setError("সঠিক বাংলাদেশি মোবাইল নম্বর দিন (যেমন: 01712345678)");
+      return;
+    }
+
     if (password.length < 6) {
       setError("পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।");
       return;
@@ -64,7 +72,7 @@ function RegisterPage() {
     try {
       const data = await signUp(email, password, {
         full_name: fullName.trim(),
-        phone: phone.trim(),
+        phone: cleanedPhone,
       });
 
       toast.success("অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে!");
@@ -149,7 +157,7 @@ function RegisterPage() {
             {/* Full Name */}
             <div className="space-y-1.5">
               <Label htmlFor="full_name" className="text-xs font-semibold text-foreground">
-                আপনার পুরো নাম
+                আপনার পুরো নাম <span className="text-destructive">*</span>
               </Label>
               <div className="relative">
                 <User className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -168,9 +176,12 @@ function RegisterPage() {
 
             {/* Phone */}
             <div className="space-y-1.5">
-              <Label htmlFor="phone" className="text-xs font-semibold text-foreground">
-                মোবাইল নম্বর
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="phone" className="text-xs font-semibold text-foreground">
+                  মোবাইল নম্বর <span className="text-destructive">*</span>
+                </Label>
+                <span className="text-[11px] text-muted-foreground">১১ ডিজিট</span>
+              </div>
               <div className="relative">
                 <Phone className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -179,7 +190,8 @@ function RegisterPage() {
                   placeholder="017XXXXXXXX"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="pl-10 h-11 rounded-xl bg-background/50"
+                  maxLength={11}
+                  className="pl-10 h-11 rounded-xl bg-background/50 font-medium"
                   required
                   disabled={loading}
                 />
