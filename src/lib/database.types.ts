@@ -363,18 +363,21 @@ export type Database = {
           id: string;
           full_name: string | null;
           phone: string | null;
+          status: "pending" | "approved";
           created_at: string;
         };
         Insert: {
           id: string;
           full_name?: string | null;
           phone?: string | null;
+          status?: "pending" | "approved";
           created_at?: string;
         };
         Update: {
           id?: string;
           full_name?: string | null;
           phone?: string | null;
+          status?: "pending" | "approved";
           created_at?: string;
         };
         Relationships: [];

@@ -57,6 +57,10 @@ import {
   Phone,
   Copy,
   ShieldAlert,
+  Clock,
+  Check,
+  Undo2,
+  UserCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { isAdminEmail } from "@/lib/admin";
@@ -66,6 +70,7 @@ export interface DashboardUser {
   email: string | null;
   full_name: string | null;
   phone: string | null;
+  status: "pending" | "approved";
   created_at: string;
 }
 
@@ -231,6 +236,8 @@ function AdminDashboard() {
   // ─── Users state ──────────────────────────────────────────────────
   const [dashboardUsers, setDashboardUsers] = useState<DashboardUser[]>([]);
   const [usersLoading, setUsersLoading] = useState(true);
+  const [userStatusFilter, setUserStatusFilter] = useState<"all" | "pending" | "approved">("all");
+  const [approvingUserId, setApprovingUserId] = useState<string | null>(null);
   const [deletingUser, setDeletingUser] = useState<DashboardUser | null>(null);
   const [deletingUserLoading, setDeletingUserLoading] = useState(false);
 
@@ -313,11 +320,21 @@ function AdminDashboard() {
             email: "—",
             full_name: p.full_name,
             phone: p.phone,
+            status: p.status || "pending",
             created_at: p.created_at,
           }))
         );
       } else {
-        setDashboardUsers((data as DashboardUser[]) || []);
+        setDashboardUsers(
+          ((data as any[]) || []).map((u: any) => ({
+            id: u.id,
+            email: u.email || null,
+            full_name: u.full_name || null,
+            phone: u.phone || null,
+            status: u.status || "pending",
+            created_at: u.created_at,
+          }))
+        );
       }
     } catch (err: any) {
       console.error("Error fetching dashboard users:", err);
@@ -326,6 +343,43 @@ function AdminDashboard() {
       setUsersLoading(false);
     }
   }, []);
+
+  // ─── User Status Approval Handler ──────────────────────────────────
+  const handleUpdateUserStatus = async (userId: string, newStatus: "pending" | "approved") => {
+    setApprovingUserId(userId);
+    try {
+      const { error: rpcError } = await supabase.rpc("admin_update_user_status" as any, {
+        target_user_id: userId,
+        new_status: newStatus,
+      });
+
+      if (rpcError) {
+        console.warn("admin_update_user_status RPC failed, updating profiles directly:", rpcError.message);
+        const { error: directErr } = await supabase
+          .from("profiles")
+          .update({ status: newStatus })
+          .eq("id", userId);
+
+        if (directErr) throw directErr;
+      }
+
+      toast.success(
+        newStatus === "approved"
+          ? "ব্যবহারকারী সফলভাবে অনুমোদিত হয়েছে"
+          : "ব্যবহারকারীকে অপেক্ষমান তালিকায় রাখা হয়েছে"
+      );
+
+      // Optimistic update
+      setDashboardUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, status: newStatus } : u))
+      );
+    } catch (err: any) {
+      console.error("Error updating user status:", err);
+      toast.error(err?.message || "ব্যবহারকারীর স্ট্যাটাস পরিবর্তন করতে সমস্যা হয়েছে");
+    } finally {
+      setApprovingUserId(null);
+    }
+  };
 
   useEffect(() => {
     if (user) {
@@ -545,6 +599,10 @@ function AdminDashboard() {
 
   const filteredUsers = useMemo(() => {
     return dashboardUsers.filter((u) => {
+      // Status filter
+      if (userStatusFilter !== "all" && (u.status || "pending") !== userStatusFilter) {
+        return false;
+      }
       if (!searchQuery) return true;
       const q = searchQuery.toLowerCase();
       return (
@@ -554,7 +612,15 @@ function AdminDashboard() {
         (u.id && u.id.toLowerCase().includes(q))
       );
     });
-  }, [dashboardUsers, searchQuery]);
+  }, [dashboardUsers, searchQuery, userStatusFilter]);
+
+  const pendingUsersCount = useMemo(() => {
+    return dashboardUsers.filter((u) => (u.status || "pending") === "pending").length;
+  }, [dashboardUsers]);
+
+  const approvedUsersCount = useMemo(() => {
+    return dashboardUsers.filter((u) => u.status === "approved").length;
+  }, [dashboardUsers]);
 
   // Highlight Featured Item (Latest / Top Opportunity or Blog Post)
   const featuredOpportunity = opportunities[0] || null;
@@ -1150,6 +1216,71 @@ function AdminDashboard() {
             </div>
           )}
 
+          {/* ─── User Status Filter Chips (All / Pending / Approved) ─── */}
+          {activeTab === "users" && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground px-1">
+                <span>ইউজার স্ট্যাটাস ফিল্টার</span>
+                <span>{dashboardUsers.length} জন মোট নিবন্ধিত</span>
+              </div>
+              
+              <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none select-none">
+                {/* All Users */}
+                <button
+                  onClick={() => setUserStatusFilter("all")}
+                  className={`px-4 py-2 rounded-2xl text-xs font-bold shrink-0 transition-all duration-200 border cursor-pointer flex items-center gap-2 ${
+                    userStatusFilter === "all"
+                      ? "bg-[#0B2B26] text-white border-[#0B2B26] shadow-sm scale-102"
+                      : "bg-white text-slate-700 border-slate-200/80 hover:bg-slate-50"
+                  }`}
+                >
+                  <span>সকল ব্যবহারকারী</span>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                    userStatusFilter === "all" ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
+                  }`}>
+                    {dashboardUsers.length}
+                  </span>
+                </button>
+
+                {/* Pending Users */}
+                <button
+                  onClick={() => setUserStatusFilter("pending")}
+                  className={`px-4 py-2 rounded-2xl text-xs font-bold shrink-0 transition-all duration-200 border cursor-pointer flex items-center gap-2 ${
+                    userStatusFilter === "pending"
+                      ? "bg-amber-600 text-white border-amber-600 shadow-sm scale-102"
+                      : "bg-amber-50 text-amber-900 border-amber-200 hover:bg-amber-100/70"
+                  }`}
+                >
+                  <span className="h-2 w-2 rounded-full bg-amber-500 animate-ping" />
+                  <span>অপেক্ষমান (Pending)</span>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                    userStatusFilter === "pending" ? "bg-white/20 text-white" : "bg-amber-200 text-amber-900"
+                  }`}>
+                    {pendingUsersCount}
+                  </span>
+                </button>
+
+                {/* Approved Users */}
+                <button
+                  onClick={() => setUserStatusFilter("approved")}
+                  className={`px-4 py-2 rounded-2xl text-xs font-bold shrink-0 transition-all duration-200 border cursor-pointer flex items-center gap-2 ${
+                    userStatusFilter === "approved"
+                      ? "bg-emerald-700 text-white border-emerald-700 shadow-sm scale-102"
+                      : "bg-emerald-50 text-emerald-900 border-emerald-200 hover:bg-emerald-100/70"
+                  }`}
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                  <span>অনুমোদিত (Approved)</span>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                    userStatusFilter === "approved" ? "bg-white/20 text-white" : "bg-emerald-200 text-emerald-900"
+                  }`}>
+                    {approvedUsersCount}
+                  </span>
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* ─── Featured Highlight Hero Card (Reference "Featured Doctor" Style) ─── */}
           {activeTab === "opportunities" && featuredOpportunity && selectedOppCategory === "all" && !searchQuery && (
             <div className="bg-gradient-to-br from-[#EAF5EE] via-[#F4F9F5] to-[#FCF8EE] rounded-[2.2rem] p-5 sm:p-6 border border-emerald-800/10 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden group">
@@ -1597,79 +1728,170 @@ function AdminDashboard() {
                             <th className="px-5 py-4">ব্যবহারকারী</th>
                             <th className="px-5 py-4">ইমেইল</th>
                             <th className="px-5 py-4">মোবাইল নম্বর</th>
+                            <th className="px-5 py-4">স্ট্যাটাস</th>
                             <th className="px-5 py-4">ইউজার আইডি</th>
                             <th className="px-5 py-4">নিবন্ধনের তারিখ</th>
-                            <th className="px-5 py-4 text-right">অ্যাকশন</th>
+                            <th className="px-5 py-4 text-right">অ্যাকশন ও অনুমোদন</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
-                          {filteredUsers.map((u) => (
-                            <tr key={u.id} className="hover:bg-emerald-50/20 transition-colors group">
-                              {/* Full Name & Avatar */}
-                              <td className="px-5 py-4">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-9 h-9 rounded-full bg-emerald-100 text-[#0B2B26] font-bold text-xs flex items-center justify-center shrink-0 border border-emerald-200 shadow-2xs">
-                                    {u.full_name ? u.full_name.charAt(0).toUpperCase() : (u.email ? u.email.charAt(0).toUpperCase() : "U")}
-                                  </div>
-                                  <div className="min-w-0">
-                                    <div className="font-bold text-[#051F20] text-sm">
-                                      {u.full_name || "নাম অপ্রদানকৃত"}
-                                    </div>
-                                  </div>
-                                </div>
-                              </td>
-
-                              {/* Email */}
-                              <td className="px-5 py-4">
-                                <div className="flex items-center gap-1.5 text-slate-700 font-medium">
-                                  <Mail className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                                  <span>{u.email || "—"}</span>
-                                </div>
-                              </td>
-
-                              {/* Phone */}
-                              <td className="px-5 py-4">
-                                <div className="flex items-center gap-1.5 text-slate-700 font-medium">
-                                  <Phone className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                                  <span>{u.phone || "—"}</span>
-                                </div>
-                              </td>
-
-                              {/* User ID */}
-                              <td className="px-5 py-4">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    navigator.clipboard.writeText(u.id);
-                                    toast.success("User ID কপি হয়েছে");
-                                  }}
-                                  className="group/copy inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-[11px] font-mono text-slate-600 transition-colors cursor-pointer"
-                                  title="ক্লিক করে সম্পূর্ণ আইডি কপি করুন"
-                                >
-                                  <span>{u.id.slice(0, 8)}...{u.id.slice(-4)}</span>
-                                  <Copy className="h-3 w-3 text-muted-foreground group-hover/copy:text-[#0B2B26]" />
-                                </button>
-                              </td>
-
-                              {/* Created At */}
-                              <td className="px-5 py-4 text-slate-600 text-xs font-medium">
-                                {u.created_at ? new Date(u.created_at).toLocaleDateString("bn-BD", { year: "numeric", month: "short", day: "numeric" }) : "—"}
-                              </td>
-
-                              {/* Action */}
-                              <td className="px-5 py-4 text-right">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => setDeletingUser(u)}
-                                  className="w-8 h-8 rounded-full bg-red-50 text-red-600 hover:bg-red-600 hover:text-white shadow-2xs transition-colors cursor-pointer"
-                                  title="ব্যবহারকারী মুছে ফেলুন"
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </Button>
+                          {filteredUsers.length === 0 ? (
+                            <tr>
+                              <td colSpan={7} className="px-5 py-12 text-center text-muted-foreground">
+                                কোনো ব্যবহারকারী পাওয়া যায়নি
                               </td>
                             </tr>
-                          ))}
+                          ) : (
+                            filteredUsers.map((u) => {
+                              const isPending = (u.status || "pending") === "pending";
+                              return (
+                                <tr
+                                  key={u.id}
+                                  className={`transition-colors group ${
+                                    isPending
+                                      ? "bg-amber-50/50 hover:bg-amber-50/80 border-l-4 border-l-amber-500"
+                                      : "hover:bg-emerald-50/20"
+                                  }`}
+                                >
+                                  {/* Full Name & Avatar */}
+                                  <td className="px-5 py-4">
+                                    <div className="flex items-center gap-3">
+                                      <div
+                                        className={`w-9 h-9 rounded-full font-bold text-xs flex items-center justify-center shrink-0 border shadow-2xs ${
+                                          isPending
+                                            ? "bg-amber-100 text-amber-900 border-amber-300"
+                                            : "bg-emerald-100 text-[#0B2B26] border-emerald-200"
+                                        }`}
+                                      >
+                                        {u.full_name
+                                          ? u.full_name.charAt(0).toUpperCase()
+                                          : u.email
+                                          ? u.email.charAt(0).toUpperCase()
+                                          : "U"}
+                                      </div>
+                                      <div className="min-w-0">
+                                        <div className="font-bold text-[#051F20] text-sm flex items-center gap-2">
+                                          <span>{u.full_name || "নাম অপ্রদানকৃত"}</span>
+                                          {isPending && (
+                                            <span className="inline-flex sm:hidden px-1.5 py-0.5 text-[9px] font-bold rounded bg-amber-200 text-amber-900">
+                                              Pending
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </td>
+
+                                  {/* Email */}
+                                  <td className="px-5 py-4">
+                                    <div className="flex items-center gap-1.5 text-slate-700 font-medium">
+                                      <Mail className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                      <span>{u.email || "—"}</span>
+                                    </div>
+                                  </td>
+
+                                  {/* Phone */}
+                                  <td className="px-5 py-4">
+                                    <div className="flex items-center gap-1.5 text-slate-700 font-medium">
+                                      <Phone className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                      <span>{u.phone || "—"}</span>
+                                    </div>
+                                  </td>
+
+                                  {/* Status Badge */}
+                                  <td className="px-5 py-4">
+                                    {isPending ? (
+                                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 shadow-2xs">
+                                        <Clock className="h-3 w-3 text-amber-700 animate-pulse" />
+                                        <span>অপেক্ষমান</span>
+                                      </span>
+                                    ) : (
+                                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-900 border border-emerald-300 shadow-2xs">
+                                        <CheckCircle2 className="h-3 w-3 text-emerald-700" />
+                                        <span>অনুমোদিত</span>
+                                      </span>
+                                    )}
+                                  </td>
+
+                                  {/* User ID */}
+                                  <td className="px-5 py-4">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(u.id);
+                                        toast.success("User ID কপি হয়েছে");
+                                      }}
+                                      className="group/copy inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-[11px] font-mono text-slate-600 transition-colors cursor-pointer"
+                                      title="ক্লিক করে সম্পূর্ণ আইডি কপি করুন"
+                                    >
+                                      <span>{u.id.slice(0, 8)}...{u.id.slice(-4)}</span>
+                                      <Copy className="h-3 w-3 text-muted-foreground group-hover/copy:text-[#0B2B26]" />
+                                    </button>
+                                  </td>
+
+                                  {/* Created At */}
+                                  <td className="px-5 py-4 text-slate-600 text-xs font-medium">
+                                    {u.created_at
+                                      ? new Date(u.created_at).toLocaleDateString("bn-BD", {
+                                          year: "numeric",
+                                          month: "short",
+                                          day: "numeric",
+                                        })
+                                      : "—"}
+                                  </td>
+
+                                  {/* Action Buttons */}
+                                  <td className="px-5 py-4 text-right">
+                                    <div className="flex items-center justify-end gap-2">
+                                      {isPending ? (
+                                        <Button
+                                          size="sm"
+                                          onClick={() => handleUpdateUserStatus(u.id, "approved")}
+                                          disabled={approvingUserId === u.id}
+                                          className="h-8 px-3.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs gap-1.5 shadow-sm transition-all hover:scale-105 cursor-pointer"
+                                          title="এই ব্যবহারকারীকে অনুমোদন দিন"
+                                        >
+                                          {approvingUserId === u.id ? (
+                                            <>
+                                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                              <span>অনুমোদন হচ্ছে...</span>
+                                            </>
+                                          ) : (
+                                            <>
+                                              <CheckCircle2 className="h-3.5 w-3.5" />
+                                              <span>অনুমোদন করুন</span>
+                                            </>
+                                          )}
+                                        </Button>
+                                      ) : (
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => handleUpdateUserStatus(u.id, "pending")}
+                                          disabled={approvingUserId === u.id}
+                                          className="h-8 px-2.5 rounded-full border-amber-200 bg-amber-50/50 hover:bg-amber-100 text-amber-900 text-xs font-medium gap-1 cursor-pointer"
+                                          title="পুনরায় অপেক্ষমান তালিকায় নিন"
+                                        >
+                                          <Undo2 className="h-3 w-3 text-amber-700" />
+                                          <span>বাতিল/রিভোক</span>
+                                        </Button>
+                                      )}
+
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => setDeletingUser(u)}
+                                        className="w-8 h-8 rounded-full bg-red-50 text-red-600 hover:bg-red-600 hover:text-white shadow-2xs transition-colors cursor-pointer"
+                                        title="ব্যবহারকারী মুছে ফেলুন"
+                                      >
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                      </Button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })
+                          )}
                         </tbody>
                       </table>
                     </div>

@@ -5,11 +5,27 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import type { Testimonial } from "@/lib/database.types";
 import { TestimonialCard } from "@/components/TestimonialsSection";
-import { fetchOpportunitiesSSR, fetchOpportunities, isFullyFunded, statusLabel, parseLinks, getRiskLevel, resolveImageUrl, resolveImageUrls, getStatusConfig, fetchOpportunitySubsections, fetchTestimonialsSSR, type Opportunity, type OpportunityRisk, type OpportunityPayout, type OpportunityLegalCheck } from "@/lib/projects";
+import {
+  fetchOpportunitiesSSR,
+  fetchOpportunities,
+  isFullyFunded,
+  statusLabel,
+  parseLinks,
+  getRiskLevel,
+  resolveImageUrl,
+  resolveImageUrls,
+  getStatusConfig,
+  fetchOpportunitySubsections,
+  fetchTestimonialsSSR,
+  type Opportunity,
+  type OpportunityRisk,
+  type OpportunityPayout,
+  type OpportunityLegalCheck,
+} from "@/lib/projects";
 import { InvestmentCalculator } from "@/components/InvestmentCalculator";
 import { motion } from "framer-motion";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { Lock, Building2, Copy, Check, ShieldCheck, ArrowRight } from "lucide-react";
+import { Lock, Building2, Copy, Check, ShieldCheck, ArrowRight, Clock, ShieldAlert } from "lucide-react";
 
 export const Route = createFileRoute("/opportunities/$id")({
   loader: async ({ params, context }) => {
@@ -78,8 +94,15 @@ function OpportunityDetailsPage() {
 
   const handleBack = (e?: React.MouseEvent) => {
     if (e) e.preventDefault();
-    const hasRouterHistory = typeof window !== "undefined" && window.history.state && typeof window.history.state.idx === "number" && window.history.state.idx > 0;
-    const hasReferrer = typeof document !== "undefined" && document.referrer && document.referrer.includes(window.location.host);
+    const hasRouterHistory =
+      typeof window !== "undefined" &&
+      window.history.state &&
+      typeof window.history.state.idx === "number" &&
+      window.history.state.idx > 0;
+    const hasReferrer =
+      typeof document !== "undefined" &&
+      document.referrer &&
+      document.referrer.includes(window.location.host);
 
     if (hasRouterHistory || (typeof window !== "undefined" && window.history.length > 1 && hasReferrer)) {
       if (typeof router.history?.back === "function") {
@@ -106,21 +129,21 @@ function OpportunityDetailsPage() {
                   "@type": "ListItem",
                   position: 1,
                   name: "Home",
-                  item: "https://samriddhi.techvrs.com"
+                  item: "https://samriddhi.techvrs.com",
                 },
                 {
                   "@type": "ListItem",
                   position: 2,
                   name: "Opportunities",
-                  item: "https://samriddhi.techvrs.com/opportunities"
+                  item: "https://samriddhi.techvrs.com/opportunities",
                 },
                 {
                   "@type": "ListItem",
                   position: 3,
                   name: project.name,
-                  item: `https://samriddhi.techvrs.com/opportunities/${project.slug || project.id}`
-                }
-              ]
+                  item: `https://samriddhi.techvrs.com/opportunities/${project.slug || project.id}`,
+                },
+              ],
             },
             {
               "@context": "https://schema.org",
@@ -133,15 +156,18 @@ function OpportunityDetailsPage() {
                 price: parseFloat((project.investment_amount || "0").replace(/[^0-9.]/g, "")) || 0,
                 priceCurrency: "BDT",
                 availability: funded ? "https://schema.org/SoldOut" : "https://schema.org/InStock",
-                url: `https://samriddhi.techvrs.com/opportunities/${project.slug || project.id}`
-              }
-            }
-          ])
+                url: `https://samriddhi.techvrs.com/opportunities/${project.slug || project.id}`,
+              },
+            },
+          ]),
         }}
       />
       <header className="sticky top-0 z-20 border-b border-border/70 bg-background/85 backdrop-blur">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-5 py-4 sm:px-8">
-          <button onClick={handleBack} className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors cursor-pointer">
+          <button
+            onClick={handleBack}
+            className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+          >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
@@ -152,7 +178,7 @@ function OpportunityDetailsPage() {
       </header>
 
       <main className="mx-auto max-w-4xl px-5 py-10 sm:px-8 sm:py-14">
-        {/* Back navigation button above image/title */}
+        {/* Back navigation button */}
         <div className="mb-6 flex items-center justify-between">
           <button
             onClick={handleBack}
@@ -263,8 +289,6 @@ function OpportunityDetailsPage() {
           {project.description || "—"}
         </p>
 
-
-
         <div className="mt-8 grid grid-cols-2 gap-4 rounded-2xl border border-border/80 bg-card/60 p-5 shadow-sm sm:grid-cols-3 sm:gap-6 sm:p-7">
           <Field label="নুন্যতম বিনিয়োগ" value={project.investment_amount || ""} num highlight />
           <Field label="সম্ভাব্য লাভ" value={project.expected_profit || ""} num highlight accent />
@@ -296,8 +320,16 @@ function OpportunityDetailsPage() {
             <ul className="mt-4 space-y-2 text-base font-medium">
               {links.map((l) => (
                 <li key={l}>
-                  <a href={l} target="_blank" rel="noopener noreferrer" className="break-all text-primary underline-offset-4 hover:underline inline-flex items-center gap-1.5">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                  <a
+                    href={l}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="break-all text-primary underline-offset-4 hover:underline inline-flex items-center gap-1.5"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                    </svg>
                     {l}
                   </a>
                 </li>
@@ -313,7 +345,9 @@ function OpportunityDetailsPage() {
         <BankDetailsSection project={project} funded={funded} />
 
         <div className="mt-12">
-          <Link to="/" className="text-sm text-muted-foreground hover:text-primary">← আরও বিনিয়োগ সুযোগ দেখুন</Link>
+          <Link to="/" className="text-sm text-muted-foreground hover:text-primary">
+            ← আরও বিনিয়োগ সুযোগ দেখুন
+          </Link>
         </div>
       </main>
       
@@ -338,23 +372,34 @@ function OpportunityDetailsPage() {
   );
 }
 
-function Field({ label, value, num, accent, highlight }: { label: string; value: string; num?: boolean; accent?: boolean; highlight?: boolean }) {
+function Field({
+  label,
+  value,
+  num,
+  accent,
+  highlight,
+}: {
+  label: string;
+  value: string;
+  num?: boolean;
+  accent?: boolean;
+  highlight?: boolean;
+}) {
   return (
     <div className={highlight ? "rounded-xl border border-primary/30 bg-primary/10 dark:bg-primary/5 p-3.5 sm:p-4 shadow-sm" : "p-2"}>
       <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/90 dark:text-teal-400/90">{label}</div>
-      <div className={`mt-1.5 font-bold ${num ? "num" : ""} ${
-        highlight 
-          ? "text-lg sm:text-xl md:text-2xl text-primary font-extrabold" 
-          : "text-base sm:text-lg text-foreground"
-      }`}>
+      <div
+        className={`mt-1.5 font-bold ${num ? "num" : ""} ${
+          highlight
+            ? "text-lg sm:text-xl md:text-2xl text-primary font-extrabold"
+            : "text-base sm:text-lg text-foreground"
+        }`}
+      >
         {value || "—"}
       </div>
     </div>
   );
 }
-
-
-
 
 function BusinessBackground({ project }: { project: any }) {
   return (
@@ -472,16 +517,20 @@ function PayoutTrackRecord({ records = [] }: { records?: OpportunityPayout[] }) 
                   <td className="px-4 py-3.5 num text-muted-foreground font-semibold">{r.target_profit || "—"}</td>
                   <td className="px-4 py-3.5 num font-extrabold text-primary text-base">{r.actual_profit || "—"}</td>
                   <td className="px-4 py-3.5">
-                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold border ${
-                      r.status === "পেইড" || r.status.includes("Paid")
-                        ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30"
-                        : r.status === "চলমান" || r.status === "প্রক্রিয়াধীন" || r.status === "Pending"
-                        ? "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30"
-                        : "bg-destructive/15 text-destructive border-destructive/30"
-                    }`}>
-                      <span className={`h-2 w-2 rounded-full ${
-                        r.status === "পেইড" || r.status.includes("Paid") ? "bg-emerald-500" : "bg-amber-500"
-                      }`} />
+                    <span
+                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold border ${
+                        r.status === "পেইড" || r.status.includes("Paid")
+                          ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30"
+                          : r.status === "চলমান" || r.status === "প্রক্রিয়াধীন" || r.status === "Pending"
+                          ? "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30"
+                          : "bg-destructive/15 text-destructive border-destructive/30"
+                      }`}
+                    >
+                      <span
+                        className={`h-2 w-2 rounded-full ${
+                          r.status === "পেইড" || r.status.includes("Paid") ? "bg-emerald-500" : "bg-amber-500"
+                        }`}
+                      />
                       {r.status}
                     </span>
                   </td>
@@ -551,8 +600,8 @@ function OpportunityTestimonials({ project }: { project: Opportunity }) {
       {isLoading ? (
         <div className="py-8 text-center text-sm text-muted-foreground">লোড হচ্ছে...</div>
       ) : !isError && testimonials.length > 0 ? (
-        <div className="flex flex-nowrap overflow-x-auto gap-5 pb-6 snap-x" style={{ scrollbarWidth: 'thin' }}>
-          {testimonials.map(t => (
+        <div className="flex flex-nowrap overflow-x-auto gap-5 pb-6 snap-x" style={{ scrollbarWidth: "thin" }}>
+          {testimonials.map((t) => (
             <div key={t.id} className="snap-start shrink-0">
               <TestimonialCard item={t} />
             </div>
@@ -582,7 +631,7 @@ function OpportunityTestimonials({ project }: { project: Opportunity }) {
 }
 
 function BankDetailsSection({ project, funded }: { project: Opportunity; funded: boolean }) {
-  const { user, session, loading: authLoading } = useAuth();
+  const { user, session, profile, status, isApproved, loading: authLoading } = useAuth();
   const [copied, setCopied] = useState(false);
 
   // Debug session / user state as required
@@ -591,11 +640,12 @@ function BankDetailsSection({ project, funded }: { project: Opportunity; funded:
       isLoggedIn: !!user,
       userId: user?.id,
       email: user?.email,
-      sessionExists: !!session,
+      status,
+      isApproved,
       authLoading,
       bankDetails: project.bank_details ? `${project.bank_details.slice(0, 30)}...` : "None",
     });
-  }, [user, session, authLoading, project.bank_details]);
+  }, [user, session, status, isApproved, authLoading, project.bank_details]);
 
   const handleCopy = () => {
     if (project.bank_details) {
@@ -617,11 +667,68 @@ function BankDetailsSection({ project, funded }: { project: Opportunity; funded:
         <div className="mt-6 py-8 flex items-center justify-center">
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         </div>
-      ) : user ? (
+      ) : !user ? (
+        /* State 1: Not Logged in -> Show Lock Screen */
+        <div className="mt-6 rounded-2xl border border-border bg-card p-6 sm:p-8 text-center space-y-4 shadow-sm">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary border border-primary/20">
+            <Lock className="h-7 w-7" />
+          </div>
+
+          <div className="space-y-1.5 max-w-md mx-auto">
+            <h4 className="text-lg sm:text-xl font-bold text-foreground">ব্যাংক অ্যাকাউন্ট বিবরণী দেখতে লগইন প্রয়োজন</h4>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              উদ্যোক্তা ও বিনিয়োগকারীদের তথ্যের সুরক্ষার্থে ব্যাংক অ্যাকাউন্ট নম্বর ও লেনদেনের গোপনীয় তথ্য শুধুমাত্র লগইন করা সদস্যদের জন্য উন্মুক্ত।
+            </p>
+          </div>
+
+          <div className="pt-3 flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto">
+            <Link
+              to="/login"
+              search={{ redirect: redirectPath }}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm sm:text-base font-semibold text-primary-foreground shadow-md transition-transform hover:scale-[1.02] cursor-pointer w-full sm:w-auto"
+            >
+              <span>🔒 ব্যাংক বিস্তারিত দেখতে Login করুন</span>
+            </Link>
+
+            <Link
+              to="/register"
+              search={{ redirect: redirectPath }}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-5 py-3.5 text-sm font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer w-full sm:w-auto"
+            >
+              <span>নতুন রেজিস্ট্রেশন</span>
+            </Link>
+          </div>
+        </div>
+      ) : status === "pending" || !isApproved ? (
+        /* State 2: Logged in but Pending Approval */
+        <div className="mt-6 rounded-2xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/60 dark:bg-amber-950/20 p-6 sm:p-8 text-center space-y-4 shadow-sm">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
+            <Clock className="h-7 w-7 animate-pulse" />
+          </div>
+
+          <div className="space-y-2 max-w-lg mx-auto">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-200 text-amber-900 dark:bg-amber-900 dark:text-amber-200">
+              <span className="h-2 w-2 rounded-full bg-amber-600 animate-ping" />
+              অ্যাকাউন্ট স্ট্যাটাস: অপেক্ষমান (Pending)
+            </span>
+            <h4 className="text-lg sm:text-2xl font-bold text-amber-950 dark:text-amber-100">
+              আপনার একাউন্ট অনুমোদনের অপেক্ষায় আছে
+            </h4>
+            <p className="text-sm text-amber-900/80 dark:text-amber-200/80 leading-relaxed">
+              বিনিয়োগকারী ও উদ্যোক্তাদের তথ্যের সুরক্ষার জন্য অ্যাডমিন কর্তৃক একাউন্ট যাচাই প্রক্রিয়াধীন রয়েছে। অনুমোদন সম্পন্ন হলে এই পেইজে ব্যাংক হিসাব নম্বর ও পেমেন্ট বিবরণী স্বয়ংক্রিয়ভাবে উন্মুক্ত হবে।
+            </p>
+          </div>
+
+          <div className="pt-2 text-xs text-muted-foreground">
+            লগইনকৃত অ্যাকাউন্ট: <strong>{user.email}</strong> {profile?.full_name ? `(${profile.full_name})` : ""}
+          </div>
+        </div>
+      ) : (
+        /* State 3: Logged in & Approved -> Show Bank Details */
         <div className="mt-6 space-y-5">
           <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3.5 py-1.5 rounded-full w-fit">
             <ShieldCheck className="h-4 w-4" />
-            <span>লগইনকৃত বিনিয়োগকারী ভিউ — ব্যাংক বিবরণ দৃশ্যমান</span>
+            <span>অনুমোদিত বিনিয়োগকারী ভিউ — ব্যাংক বিবরণ দৃশ্যমান</span>
           </div>
 
           <div className="rounded-xl border border-primary/20 bg-card p-5 sm:p-6 shadow-sm">
@@ -674,37 +781,6 @@ function BankDetailsSection({ project, funded }: { project: Opportunity; funded:
               <span>সকল প্রজেক্টের যোগাযোগ ও ব্যাংক তথ্য গুগল শিটে দেখুন</span>
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </a>
-          </div>
-        </div>
-      ) : (
-        <div className="mt-6 rounded-2xl border border-border bg-card p-6 sm:p-8 text-center space-y-4 shadow-sm">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary border border-primary/20">
-            <Lock className="h-7 w-7" />
-          </div>
-
-          <div className="space-y-1.5 max-w-md mx-auto">
-            <h4 className="text-lg sm:text-xl font-bold text-foreground">ব্যাংক অ্যাকাউন্ট বিবরণী দেখতে লগইন প্রয়োজন</h4>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              উদ্যোক্তা ও বিনিয়োগকারীদের তথ্যের সুরক্ষার্থে ব্যাংক অ্যাকাউন্ট নম্বর ও লেনদেনের গোপনীয় তথ্য শুধুমাত্র লগইন করা সদস্যদের জন্য উন্মুক্ত।
-            </p>
-          </div>
-
-          <div className="pt-3 flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto">
-            <Link
-              to="/login"
-              search={{ redirect: redirectPath }}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm sm:text-base font-semibold text-primary-foreground shadow-md transition-transform hover:scale-[1.02] cursor-pointer w-full sm:w-auto"
-            >
-              <span>🔒 ব্যাংক বিস্তারিত দেখতে Login করুন</span>
-            </Link>
-
-            <Link
-              to="/register"
-              search={{ redirect: redirectPath }}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-5 py-3.5 text-sm font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer w-full sm:w-auto"
-            >
-              <span>নতুন রেজিস্ট্রেশন</span>
-            </Link>
           </div>
         </div>
       )}
