@@ -350,6 +350,8 @@ function RootComponent() {
   // After hydration completes, enable page-transition animations.
   const outletContent = <Outlet />;
 
+  const isAdminRoute = router.state.location.pathname.startsWith("/admin");
+
   return (
     <QueryClientProvider client={queryClient}>
       <AppErrorBoundary>
@@ -375,11 +377,11 @@ function RootComponent() {
               {outletContent}
             </div>
           )}
-          <Footer />
+          {!isAdminRoute && <Footer />}
         </div>
         
         {/* Global floating elements */}
-        <GlobalNav />
+        {!isAdminRoute && <GlobalNav />}
         <FloatingWhatsAppButton />
         <Toaster position="top-center" richColors />
       </AppErrorBoundary>

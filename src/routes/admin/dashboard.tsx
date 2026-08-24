@@ -237,8 +237,9 @@ function AdminDashboard() {
 
   // ─── Tab ──────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<
-    "overview" | "opportunities" | "blog" | "testimonials" | "homepage_reviews" | "users"
+    "overview" | "opportunities" | "blog" | "users" | "reviews"
   >("overview");
+  const [reviewSubTab, setReviewSubTab] = useState<"homepage" | "company">("homepage");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // ─── Opportunities state ─────────────────────────────────────
@@ -646,12 +647,59 @@ function AdminDashboard() {
     } catch (err: any) { toast.error("মুছতে সমস্যা হয়েছে: " + err.message); }
   };
 
+  const handleReorderHomepageReview = async (review: HomepageReview, direction: "up" | "down") => {
+    const currentOrder = review.sort_order ?? 0;
+    const newOrder = direction === "up" ? Math.max(0, currentOrder - 1) : currentOrder + 1;
+    try {
+      const { error } = await supabase
+        .from("homepage_reviews")
+        .update({ sort_order: newOrder })
+        .eq("id", review.id);
+      if (error) throw error;
+      toast.success("সর্ট অর্ডার আপডেট হয়েছে");
+      fetchHomepageReviews();
+    } catch (err: any) {
+      toast.error("সর্ট অর্ডার পরিবর্তনে সমস্যা: " + err.message);
+    }
+  };
+
+  const handleDeleteTest = async () => {
+    if (!deletingTest) return;
+    setDeletingTestLoading(true);
+    try {
+      const { error } = await supabase.from("testimonials").delete().eq("id", deletingTest.id);
+      if (error) throw error;
+      toast.success("প্রশংসাপত্র সফলভাবে মুছে ফেলা হয়েছে");
+      setDeletingTest(null);
+      fetchTestimonials();
+    } catch (err: any) {
+      toast.error("মুছে ফেলতে সমস্যা হয়েছে: " + err.message);
+    } finally {
+      setDeletingTestLoading(false);
+    }
+  };
+
+  const handleDeleteHomeRev = async () => {
+    if (!deletingHomeRev) return;
+    setDeletingHomeRevLoading(true);
+    try {
+      const { error } = await supabase.from("homepage_reviews").delete().eq("id", deletingHomeRev.id);
+      if (error) throw error;
+      toast.success("রিভিউ মুছে ফেলা হয়েছে");
+      setDeletingHomeRev(null);
+      fetchHomepageReviews();
+    } catch (err: any) {
+      toast.error("মুছতে সমস্যা: " + err.message);
+    } finally {
+      setDeletingHomeRevLoading(false);
+    }
+  };
+
   const handleRefreshCurrent = () => {
     fetchStorageStats();
     if (activeTab === "opportunities" || activeTab === "overview") fetchOpportunities();
     if (activeTab === "blog" || activeTab === "overview") { refetchBlogPosts(); refetchCategories(); }
-    if (activeTab === "testimonials") fetchTestimonials();
-    if (activeTab === "homepage_reviews") fetchHomepageReviews();
+    if (activeTab === "reviews" || activeTab === "overview") { fetchHomepageReviews(); fetchTestimonials(); }
     if (activeTab === "users" || activeTab === "overview") fetchDashboardUsers();
   };
 
@@ -734,8 +782,7 @@ function AdminDashboard() {
     { id: "opportunities" as const, icon: Briefcase, label: "সুযোগসমূহ" },
     { id: "blog" as const, icon: BookOpen, label: "ব্লগ" },
     { id: "users" as const, icon: Users, label: "ব্যবহারকারী" },
-    { id: "homepage_reviews" as const, icon: Star, label: "রিভিউ" },
-    { id: "testimonials" as const, icon: Settings2, label: "সেটিংস" },
+    { id: "reviews" as const, icon: Star, label: "রিভিউ" },
   ];
 
   // ═══════════════════════════════════════════════════════════════
@@ -1049,7 +1096,8 @@ function AdminDashboard() {
                   {/* ─── Card 5: রিভিউ ────────────────────────────── */}
                   <motion.div
                     custom={4} variants={cardVariant} initial="hidden" animate="visible"
-                    className="bg-white rounded-[20px] p-6 shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:scale-[1.01] transition-transform duration-200"
+                    onClick={() => setActiveTab("reviews")}
+                    className="bg-white rounded-[20px] p-6 shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:scale-[1.01] transition-transform duration-200 cursor-pointer"
                   >
                     <p className="text-sm font-semibold text-[#6b7280] mb-1">রিভিউ ও প্রশংসাপত্র</p>
                     <div className="text-4xl font-bold text-[#111827] mb-2">
@@ -1576,47 +1624,329 @@ function AdminDashboard() {
               </div>
             )}
 
-            {/* ═══════════ HOMEPAGE REVIEWS TAB ═══════════ */}
-            {activeTab === "homepage_reviews" && (
+            {/* ═══════════ REVIEWS & TESTIMONIALS SECTION ═══════════ */}
+            {activeTab === "reviews" && (
               <div className="space-y-5">
-                <div className="flex items-center justify-between">
-                  <h1 className="text-2xl font-bold text-[#111827]">হোমপেজ রিভিউ <Badge className="ml-2 bg-rose-100 text-rose-800 text-xs font-bold border-none">{homepageReviews.length}</Badge></h1>
-                  <Button size="sm" onClick={() => { setEditingHomeRev(null); setHomeRevFormOpen(true); }} className="rounded-xl bg-[#1a6b4a] hover:bg-[#145a3d] text-white text-xs font-bold gap-1.5 h-9 px-4 cursor-pointer"><Plus className="h-3.5 w-3.5" /> নতুন রিভিউ</Button>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {homepageReviews.map((r, i) => (
-                    <motion.div key={r.id} custom={i} variants={cardVariant} initial="hidden" animate="visible"
-                      className="bg-white rounded-[20px] p-5 shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:scale-[1.01] transition-transform duration-200">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-rose-100 text-rose-800 flex items-center justify-center font-bold text-sm">{r.name?.charAt(0)}</div>
-                          <div><p className="font-bold text-sm text-[#111827]">{r.name}</p><p className="text-[11px] text-[#6b7280]">{r.location || "বাংলাদেশ"}</p></div>
-                        </div>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-600">#{r.sort_order}</span>
-                      </div>
-                      <p className="text-xs text-[#6b7280] italic bg-gray-50 p-3 rounded-xl leading-relaxed mb-3">"{r.quote}"</p>
-                      <div className="flex items-center justify-end gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => { setEditingHomeRev(r); setHomeRevFormOpen(true); }} className="w-8 h-8 rounded-lg bg-[#1a6b4a] text-white hover:bg-[#145a3d]"><Pencil className="h-3.5 w-3.5" /></Button>
-                        <Button variant="ghost" size="icon" onClick={() => setDeletingHomeRev(r)} className="w-8 h-8 rounded-lg hover:bg-red-50 text-red-500"><Trash2 className="h-3.5 w-3.5" /></Button>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            )}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h1 className="text-2xl font-bold text-[#111827]">
+                      রিভিউ ও প্রশংসাপত্র ব্যবস্থাপনা{" "}
+                      <Badge className="ml-2 bg-rose-100 text-rose-800 text-xs font-bold border-none">
+                        {homepageReviews.length + testimonials.length} টি
+                      </Badge>
+                    </h1>
+                    <p className="text-xs text-[#6b7280] mt-0.5">
+                      হোমপেজ ও কোম্পানিভিত্তিক বিনিয়োগকারী রিভিউ ও টেস্টিমোনিয়াল পরিচালনা করুন
+                    </p>
+                  </div>
 
-            {/* Testimonials tab placeholder — if needed */}
-            {activeTab === "testimonials" && (
-              <div className="space-y-5">
-                <h1 className="text-2xl font-bold text-[#111827]">সেটিংস ও ম্যানেজমেন্ট</h1>
-                <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
-                  <p className="text-sm text-[#6b7280]">ড্যাশবোর্ড কনফিগারেশন ও টেস্টিমোনিয়াল ম্যানেজমেন্ট এখানে পরিচালনা করুন।</p>
-                  <div className="mt-4">
-                    <Button size="sm" onClick={() => { setEditingTest(null); setTestFormOpen(true); }} className="rounded-xl bg-[#1a6b4a] hover:bg-[#145a3d] text-white text-xs font-bold gap-1.5 h-9 px-4 cursor-pointer">
-                      <Plus className="h-3.5 w-3.5" /> নতুন প্রশংসাপত্র
-                    </Button>
+                  <div className="flex items-center gap-2">
+                    {reviewSubTab === "homepage" ? (
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setEditingHomeRev(null);
+                          setHomeRevFormOpen(true);
+                        }}
+                        className="rounded-xl bg-[#1a6b4a] hover:bg-[#145a3d] text-white text-xs font-bold gap-1.5 h-9 px-4 cursor-pointer"
+                      >
+                        <Plus className="h-3.5 w-3.5" /> নতুন হোম রিভিউ
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setEditingTest(null);
+                          setTestFormOpen(true);
+                        }}
+                        className="rounded-xl bg-[#1a6b4a] hover:bg-[#145a3d] text-white text-xs font-bold gap-1.5 h-9 px-4 cursor-pointer"
+                      >
+                        <Plus className="h-3.5 w-3.5" /> নতুন টেস্টিমোনিয়াল
+                      </Button>
+                    )}
                   </div>
                 </div>
+
+                {/* Sub-tabs Navigation */}
+                <div className="bg-white rounded-2xl p-2 shadow-[0_2px_8px_rgba(0,0,0,0.04)] inline-flex gap-1.5">
+                  <button
+                    onClick={() => setReviewSubTab("homepage")}
+                    className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      reviewSubTab === "homepage"
+                        ? "bg-[#1a6b4a] text-white shadow-xs"
+                        : "text-gray-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    <span>হোম রিভিউ</span>
+                    <span
+                      className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                        reviewSubTab === "homepage"
+                          ? "bg-white/20 text-white"
+                          : "bg-gray-100 text-gray-700"
+                      }`}
+                    >
+                      {homepageReviews.length}
+                    </span>
+                  </button>
+
+                  <button
+                    onClick={() => setReviewSubTab("company")}
+                    className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      reviewSubTab === "company"
+                        ? "bg-[#1a6b4a] text-white shadow-xs"
+                        : "text-gray-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    <span>কোম্পানি টেস্টিমোনিয়াল</span>
+                    <span
+                      className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                        reviewSubTab === "company"
+                          ? "bg-white/20 text-white"
+                          : "bg-gray-100 text-gray-700"
+                      }`}
+                    >
+                      {testimonials.length}
+                    </span>
+                  </button>
+                </div>
+
+                {/* Sub-tab 1: হোম রিভিউ Table */}
+                {reviewSubTab === "homepage" && (
+                  <div className="bg-white rounded-2xl overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+                    {homeRevLoading ? (
+                      <div className="p-6 space-y-4">
+                        {[1, 2, 3].map((i) => (
+                          <div key={i} className="flex items-center gap-4">
+                            <Skeleton className="h-10 w-10 rounded-full" />
+                            <div className="space-y-2 flex-1">
+                              <Skeleton className="h-4 w-1/3" />
+                              <Skeleton className="h-3 w-1/2" />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : homepageReviews.length === 0 ? (
+                      <div className="py-16 text-center text-[#6b7280]">
+                        <Star className="h-10 w-10 mx-auto mb-2 text-gray-300" />
+                        <p className="font-semibold text-sm">কোনো হোম রিভিউ পাওয়া যায়নি</p>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-gray-50/80 text-[#6b7280] font-bold text-[11px] uppercase tracking-wider border-b border-gray-100">
+                            <tr>
+                              <th className="px-5 py-3.5">রিভিউকারী</th>
+                              <th className="px-5 py-3.5">অবস্থান</th>
+                              <th className="px-5 py-3.5">রেটিং</th>
+                              <th className="px-5 py-3.5">সর্ট অর্ডার</th>
+                              <th className="px-5 py-3.5">উক্তি প্রিভিউ</th>
+                              <th className="px-5 py-3.5 text-right">অ্যাকশন</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100">
+                            {homepageReviews.map((r) => (
+                              <tr key={r.id} className="hover:bg-gray-50/60 transition-colors">
+                                <td className="px-5 py-3.5">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full overflow-hidden bg-rose-100 text-rose-800 flex items-center justify-center font-bold text-xs shrink-0">
+                                      {r.avatar_url ? (
+                                        <img src={r.avatar_url} alt="" className="w-full h-full object-cover" />
+                                      ) : (
+                                        r.name?.charAt(0) || "ব"
+                                      )}
+                                    </div>
+                                    <div className="font-semibold text-[#111827] text-sm truncate max-w-[160px]">
+                                      {r.name}
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="px-5 py-3.5 text-[#6b7280]">
+                                  {r.location || "বাংলাদেশ"}
+                                </td>
+                                <td className="px-5 py-3.5">
+                                  <div className="flex items-center gap-1 text-amber-500 font-semibold">
+                                    <Star className="h-3.5 w-3.5 fill-current" />
+                                    <span>{r.rating || 5}.০</span>
+                                  </div>
+                                </td>
+                                <td className="px-5 py-3.5">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="font-mono font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-700 text-[11px]">
+                                      #{r.sort_order ?? 0}
+                                    </span>
+                                    <button
+                                      onClick={() => handleReorderHomepageReview(r, "up")}
+                                      className="p-1 hover:bg-gray-200 rounded text-gray-600 transition-colors cursor-pointer"
+                                      title="উপরে নিন (মান হ্রাস)"
+                                    >
+                                      ▲
+                                    </button>
+                                    <button
+                                      onClick={() => handleReorderHomepageReview(r, "down")}
+                                      className="p-1 hover:bg-gray-200 rounded text-gray-600 transition-colors cursor-pointer"
+                                      title="নিচে নিন (মান বৃদ্ধি)"
+                                    >
+                                      ▼
+                                    </button>
+                                  </div>
+                                </td>
+                                <td className="px-5 py-3.5 text-[#6b7280] max-w-[280px] truncate" title={r.quote}>
+                                  "{r.quote}"
+                                </td>
+                                <td className="px-5 py-3.5 text-right">
+                                  <div className="flex items-center justify-end gap-1">
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => {
+                                        setEditingHomeRev(r);
+                                        setHomeRevFormOpen(true);
+                                      }}
+                                      className="w-8 h-8 rounded-lg hover:bg-gray-100"
+                                      title="সম্পাদনা"
+                                    >
+                                      <Pencil className="h-3.5 w-3.5 text-[#6b7280]" />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => setDeletingHomeRev(r)}
+                                      className="w-8 h-8 rounded-lg hover:bg-red-50 text-red-500"
+                                      title="মুছে ফেলুন"
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Sub-tab 2: কোম্পানি টেস্টিমোনিয়াল Table */}
+                {reviewSubTab === "company" && (
+                  <div className="bg-white rounded-2xl overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+                    {testLoading ? (
+                      <div className="p-6 space-y-4">
+                        {[1, 2, 3].map((i) => (
+                          <div key={i} className="flex items-center gap-4">
+                            <Skeleton className="h-10 w-10 rounded-full" />
+                            <div className="space-y-2 flex-1">
+                              <Skeleton className="h-4 w-1/3" />
+                              <Skeleton className="h-3 w-1/2" />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : testimonials.length === 0 ? (
+                      <div className="py-16 text-center text-[#6b7280]">
+                        <Briefcase className="h-10 w-10 mx-auto mb-2 text-gray-300" />
+                        <p className="font-semibold text-sm">কোনো কোম্পানি টেস্টিমোনিয়াল নেই</p>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-gray-50/80 text-[#6b7280] font-bold text-[11px] uppercase tracking-wider border-b border-gray-100">
+                            <tr>
+                              <th className="px-5 py-3.5">বিনিয়োগকারী</th>
+                              <th className="px-5 py-3.5">সম্পর্কিত ব্যবসা / ব্র্যান্ড</th>
+                              <th className="px-5 py-3.5">রেটিং</th>
+                              <th className="px-5 py-3.5">বিনিয়োগের পরিমাণ</th>
+                              <th className="px-5 py-3.5">উক্তি প্রিভিউ</th>
+                              <th className="px-5 py-3.5 text-right">অ্যাকশন</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100">
+                            {testimonials.map((t) => {
+                              const opp = opportunities.find((o) => o.id === t.related_opportunity_id);
+                              const brandDisplay = opp?.name || t.brand_name;
+                              return (
+                                <tr key={t.id} className="hover:bg-gray-50/60 transition-colors">
+                                  <td className="px-5 py-3.5">
+                                    <div className="flex items-center gap-3">
+                                      <div className="w-8 h-8 rounded-full overflow-hidden bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs shrink-0">
+                                        {t.avatar_url ? (
+                                          <img src={t.avatar_url} alt="" className="w-full h-full object-cover" />
+                                        ) : (
+                                          t.name?.charAt(0) || "ব"
+                                        )}
+                                      </div>
+                                      <div className="min-w-0">
+                                        <div className="font-semibold text-[#111827] text-sm truncate max-w-[160px]">
+                                          {t.name}
+                                        </div>
+                                        <div className="text-[11px] text-[#6b7280] truncate">
+                                          {[t.role_title, t.location].filter(Boolean).join(" • ") || "বিনিয়োগকারী"}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="px-5 py-3.5">
+                                    {brandDisplay ? (
+                                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-900 border border-emerald-200/60 font-semibold text-[11px]">
+                                        <Building2 className="h-3 w-3 text-emerald-700" />
+                                        <span className="truncate max-w-[160px]">{brandDisplay}</span>
+                                      </span>
+                                    ) : (
+                                      <span className="text-gray-400">—</span>
+                                    )}
+                                  </td>
+                                  <td className="px-5 py-3.5">
+                                    <div className="flex items-center gap-1 text-amber-500 font-semibold">
+                                      <Star className="h-3.5 w-3.5 fill-current" />
+                                      <span>{t.rating || 5}.০</span>
+                                    </div>
+                                  </td>
+                                  <td className="px-5 py-3.5">
+                                    {t.investment_amount ? (
+                                      <span className="font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 text-[11px]">
+                                        {t.investment_amount}
+                                      </span>
+                                    ) : (
+                                      <span className="text-gray-400">—</span>
+                                    )}
+                                  </td>
+                                  <td className="px-5 py-3.5 text-[#6b7280] max-w-[280px] truncate" title={t.quote}>
+                                    "{t.quote}"
+                                  </td>
+                                  <td className="px-5 py-3.5 text-right">
+                                    <div className="flex items-center justify-end gap-1">
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => {
+                                          setEditingTest(t);
+                                          setTestFormOpen(true);
+                                        }}
+                                        className="w-8 h-8 rounded-lg hover:bg-gray-100"
+                                        title="সম্পাদনা"
+                                      >
+                                        <Pencil className="h-3.5 w-3.5 text-[#6b7280]" />
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => setDeletingTest(t)}
+                                        className="w-8 h-8 rounded-lg hover:bg-red-50 text-red-500"
+                                        title="মুছে ফেলুন"
+                                      >
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                      </Button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
@@ -1641,8 +1971,48 @@ function AdminDashboard() {
         <AlertDialogContent className="rounded-2xl p-6"><AlertDialogHeader><AlertDialogTitle className="text-xl font-bold">ব্যবহারকারী মুছতে চান?</AlertDialogTitle><AlertDialogDescription className="text-sm"><strong>"{deletingUser?.full_name || deletingUser?.email}"</strong> এর অ্যাকাউন্ট মুছে যাবে।</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="rounded-xl">বাতিল</AlertDialogCancel><AlertDialogAction onClick={handleDeleteUser} className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl">মুছে ফেলুন</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
 
+      <AlertDialog open={!!deletingTest} onOpenChange={(o) => !o && setDeletingTest(null)}>
+        <AlertDialogContent className="rounded-2xl p-6">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-bold">প্রশংসাপত্রটি মুছতে চান?</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm">
+              <strong>"{deletingTest?.name}"</strong> এর প্রশংসাপত্র মুছে ফেলা হবে।
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">বাতিল</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteTest}
+              disabled={deletingTestLoading}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl"
+            >
+              {deletingTestLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              মুছে ফেলুন
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <AlertDialog open={!!deletingHomeRev} onOpenChange={(o) => !o && setDeletingHomeRev(null)}>
-        <AlertDialogContent className="rounded-2xl p-6"><AlertDialogHeader><AlertDialogTitle className="text-xl font-bold">রিভিউটি মুছতে চান?</AlertDialogTitle><AlertDialogDescription className="text-sm"><strong>"{deletingHomeRev?.name}"</strong> এর রিভিউ মুছে ফেলা হবে।</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="rounded-xl">বাতিল</AlertDialogCancel><AlertDialogAction onClick={async () => { if (!deletingHomeRev) return; try { const { error } = await supabase.from("homepage_reviews").delete().eq("id", deletingHomeRev.id); if (error) throw error; toast.success("রিভিউ মুছে ফেলা হয়েছে"); setDeletingHomeRev(null); fetchHomepageReviews(); } catch (err: any) { toast.error("মুছতে সমস্যা: " + err.message); } }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl">মুছে ফেলুন</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+        <AlertDialogContent className="rounded-2xl p-6">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-bold">রিভিউটি মুছতে চান?</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm">
+              <strong>"{deletingHomeRev?.name}"</strong> এর রিভিউ মুছে ফেলা হবে।
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">বাতিল</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteHomeRev}
+              disabled={deletingHomeRevLoading}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl"
+            >
+              {deletingHomeRevLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              মুছে ফেলুন
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
       </AlertDialog>
 
       {/* Category Manager Dialog */}

@@ -1,8 +1,11 @@
 import { useState, useMemo, useEffect } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, Star, Search, CheckCircle2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Loader2, Star, Search, CheckCircle2, ArrowRight, Building2, Coins } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import type { HomepageReview, Testimonial, Opportunity } from "@/lib/database.types";
 
 interface ReviewsSearch {
   q?: string;
@@ -46,7 +49,7 @@ export const Route = createFileRoute("/reviews")({
     ],
   }),
   loader: async ({ context }) => {
-    const { fetchTestimonialsSSR } = await import("@/lib/projects");
+    const { fetchTestimonialsSSR, fetchOpportunitiesSSR } = await import("@/lib/projects");
     const { fetchHomepageReviewsSSR } = await import("@/lib/homepage_reviews");
     await Promise.all([
       context.queryClient.ensureQueryData({
@@ -57,77 +60,54 @@ export const Route = createFileRoute("/reviews")({
         queryKey: ["homepage-reviews-all"],
         queryFn: () => fetchHomepageReviewsSSR(),
       }),
+      context.queryClient.ensureQueryData({
+        queryKey: ["opportunities-all"],
+        queryFn: () => fetchOpportunitiesSSR(),
+      }),
     ]);
   },
   component: ReviewsPage,
 });
 
-interface ReviewCardItem {
-  id: string;
-  name: string;
-  location?: string | null;
-  quote: string;
-  rating?: number | null;
-  avatar_url?: string | null;
-  brand_name?: string | null;
-  related_opportunity_id?: string | null;
-  role_title?: string | null;
-  investment_amount?: string | null;
-}
-
-function ReviewGridCard({ item }: { item: ReviewCardItem }) {
-  const brandContent = item.brand_name ? (
-    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold text-primary w-fit mb-3 transition-colors hover:bg-primary/15">
-      <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-      <span>{item.brand_name}</span>
-    </div>
-  ) : null;
+// ─── Tab 1 Card: আমাদের রিভিউ (Platform / Homepage Reviews) ────────────
+function PlatformReviewCard({ item }: { item: HomepageReview }) {
+  const rating = item.rating ?? 5;
+  const initial = item.name ? item.name.charAt(0) : "ব";
 
   return (
-    <div className="w-full h-full flex flex-col justify-between rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-[var(--shadow-card)] transition-all duration-300 hover:scale-[1.01] hover:shadow-[var(--shadow-elevated)]">
+    <div className="w-full h-full flex flex-col justify-between rounded-3xl border border-border/80 bg-card p-6 sm:p-7 shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
       <div>
-        {/* Brand Badge */}
-        {item.related_opportunity_id ? (
-          <Link to="/opportunities/$id" params={{ id: item.related_opportunity_id }}>
-            {brandContent}
-          </Link>
-        ) : (
-          brandContent
-        )}
-
         {/* Star Rating */}
-        {item.rating && item.rating > 0 ? (
-          <div className="flex items-center gap-1 mb-3">
-            {Array.from({ length: item.rating }).map((_, i) => (
-              <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
-            ))}
-          </div>
-        ) : null}
+        <div className="flex items-center gap-1 mb-3">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Star
+              key={i}
+              className={`h-4 w-4 ${
+                i < rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/20"
+              }`}
+            />
+          ))}
+          <span className="ml-1.5 text-xs font-bold text-muted-foreground">
+            {rating}.০
+          </span>
+        </div>
 
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" className="text-primary/40">
+        {/* Quote Icon & Text */}
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          className="text-primary/30 mb-2"
+        >
           <path d="M7.17 6C4.87 6 3 7.87 3 10.17V18h7v-7.83H6.5C6.5 8.7 7.7 7.5 9.17 7.5V6h-2zM17.17 6c-2.3 0-4.17 1.87-4.17 4.17V18h7v-7.83h-3.5c0-1.47 1.2-2.67 2.67-2.67V6h-2z" />
         </svg>
-        <p className="mt-3 text-base leading-relaxed text-foreground sm:text-lg">
+        <p className="text-base leading-relaxed text-foreground sm:text-[17px] font-normal">
           "{item.quote}"
         </p>
-
-        {/* Investment Amount Badge */}
-        {item.investment_amount && (
-          <div className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-md border border-emerald-200 dark:border-emerald-800/50">
-            <svg
-              className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2.5"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>{item.investment_amount}</span>
-          </div>
-        )}
       </div>
 
+      {/* Footer: Avatar + Name + Location */}
       <footer className="mt-6 flex items-center gap-3 pt-4 border-t border-border/60">
         {item.avatar_url ? (
           <img
@@ -136,13 +116,115 @@ function ReviewGridCard({ item }: { item: ReviewCardItem }) {
             className="h-11 w-11 shrink-0 rounded-full object-cover border border-border"
           />
         ) : (
-          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary/10 text-sm font-bold text-primary">
-            {item.name ? item.name.substring(0, 2) : "বি"}
-          </span>
+          <div className="h-11 w-11 shrink-0 rounded-full bg-[#1a6b4a]/10 text-[#1a6b4a] flex items-center justify-center font-bold text-base border border-[#1a6b4a]/20">
+            {initial}
+          </div>
         )}
         <div className="min-w-0 flex-1">
-          <div className="truncate text-sm font-semibold text-foreground">{item.name || "বিনিয়োগকারী"}</div>
-          <div className="truncate text-xs text-muted-foreground">
+          <div className="truncate text-sm font-bold text-foreground">
+            {item.name || "সম্মানিত বিনিয়োগকারী"}
+          </div>
+          <div className="truncate text-xs text-muted-foreground font-medium">
+            {item.location || "বাংলাদেশ"}
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+// ─── Tab 2 Card: কোম্পানি রিভিউ (Company Testimonials) ─────────────────
+function CompanyReviewCard({
+  item,
+  opportunity,
+}: {
+  item: Testimonial;
+  opportunity?: Opportunity | null;
+}) {
+  const rating = item.rating ?? 5;
+  const initial = item.name ? item.name.charAt(0) : "ব";
+  const oppName = opportunity?.name || item.brand_name;
+  const oppSlug = opportunity?.slug;
+
+  return (
+    <div className="w-full h-full flex flex-col justify-between rounded-3xl border border-border/80 bg-card p-6 sm:p-7 shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
+      <div>
+        {/* Linked Opportunity Badge */}
+        {oppName && (
+          <div className="mb-3">
+            {oppSlug ? (
+              <Link
+                to={`/opportunities/${oppSlug}`}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-900 border border-emerald-200/80 text-xs font-bold hover:bg-emerald-100 transition-colors"
+              >
+                <Building2 className="h-3 w-3 text-emerald-700" />
+                <span className="truncate max-w-[200px]">{oppName}</span>
+              </Link>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-900 border border-emerald-200/80 text-xs font-bold">
+                <Building2 className="h-3 w-3 text-emerald-700" />
+                <span className="truncate max-w-[200px]">{oppName}</span>
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Star Rating */}
+        <div className="flex items-center gap-1 mb-3">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Star
+              key={i}
+              className={`h-4 w-4 ${
+                i < rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/20"
+              }`}
+            />
+          ))}
+          <span className="ml-1.5 text-xs font-bold text-muted-foreground">
+            {rating}.০
+          </span>
+        </div>
+
+        {/* Quote Icon & Text */}
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          className="text-primary/30 mb-2"
+        >
+          <path d="M7.17 6C4.87 6 3 7.87 3 10.17V18h7v-7.83H6.5C6.5 8.7 7.7 7.5 9.17 7.5V6h-2zM17.17 6c-2.3 0-4.17 1.87-4.17 4.17V18h7v-7.83h-3.5c0-1.47 1.2-2.67 2.67-2.67V6h-2z" />
+        </svg>
+        <p className="text-base leading-relaxed text-foreground sm:text-[17px] font-normal">
+          "{item.quote}"
+        </p>
+
+        {/* Investment Amount Badge if exists */}
+        {item.investment_amount && (
+          <div className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+            <Coins className="h-3.5 w-3.5 text-emerald-600" />
+            <span>{item.investment_amount}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Footer: Avatar + Investor Name + Role + Location */}
+      <footer className="mt-6 flex items-center gap-3 pt-4 border-t border-border/60">
+        {item.avatar_url ? (
+          <img
+            src={item.avatar_url}
+            alt={item.name}
+            className="h-11 w-11 shrink-0 rounded-full object-cover border border-border"
+          />
+        ) : (
+          <div className="h-11 w-11 shrink-0 rounded-full bg-[#1a6b4a]/10 text-[#1a6b4a] flex items-center justify-center font-bold text-base border border-[#1a6b4a]/20">
+            {initial}
+          </div>
+        )}
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-sm font-bold text-foreground">
+            {item.name || "বিনিয়োগকারী"}
+          </div>
+          <div className="truncate text-xs text-muted-foreground font-medium">
             {[item.role_title, item.location].filter(Boolean).join(" • ") || "বিনিয়োগকারী"}
           </div>
         </div>
@@ -151,6 +233,7 @@ function ReviewGridCard({ item }: { item: ReviewCardItem }) {
   );
 }
 
+// ─── Main Reviews Page Component ─────────────────────────────────────
 function ReviewsPage() {
   const searchParams = Route.useSearch();
   const navigate = Route.useNavigate();
@@ -158,7 +241,7 @@ function ReviewsPage() {
   const currentTab = searchParams.tab === "company" ? "company" : "platform";
 
   // Fetch Homepage Reviews (Tab 1: আমাদের রিভিউ)
-  const { data: homepageReviews = [], isLoading: isLoadingHomepage } = useQuery({
+  const { data: rawHomepageReviews = [], isLoading: isLoadingHomepage } = useQuery({
     queryKey: ["homepage-reviews-all"],
     queryFn: async () => {
       const { fetchHomepageReviewsSSR } = await import("@/lib/homepage_reviews");
@@ -166,6 +249,11 @@ function ReviewsPage() {
     },
     staleTime: 1000 * 60 * 5,
   });
+
+  // Sort Homepage reviews by sort_order
+  const homepageReviews = useMemo(() => {
+    return [...rawHomepageReviews].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+  }, [rawHomepageReviews]);
 
   // Fetch Testimonials (Tab 2: কোম্পানি রিভিউ)
   const { data: testimonials = [], isLoading: isLoadingTestimonials } = useQuery({
@@ -176,6 +264,23 @@ function ReviewsPage() {
     },
     staleTime: 1000 * 60 * 5,
   });
+
+  // Fetch Opportunities for resolving linked company names
+  const { data: opportunities = [] } = useQuery({
+    queryKey: ["opportunities-all"],
+    queryFn: async () => {
+      const { fetchOpportunitiesSSR } = await import("@/lib/projects");
+      return fetchOpportunitiesSSR();
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+
+  // Opportunities lookup map
+  const oppMap = useMemo(() => {
+    const map = new Map<string, Opportunity>();
+    opportunities.forEach((o) => map.set(o.id, o));
+    return map;
+  }, [opportunities]);
 
   const activeReviews = useMemo(() => {
     return currentTab === "platform" ? homepageReviews : testimonials;
@@ -224,8 +329,7 @@ function ReviewsPage() {
             ratedList.length
           ).toFixed(1)
         : "৫.০";
-    const verifiedCount = activeReviews.filter((t: any) => t.investment_amount).length;
-    return { total, avg, verifiedCount };
+    return { total, avg };
   }, [activeReviews]);
 
   // Filtered List
@@ -247,12 +351,12 @@ function ReviewsPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-20">
-      {/* Top sticky bar */}
+      {/* Top Header */}
       <header className="sticky top-0 z-20 border-b border-border/70 bg-background/85 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-primary transition-colors"
           >
             <svg
               width="14"
@@ -267,43 +371,43 @@ function ReviewsPage() {
             </svg>
             হোমে ফিরে যান
           </Link>
-          <span className="text-sm font-bold tracking-wide">সকল মতামত</span>
+          <span className="text-sm font-bold tracking-wide text-[#111827]">মতামত ও রিভিউ</span>
         </div>
       </header>
 
-      {/* Hero Header */}
-      <section className="bg-surface border-b border-border py-12 sm:py-20">
+      {/* Hero Section */}
+      <section className="bg-muted/30 border-b border-border py-12 sm:py-16">
         <div className="mx-auto max-w-7xl px-5 sm:px-8 text-center">
-          <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-3">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+          <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#1a6b4a] mb-3 bg-[#1a6b4a]/10 px-3 py-1 rounded-full">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#1a6b4a] animate-pulse" />
             গ্রাহকদের সন্তুষ্টি ও আস্থা
           </span>
-          <h1 className="font-display text-4xl sm:text-5xl font-bold">
+          <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-[#111827]">
             বিনিয়োগকারীদের বাস্তব অভিজ্ঞতা
           </h1>
-          <p className="mt-4 text-lg leading-relaxed text-muted-foreground max-w-2xl mx-auto">
+          <p className="mt-3 text-base sm:text-lg leading-relaxed text-muted-foreground max-w-2xl mx-auto">
             {currentTab === "platform"
               ? "বিনিয়োগ বৃদ্ধি প্ল্যাটফর্ম ও সেবা সম্পর্কে সম্মানিত বিনিয়োগকারী ও শুভাকাঙ্ক্ষীদের সামগ্রিক মতামত।"
-              : "বিনিয়োগ বৃদ্ধির সাথে যুক্ত বিভিন্ন ব্যবসায়িক উদ্যোগ ও কোম্পানিতে বিনিয়োগকারীদের বাস্তব অভিজ্ঞতা।"}
+              : "বিনিয়োগ বৃদ্ধির সাথে যুক্ত বিভিন্ন ব্যবসায়িক উদ্যোগ ও কোম্পানিতে বিনিয়োগকারীদের অভিজ্ঞতা।"}
           </p>
 
-          {/* ─── 2 Main Tabs: আমাদের রিভিউ vs কোম্পানি রিভিউ ─── */}
+          {/* ─── Pill-style Tabs ─── */}
           <div className="mt-8 flex justify-center">
-            <div className="inline-flex p-1.5 rounded-2xl bg-muted/80 border border-border/80 shadow-inner">
+            <div className="inline-flex p-1.5 rounded-2xl bg-muted/80 border border-border shadow-xs">
               <button
                 type="button"
                 onClick={() => handleTabChange("platform")}
-                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer ${
                   currentTab === "platform"
-                    ? "bg-card text-primary shadow-sm border border-border/40"
+                    ? "bg-white text-[#1a6b4a] shadow-sm border border-border/40 font-extrabold"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <span>আমাদের রিভিউ</span>
                 <span
-                  className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
+                  className={`text-xs px-2 py-0.5 rounded-full font-bold ${
                     currentTab === "platform"
-                      ? "bg-primary/10 text-primary"
+                      ? "bg-[#1a6b4a]/10 text-[#1a6b4a]"
                       : "bg-muted text-muted-foreground"
                   }`}
                 >
@@ -314,17 +418,17 @@ function ReviewsPage() {
               <button
                 type="button"
                 onClick={() => handleTabChange("company")}
-                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer ${
                   currentTab === "company"
-                    ? "bg-card text-primary shadow-sm border border-border/40"
+                    ? "bg-white text-[#1a6b4a] shadow-sm border border-border/40 font-extrabold"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <span>কোম্পানি রিভিউ</span>
                 <span
-                  className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
+                  className={`text-xs px-2 py-0.5 rounded-full font-bold ${
                     currentTab === "company"
-                      ? "bg-primary/10 text-primary"
+                      ? "bg-[#1a6b4a]/10 text-[#1a6b4a]"
                       : "bg-muted text-muted-foreground"
                   }`}
                 >
@@ -334,99 +438,89 @@ function ReviewsPage() {
             </div>
           </div>
 
-          {/* Stats Summary Cards */}
-          <div className="mt-10 grid grid-cols-2 sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
-            <div className="rounded-2xl border border-border bg-card p-5 text-center shadow-sm">
-              <div className="text-3xl font-extrabold text-primary">{stats.total}</div>
-              <div className="mt-1 text-xs sm:text-sm font-medium text-muted-foreground">মোট মতামত</div>
+          {/* Stats Bar */}
+          <div className="mt-8 grid grid-cols-2 gap-4 max-w-md mx-auto">
+            <div className="rounded-2xl border border-border bg-card p-4 text-center shadow-xs">
+              <div className="text-2xl sm:text-3xl font-bold text-[#1a6b4a]">{stats.total}</div>
+              <div className="mt-0.5 text-xs font-semibold text-muted-foreground">মোট মতামত</div>
             </div>
 
-            <div className="rounded-2xl border border-border bg-card p-5 text-center shadow-sm">
-              <div className="flex items-center justify-center gap-1 text-3xl font-extrabold text-amber-500">
+            <div className="rounded-2xl border border-border bg-card p-4 text-center shadow-xs">
+              <div className="flex items-center justify-center gap-1 text-2xl sm:text-3xl font-bold text-amber-500">
                 <span>{stats.avg}</span>
-                <Star className="h-6 w-6 fill-amber-400 text-amber-400" />
+                <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
               </div>
-              <div className="mt-1 text-xs sm:text-sm font-medium text-muted-foreground">গড় গ্রাহক রেটিং</div>
-            </div>
-
-            <div className="col-span-2 sm:col-span-1 rounded-2xl border border-border bg-card p-5 text-center shadow-sm flex flex-col justify-center items-center">
-              <div className="flex items-center gap-1 text-2xl sm:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">
-                <CheckCircle2 className="h-6 w-6 shrink-0" />
-                <span>১০০%</span>
-              </div>
-              <div className="mt-1 text-xs sm:text-sm font-medium text-muted-foreground">যাচাইকৃত মতামত</div>
+              <div className="mt-0.5 text-xs font-semibold text-muted-foreground">গড় রেটিং</div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Filter & Search Section */}
-      <section className="mx-auto max-w-7xl px-5 sm:px-8 py-8 sm:py-12">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8 bg-card p-4 rounded-2xl border border-border shadow-sm">
+      {/* Filter & Search Bar */}
+      <section className="mx-auto max-w-7xl px-5 sm:px-8 py-8">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8 bg-card p-4 rounded-2xl border border-border shadow-xs">
           {/* Search Input */}
           <div className="relative w-full sm:w-80">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="text"
               placeholder={
-                currentTab === "platform" ? "নাম বা মতামত খুঁজুন..." : "নাম, ব্যবসা বা মতামত খুঁজুন..."
+                currentTab === "platform" ? "নাম বা রিভিউ খুঁজুন..." : "নাম, কোম্পানি বা মতামত খুঁজুন..."
               }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-10 w-full rounded-xl"
+              className="pl-10 h-10 w-full rounded-xl text-sm"
             />
           </div>
 
-          {/* Star Rating Tabs */}
+          {/* Rating Tabs */}
           <div className="flex items-center gap-1.5 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
             <button
               onClick={() => handleRatingChange(null)}
-              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors shrink-0 cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
                 selectedRating === null
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "bg-muted/60 text-muted-foreground hover:bg-muted"
+                  ? "bg-[#1a6b4a] text-white shadow-xs"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
               }`}
             >
-              সকল মতামত ({activeReviews.length})
+              সকল ({activeReviews.length})
             </button>
             <button
               onClick={() => handleRatingChange(5)}
-              className={`inline-flex items-center gap-1 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors shrink-0 cursor-pointer ${
+              className={`inline-flex items-center gap-1 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
                 selectedRating === 5
-                  ? "bg-amber-500 text-white shadow-sm"
-                  : "bg-muted/60 text-muted-foreground hover:bg-muted"
+                  ? "bg-amber-500 text-white shadow-xs"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
               }`}
             >
               <span>৫ স্টার</span>
-              <Star className="h-3.5 w-3.5 fill-current" />
+              <Star className="h-3 w-3 fill-current" />
             </button>
             <button
               onClick={() => handleRatingChange(4)}
-              className={`inline-flex items-center gap-1 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors shrink-0 cursor-pointer ${
+              className={`inline-flex items-center gap-1 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
                 selectedRating === 4
-                  ? "bg-amber-500 text-white shadow-sm"
-                  : "bg-muted/60 text-muted-foreground hover:bg-muted"
+                  ? "bg-amber-500 text-white shadow-xs"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
               }`}
             >
               <span>৪ স্টার</span>
-              <Star className="h-3.5 w-3.5 fill-current" />
+              <Star className="h-3 w-3 fill-current" />
             </button>
           </div>
         </div>
 
-        {/* Testimonials Grid */}
+        {/* Reviews Grid with Animated Tab Transition */}
         {isLoading ? (
-          <div className="flex min-h-[400px] items-center justify-center">
-            <Loader2 className="h-10 w-10 animate-spin text-primary/50" />
+          <div className="flex min-h-[300px] items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-[#1a6b4a]" />
           </div>
         ) : filteredReviews.length === 0 ? (
-          <div className="rounded-3xl border border-border bg-card py-20 text-center shadow-sm my-8">
-            <div className="mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground mb-4">
-              <Search className="h-6 w-6" />
-            </div>
-            <h3 className="text-lg font-bold">কোনো মতামত পাওয়া যায়নি</h3>
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground max-w-md mx-auto">
-              আপনার অনুসন্ধানের সাথে মিল রয়েছে এমন কোনো প্রশংসাপত্র এই মুহূর্তে নেই। দয়া করে অন্য কিওয়ার্ড দিয়ে চেষ্টা করুন।
+          <div className="rounded-3xl border border-border bg-card py-16 text-center shadow-xs my-6">
+            <Search className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+            <h3 className="text-base font-bold">কোনো মতামত পাওয়া যায়নি</h3>
+            <p className="mt-1 text-xs text-muted-foreground max-w-sm mx-auto">
+              অনুসন্ধানের সাথে মিল রয়েছে এমন কোনো রিভিউ নেই। অন্য কিওয়ার্ড দিয়ে চেষ্টা করুন।
             </p>
             {(searchQuery || selectedRating !== null) && (
               <button
@@ -434,21 +528,41 @@ function ReviewsPage() {
                   setSearchQuery("");
                   handleRatingChange(null);
                 }}
-                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-primary/10 px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/20 cursor-pointer"
+                className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-[#1a6b4a]/10 px-4 py-2 text-xs font-bold text-[#1a6b4a] hover:bg-[#1a6b4a]/20 cursor-pointer"
               >
                 ফিল্টার রিসেট করুন
               </button>
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            {filteredReviews.map((t: any, idx: number) => (
-              <ReviewGridCard key={t.id || idx} item={t} />
-            ))}
-          </div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentTab}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.25 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            >
+              {currentTab === "platform"
+                ? filteredReviews.map((item: HomepageReview) => (
+                    <PlatformReviewCard key={item.id} item={item} />
+                  ))
+                : filteredReviews.map((item: Testimonial) => (
+                    <CompanyReviewCard
+                      key={item.id}
+                      item={item}
+                      opportunity={
+                        item.related_opportunity_id
+                          ? oppMap.get(item.related_opportunity_id)
+                          : null
+                      }
+                    />
+                  ))}
+            </motion.div>
+          </AnimatePresence>
         )}
       </section>
     </div>
   );
 }
-
