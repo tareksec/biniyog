@@ -1,7 +1,7 @@
 import { execSync } from 'child_process';
 import fs from 'fs';
 
-const repoUrl = 'https://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@github.com/tareksec/biniyog.git';
+const repoUrl = 'https://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@github.com/tareksec/biniyog.git';
 
 try {
   // Stage all changes
