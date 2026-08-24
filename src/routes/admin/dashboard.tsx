@@ -323,17 +323,37 @@ function AdminDashboard() {
 
   const fetchTestimonials = useCallback(async () => {
     setTestLoading(true);
-    const { data, error } = await supabase
-      .from("testimonials")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (error) {
-      console.error("Error fetching testimonials:", error);
-      toast.error("প্রশংসাপত্র লোড করতে সমস্যা হয়েছে");
-    } else {
-      setTestimonials(data || []);
+    try {
+      const { data, error } = await supabase
+        .from("testimonials")
+        .select(`
+          *,
+          opportunities (
+            id,
+            name,
+            slug
+          )
+        `)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.warn("Joined testimonials fetch failed, trying standard select:", error.message);
+        const { data: standardData, error: standardErr } = await supabase
+          .from("testimonials")
+          .select("*")
+          .order("created_at", { ascending: false });
+        if (standardErr) throw standardErr;
+        setTestimonials((standardData as any) ?? []);
+      } else {
+        setTestimonials((data as any) ?? []);
+      }
+    } catch (err: any) {
+      console.error("Error fetching testimonials:", err);
+      setTestimonials([]);
+      toast.error("টেস্টিমোনিয়াল লোড হয়নি");
+    } finally {
+      setTestLoading(false);
     }
-    setTestLoading(false);
   }, []);
 
   const fetchHomepageReviews = useCallback(async () => {
@@ -1842,7 +1862,7 @@ function AdminDashboard() {
                           </div>
                         ))}
                       </div>
-                    ) : testimonials.length === 0 ? (
+                    ) : (testimonials ?? []).length === 0 ? (
                       <div className="py-16 text-center text-[#6b7280]">
                         <Briefcase className="h-10 w-10 mx-auto mb-2 text-gray-300" />
                         <p className="font-semibold text-sm">কোনো কোম্পানি টেস্টিমোনিয়াল নেই</p>
@@ -1861,26 +1881,40 @@ function AdminDashboard() {
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-gray-100">
-                            {testimonials.map((t) => {
-                              const opp = opportunities.find((o) => o.id === t.related_opportunity_id);
-                              const brandDisplay = opp?.name || t.brand_name;
+                            {(testimonials ?? []).map((t: any) => {
+                              if (!t) return null;
+                              const opp =
+                                (t.opportunities as { id?: string; name?: string; slug?: string } | undefined) ||
+                                (Array.isArray(opportunities)
+                                  ? opportunities.find((o) => o?.id === t.related_opportunity_id)
+                                  : null);
+                              const brandDisplay = opp?.name ?? t.brand_name ?? null;
+                              const ratingVal = typeof t.rating === "number" && t.rating > 0 ? t.rating : 5;
+                              const initial =
+                                t.name && String(t.name).trim().length > 0
+                                  ? String(t.name).trim().charAt(0)
+                                  : "ব";
+                              const nameDisplay = t.name || "বিনিয়োগকারী";
+                              const roleLocation =
+                                [t.role_title, t.location].filter(Boolean).join(" • ") || "বিনিয়োগকারী";
+
                               return (
-                                <tr key={t.id} className="hover:bg-gray-50/60 transition-colors">
+                                <tr key={t.id || Math.random()} className="hover:bg-gray-50/60 transition-colors">
                                   <td className="px-5 py-3.5">
                                     <div className="flex items-center gap-3">
                                       <div className="w-8 h-8 rounded-full overflow-hidden bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs shrink-0">
                                         {t.avatar_url ? (
                                           <img src={t.avatar_url} alt="" className="w-full h-full object-cover" />
                                         ) : (
-                                          t.name?.charAt(0) || "ব"
+                                          initial
                                         )}
                                       </div>
                                       <div className="min-w-0">
                                         <div className="font-semibold text-[#111827] text-sm truncate max-w-[160px]">
-                                          {t.name}
+                                          {nameDisplay}
                                         </div>
                                         <div className="text-[11px] text-[#6b7280] truncate">
-                                          {[t.role_title, t.location].filter(Boolean).join(" • ") || "বিনিয়োগকারী"}
+                                          {roleLocation}
                                         </div>
                                       </div>
                                     </div>
@@ -1888,17 +1922,17 @@ function AdminDashboard() {
                                   <td className="px-5 py-3.5">
                                     {brandDisplay ? (
                                       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-900 border border-emerald-200/60 font-semibold text-[11px]">
-                                        <Building2 className="h-3 w-3 text-emerald-700" />
+                                        <Building2 className="h-3 w-3 text-emerald-700 shrink-0" />
                                         <span className="truncate max-w-[160px]">{brandDisplay}</span>
                                       </span>
                                     ) : (
-                                      <span className="text-gray-400">—</span>
+                                      <span className="text-gray-400">সংযুক্ত নেই</span>
                                     )}
                                   </td>
                                   <td className="px-5 py-3.5">
                                     <div className="flex items-center gap-1 text-amber-500 font-semibold">
                                       <Star className="h-3.5 w-3.5 fill-current" />
-                                      <span>{t.rating || 5}.০</span>
+                                      <span>{ratingVal}.০</span>
                                     </div>
                                   </td>
                                   <td className="px-5 py-3.5">
@@ -1910,8 +1944,8 @@ function AdminDashboard() {
                                       <span className="text-gray-400">—</span>
                                     )}
                                   </td>
-                                  <td className="px-5 py-3.5 text-[#6b7280] max-w-[280px] truncate" title={t.quote}>
-                                    "{t.quote}"
+                                  <td className="px-5 py-3.5 text-[#6b7280] max-w-[280px] truncate" title={t.quote || ""}>
+                                    "{t.quote || ""}"
                                   </td>
                                   <td className="px-5 py-3.5 text-right">
                                     <div className="flex items-center justify-end gap-1">

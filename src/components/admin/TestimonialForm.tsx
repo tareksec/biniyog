@@ -12,7 +12,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Loader2, Star, Upload, X, User } from "lucide-react";
+import { Loader2, Star, X, User } from "lucide-react";
 import { toast } from "sonner";
 
 interface TestimonialFormProps {
@@ -55,7 +55,10 @@ export function TestimonialForm({
         brand_name: testimonial.brand_name || "",
         related_opportunity_id: testimonial.related_opportunity_id || "",
         role_title: testimonial.role_title || "",
-        rating: testimonial.rating !== null && testimonial.rating !== undefined ? Number(testimonial.rating) : 5,
+        rating:
+          testimonial.rating !== null && testimonial.rating !== undefined
+            ? parseInt(String(testimonial.rating), 10) || 5
+            : 5,
         avatar_url: testimonial.avatar_url || "",
         investment_amount: testimonial.investment_amount || "",
       });
@@ -114,7 +117,7 @@ export function TestimonialForm({
 
   const handleOppChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const oppId = e.target.value;
-    const opp = opportunities.find((o) => o.id === oppId);
+    const opp = (opportunities ?? []).find((o) => o.id === oppId);
     setForm((prev) => ({
       ...prev,
       related_opportunity_id: oppId,
@@ -133,15 +136,21 @@ export function TestimonialForm({
     setSaving(true);
 
     try {
+      const ratingParsed =
+        form.rating !== null && form.rating !== undefined
+          ? parseInt(String(form.rating), 10) || 5
+          : 5;
+      const relatedOppId = form.related_opportunity_id?.trim() || null;
+
       if (isEditing && testimonial) {
         const updateData: TestimonialUpdate = {
           name: form.name.trim(),
           location: form.location.trim() || null,
           quote: form.quote.trim(),
           brand_name: form.brand_name.trim() || null,
-          related_opportunity_id: form.related_opportunity_id || null,
+          related_opportunity_id: relatedOppId,
           role_title: form.role_title.trim() || null,
-          rating: form.rating ? Number(form.rating) : null,
+          rating: ratingParsed,
           avatar_url: form.avatar_url || null,
           investment_amount: form.investment_amount.trim() || null,
         };
@@ -159,9 +168,9 @@ export function TestimonialForm({
           location: form.location.trim() || null,
           quote: form.quote.trim(),
           brand_name: form.brand_name.trim() || null,
-          related_opportunity_id: form.related_opportunity_id || null,
+          related_opportunity_id: relatedOppId,
           role_title: form.role_title.trim() || null,
-          rating: form.rating ? Number(form.rating) : null,
+          rating: ratingParsed,
           avatar_url: form.avatar_url || null,
           investment_amount: form.investment_amount.trim() || null,
         };
@@ -215,7 +224,7 @@ export function TestimonialForm({
                 <button
                   type="button"
                   onClick={() => setForm((prev) => ({ ...prev, avatar_url: "" }))}
-                  className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center text-white"
+                  className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center text-white cursor-pointer"
                   title="ছবি মুছুন"
                 >
                   <X className="h-5 w-5" />
@@ -308,7 +317,7 @@ export function TestimonialForm({
                 placeholder="যেমন: তাসনিম নিটিং"
               />
               <datalist id="opp-suggestions">
-                {opportunities.map((opp) => (
+                {(opportunities ?? []).map((opp) => (
                   <option key={opp.id} value={opp.name} />
                 ))}
               </datalist>
@@ -323,7 +332,7 @@ export function TestimonialForm({
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <option value="">কোনোটি নির্বাচন করা হয়নি</option>
-                {opportunities.map((opp) => (
+                {(opportunities ?? []).map((opp) => (
                   <option key={opp.id} value={opp.id}>
                     {opp.name}
                   </option>
@@ -346,7 +355,7 @@ export function TestimonialForm({
                       rating: prev.rating === star ? null : star,
                     }))
                   }
-                  className="p-1 rounded hover:bg-muted transition-colors focus:outline-none"
+                  className="p-1 rounded hover:bg-muted transition-colors focus:outline-none cursor-pointer"
                   title={`${star} স্টার`}
                 >
                   <Star
