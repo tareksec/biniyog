@@ -1,10 +1,9 @@
 import { useState, useMemo, useEffect } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, Star, Search, CheckCircle2, ArrowRight, Building2, Coins } from "lucide-react";
+import { Loader2, Star, Search, Building2, Coins } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import type { HomepageReview, Testimonial, Opportunity } from "@/lib/database.types";
 
 interface ReviewsSearch {
@@ -14,17 +13,18 @@ interface ReviewsSearch {
 }
 
 export const Route = createFileRoute("/reviews")({
-  validateSearch: (search: Record<string, unknown>): ReviewsSearch => {
-    return {
-      q: typeof search.q === "string" ? search.q : undefined,
-      rating:
-        typeof search.rating === "number"
-          ? search.rating
-          : typeof search.rating === "string"
-          ? parseInt(search.rating, 10)
-          : undefined,
-      tab: search.tab === "company" ? "company" : "platform",
-    };
+  validateSearch: (search: Record<string, unknown> | undefined): ReviewsSearch => {
+    const q = typeof search?.q === "string" && search.q.trim().length > 0 ? search.q.trim() : undefined;
+    let rating: number | undefined = undefined;
+    if (typeof search?.rating === "number" && !isNaN(search.rating)) {
+      rating = search.rating;
+    } else if (typeof search?.rating === "string") {
+      const parsed = parseInt(search.rating, 10);
+      if (!isNaN(parsed)) rating = parsed;
+    }
+    const tab = search?.tab === "company" ? "company" : "platform";
+
+    return { q, rating, tab };
   },
   head: () => ({
     meta: [
@@ -49,30 +49,37 @@ export const Route = createFileRoute("/reviews")({
     ],
   }),
   loader: async ({ context }) => {
-    const { fetchTestimonialsSSR, fetchOpportunitiesSSR } = await import("@/lib/projects");
-    const { fetchHomepageReviewsSSR } = await import("@/lib/homepage_reviews");
-    await Promise.all([
-      context.queryClient.ensureQueryData({
-        queryKey: ["testimonials-all"],
-        queryFn: () => fetchTestimonialsSSR(),
-      }),
-      context.queryClient.ensureQueryData({
-        queryKey: ["homepage-reviews-all"],
-        queryFn: () => fetchHomepageReviewsSSR(),
-      }),
-      context.queryClient.ensureQueryData({
-        queryKey: ["opportunities-all"],
-        queryFn: () => fetchOpportunitiesSSR(),
-      }),
-    ]);
+    try {
+      const { fetchTestimonialsSSR, fetchOpportunitiesSSR } = await import("@/lib/projects");
+      const { fetchHomepageReviewsSSR } = await import("@/lib/homepage_reviews");
+      await Promise.allSettled([
+        context.queryClient.ensureQueryData({
+          queryKey: ["testimonials-all"],
+          queryFn: () => fetchTestimonialsSSR(),
+        }),
+        context.queryClient.ensureQueryData({
+          queryKey: ["homepage-reviews-all"],
+          queryFn: () => fetchHomepageReviewsSSR(),
+        }),
+        context.queryClient.ensureQueryData({
+          queryKey: ["opportunities-all"],
+          queryFn: () => fetchOpportunitiesSSR(),
+        }),
+      ]);
+    } catch (err) {
+      console.warn("[Reviews Route Loader] Non-fatal loader error:", err);
+    }
   },
   component: ReviewsPage,
 });
 
 // ─── Tab 1 Card: আমাদের রিভিউ (Platform / Homepage Reviews) ────────────
 function PlatformReviewCard({ item }: { item: HomepageReview }) {
-  const rating = item.rating ?? 5;
-  const initial = item.name ? item.name.charAt(0) : "ব";
+  const rating = item?.rating ? Math.min(5, Math.max(1, Number(item.rating))) : 5;
+  const initial = item?.name ? item.name.charAt(0) : "ব";
+  const name = item?.name || "সম্মানিত বিনিয়োগকারী";
+  const location = item?.location || "বাংলাদেশ";
+  const quote = item?.quote || "";
 
   return (
     <div className="w-full h-full flex flex-col justify-between rounded-3xl border border-border/80 bg-card p-6 sm:p-7 shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
@@ -103,16 +110,16 @@ function PlatformReviewCard({ item }: { item: HomepageReview }) {
           <path d="M7.17 6C4.87 6 3 7.87 3 10.17V18h7v-7.83H6.5C6.5 8.7 7.7 7.5 9.17 7.5V6h-2zM17.17 6c-2.3 0-4.17 1.87-4.17 4.17V18h7v-7.83h-3.5c0-1.47 1.2-2.67 2.67-2.67V6h-2z" />
         </svg>
         <p className="text-base leading-relaxed text-foreground sm:text-[17px] font-normal">
-          "{item.quote}"
+          "{quote}"
         </p>
       </div>
 
       {/* Footer: Avatar + Name + Location */}
       <footer className="mt-6 flex items-center gap-3 pt-4 border-t border-border/60">
-        {item.avatar_url ? (
+        {item?.avatar_url ? (
           <img
             src={item.avatar_url}
-            alt={item.name}
+            alt={name}
             className="h-11 w-11 shrink-0 rounded-full object-cover border border-border"
           />
         ) : (
@@ -122,10 +129,10 @@ function PlatformReviewCard({ item }: { item: HomepageReview }) {
         )}
         <div className="min-w-0 flex-1">
           <div className="truncate text-sm font-bold text-foreground">
-            {item.name || "সম্মানিত বিনিয়োগকারী"}
+            {name}
           </div>
           <div className="truncate text-xs text-muted-foreground font-medium">
-            {item.location || "বাংলাদেশ"}
+            {location}
           </div>
         </div>
       </footer>
@@ -141,10 +148,13 @@ function CompanyReviewCard({
   item: Testimonial;
   opportunity?: Opportunity | null;
 }) {
-  const rating = item.rating ?? 5;
-  const initial = item.name ? item.name.charAt(0) : "ব";
-  const oppName = opportunity?.name || item.brand_name;
-  const oppSlug = opportunity?.slug;
+  const rating = item?.rating ? Math.min(5, Math.max(1, Number(item.rating))) : 5;
+  const initial = item?.name ? item.name.charAt(0) : "ব";
+  const name = item?.name || "বিনিয়োগকারী";
+  const oppName = opportunity?.name || item?.brand_name || null;
+  const oppIdentifier = opportunity?.slug || opportunity?.id || item?.related_opportunity_id || null;
+  const quote = item?.quote || "";
+  const subtitle = [item?.role_title, item?.location].filter(Boolean).join(" • ") || "বিনিয়োগকারী";
 
   return (
     <div className="w-full h-full flex flex-col justify-between rounded-3xl border border-border/80 bg-card p-6 sm:p-7 shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
@@ -152,17 +162,18 @@ function CompanyReviewCard({
         {/* Linked Opportunity Badge */}
         {oppName && (
           <div className="mb-3">
-            {oppSlug ? (
+            {oppIdentifier ? (
               <Link
-                to={`/opportunities/${oppSlug}`}
+                to="/opportunities/$id"
+                params={{ id: String(oppIdentifier) }}
                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-900 border border-emerald-200/80 text-xs font-bold hover:bg-emerald-100 transition-colors"
               >
-                <Building2 className="h-3 w-3 text-emerald-700" />
+                <Building2 className="h-3 w-3 text-emerald-700 shrink-0" />
                 <span className="truncate max-w-[200px]">{oppName}</span>
               </Link>
             ) : (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-900 border border-emerald-200/80 text-xs font-bold">
-                <Building2 className="h-3 w-3 text-emerald-700" />
+                <Building2 className="h-3 w-3 text-emerald-700 shrink-0" />
                 <span className="truncate max-w-[200px]">{oppName}</span>
               </span>
             )}
@@ -195,13 +206,13 @@ function CompanyReviewCard({
           <path d="M7.17 6C4.87 6 3 7.87 3 10.17V18h7v-7.83H6.5C6.5 8.7 7.7 7.5 9.17 7.5V6h-2zM17.17 6c-2.3 0-4.17 1.87-4.17 4.17V18h7v-7.83h-3.5c0-1.47 1.2-2.67 2.67-2.67V6h-2z" />
         </svg>
         <p className="text-base leading-relaxed text-foreground sm:text-[17px] font-normal">
-          "{item.quote}"
+          "{quote}"
         </p>
 
         {/* Investment Amount Badge if exists */}
-        {item.investment_amount && (
+        {item?.investment_amount && (
           <div className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
-            <Coins className="h-3.5 w-3.5 text-emerald-600" />
+            <Coins className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
             <span>{item.investment_amount}</span>
           </div>
         )}
@@ -209,10 +220,10 @@ function CompanyReviewCard({
 
       {/* Footer: Avatar + Investor Name + Role + Location */}
       <footer className="mt-6 flex items-center gap-3 pt-4 border-t border-border/60">
-        {item.avatar_url ? (
+        {item?.avatar_url ? (
           <img
             src={item.avatar_url}
-            alt={item.name}
+            alt={name}
             className="h-11 w-11 shrink-0 rounded-full object-cover border border-border"
           />
         ) : (
@@ -222,10 +233,10 @@ function CompanyReviewCard({
         )}
         <div className="min-w-0 flex-1">
           <div className="truncate text-sm font-bold text-foreground">
-            {item.name || "বিনিয়োগকারী"}
+            {name}
           </div>
           <div className="truncate text-xs text-muted-foreground font-medium">
-            {[item.role_title, item.location].filter(Boolean).join(" • ") || "বিনিয়োগকারী"}
+            {subtitle}
           </div>
         </div>
       </footer>
@@ -235,70 +246,105 @@ function CompanyReviewCard({
 
 // ─── Main Reviews Page Component ─────────────────────────────────────
 function ReviewsPage() {
-  const searchParams = Route.useSearch();
+  const searchParams = useSearch({ from: "/reviews" });
   const navigate = Route.useNavigate();
 
-  const currentTab = searchParams.tab === "company" ? "company" : "platform";
+  const currentTab = searchParams?.tab === "company" ? "company" : "platform";
 
   // Fetch Homepage Reviews (Tab 1: আমাদের রিভিউ)
   const { data: rawHomepageReviews = [], isLoading: isLoadingHomepage } = useQuery({
     queryKey: ["homepage-reviews-all"],
     queryFn: async () => {
-      const { fetchHomepageReviewsSSR } = await import("@/lib/homepage_reviews");
-      return fetchHomepageReviewsSSR();
+      try {
+        const { fetchHomepageReviewsSSR } = await import("@/lib/homepage_reviews");
+        return (await fetchHomepageReviewsSSR()) ?? [];
+      } catch (err) {
+        console.error("Error fetching homepage reviews:", err);
+        return [];
+      }
     },
     staleTime: 1000 * 60 * 5,
   });
 
   // Sort Homepage reviews by sort_order
   const homepageReviews = useMemo(() => {
-    return [...rawHomepageReviews].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+    if (!Array.isArray(rawHomepageReviews)) return [];
+    return [...rawHomepageReviews].sort((a, b) => (a?.sort_order ?? 0) - (b?.sort_order ?? 0));
   }, [rawHomepageReviews]);
 
   // Fetch Testimonials (Tab 2: কোম্পানি রিভিউ)
-  const { data: testimonials = [], isLoading: isLoadingTestimonials } = useQuery({
+  const { data: rawTestimonials = [], isLoading: isLoadingTestimonials } = useQuery({
     queryKey: ["testimonials-all"],
     queryFn: async () => {
-      const { fetchTestimonialsSSR } = await import("@/lib/projects");
-      return fetchTestimonialsSSR();
+      try {
+        const { fetchTestimonialsSSR } = await import("@/lib/projects");
+        return (await fetchTestimonialsSSR()) ?? [];
+      } catch (err) {
+        console.error("Error fetching testimonials:", err);
+        return [];
+      }
     },
     staleTime: 1000 * 60 * 5,
   });
+
+  const testimonials = useMemo(() => {
+    return Array.isArray(rawTestimonials) ? rawTestimonials : [];
+  }, [rawTestimonials]);
 
   // Fetch Opportunities for resolving linked company names
-  const { data: opportunities = [] } = useQuery({
+  const { data: rawOpportunities = [] } = useQuery({
     queryKey: ["opportunities-all"],
     queryFn: async () => {
-      const { fetchOpportunitiesSSR } = await import("@/lib/projects");
-      return fetchOpportunitiesSSR();
+      try {
+        const { fetchOpportunitiesSSR } = await import("@/lib/projects");
+        return (await fetchOpportunitiesSSR()) ?? [];
+      } catch (err) {
+        console.error("Error fetching opportunities:", err);
+        return [];
+      }
     },
     staleTime: 1000 * 60 * 5,
   });
 
-  // Opportunities lookup map
+  const opportunities = useMemo(() => {
+    return Array.isArray(rawOpportunities) ? rawOpportunities : [];
+  }, [rawOpportunities]);
+
+  // Opportunities lookup map (keyed by ID and slug)
   const oppMap = useMemo(() => {
     const map = new Map<string, Opportunity>();
-    opportunities.forEach((o) => map.set(o.id, o));
+    opportunities.forEach((o) => {
+      if (o && o.id) map.set(o.id, o);
+    });
     return map;
   }, [opportunities]);
 
   const activeReviews = useMemo(() => {
-    return currentTab === "platform" ? homepageReviews : testimonials;
+    const list = currentTab === "company" ? testimonials : homepageReviews;
+    return Array.isArray(list) ? list : [];
   }, [currentTab, homepageReviews, testimonials]);
 
-  const isLoading = currentTab === "platform" ? isLoadingHomepage : isLoadingTestimonials;
+  const isLoading = currentTab === "company" ? isLoadingTestimonials : isLoadingHomepage;
 
-  const [searchQuery, setSearchQuery] = useState(searchParams.q || "");
-  const [selectedRating, setSelectedRating] = useState<number | null>(searchParams.rating || null);
+  const [searchQuery, setSearchQuery] = useState(searchParams?.q || "");
+  const [selectedRating, setSelectedRating] = useState<number | null>(
+    typeof searchParams?.rating === "number" ? searchParams.rating : null
+  );
 
   useEffect(() => {
-    setSearchQuery(searchParams.q || "");
-    setSelectedRating(searchParams.rating || null);
-  }, [searchParams.q, searchParams.rating]);
+    setSearchQuery(searchParams?.q || "");
+    setSelectedRating(typeof searchParams?.rating === "number" ? searchParams.rating : null);
+  }, [searchParams?.q, searchParams?.rating]);
 
   useEffect(() => {
     const handler = setTimeout(() => {
-      navigate({ search: (prev) => ({ ...prev, q: searchQuery || undefined }), replace: true });
+      navigate({
+        search: (prev) => ({
+          ...prev,
+          q: searchQuery.trim() ? searchQuery.trim() : undefined,
+        }),
+        replace: true,
+      });
     }, 300);
     return () => clearTimeout(handler);
   }, [searchQuery, navigate]);
@@ -307,7 +353,7 @@ function ReviewsPage() {
     navigate({
       search: (prev) => ({
         ...prev,
-        tab: tab === "platform" ? undefined : tab,
+        tab: tab === "company" ? "company" : undefined,
       }),
       replace: true,
     });
@@ -315,17 +361,25 @@ function ReviewsPage() {
 
   const handleRatingChange = (rating: number | null) => {
     setSelectedRating(rating);
-    navigate({ search: (prev) => ({ ...prev, rating: rating || undefined }), replace: true });
+    navigate({
+      search: (prev) => ({
+        ...prev,
+        rating: rating !== null ? rating : undefined,
+      }),
+      replace: true,
+    });
   };
 
   // Statistics
   const stats = useMemo(() => {
-    const total = activeReviews.length;
-    const ratedList = activeReviews.filter((t) => t.rating && t.rating > 0);
+    const total = activeReviews?.length ?? 0;
+    const ratedList = (activeReviews ?? []).filter(
+      (t) => t && typeof t.rating === "number" && t.rating > 0
+    );
     const avg =
       ratedList.length > 0
         ? (
-            ratedList.reduce((sum, t) => sum + (t.rating || 5), 0) /
+            ratedList.reduce((sum, t) => sum + Number(t.rating || 5), 0) /
             ratedList.length
           ).toFixed(1)
         : "৫.০";
@@ -334,18 +388,20 @@ function ReviewsPage() {
 
   // Filtered List
   const filteredReviews = useMemo(() => {
+    if (!Array.isArray(activeReviews)) return [];
     return activeReviews.filter((t: any) => {
-      const q = searchQuery.trim().toLowerCase();
+      if (!t) return false;
+      const q = (searchQuery || "").trim().toLowerCase();
       const matchesSearch =
         q === "" ||
-        (t.name && t.name.toLowerCase().includes(q)) ||
-        (t.quote && t.quote.toLowerCase().includes(q)) ||
-        (t.brand_name && t.brand_name.toLowerCase().includes(q)) ||
-        (t.location && t.location.toLowerCase().includes(q));
+        (t.name && String(t.name).toLowerCase().includes(q)) ||
+        (t.quote && String(t.quote).toLowerCase().includes(q)) ||
+        (t.brand_name && String(t.brand_name).toLowerCase().includes(q)) ||
+        (t.location && String(t.location).toLowerCase().includes(q));
 
-      const matchesRating = selectedRating === null || (t.rating || 5) === selectedRating;
+      const matchesRating = selectedRating === null || Number(t.rating || 5) === selectedRating;
 
-      return matchesSearch && matchesRating;
+      return Boolean(matchesSearch && matchesRating);
     });
   }, [activeReviews, searchQuery, selectedRating]);
 
@@ -515,7 +571,7 @@ function ReviewsPage() {
           <div className="flex min-h-[300px] items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-[#1a6b4a]" />
           </div>
-        ) : filteredReviews.length === 0 ? (
+        ) : (filteredReviews ?? []).length === 0 ? (
           <div className="rounded-3xl border border-border bg-card py-16 text-center shadow-xs my-6">
             <Search className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
             <h3 className="text-base font-bold">কোনো মতামত পাওয়া যায়নি</h3>
@@ -545,20 +601,22 @@ function ReviewsPage() {
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             >
               {currentTab === "platform"
-                ? filteredReviews.map((item: HomepageReview) => (
-                    <PlatformReviewCard key={item.id} item={item} />
-                  ))
-                : filteredReviews.map((item: Testimonial) => (
-                    <CompanyReviewCard
-                      key={item.id}
-                      item={item}
-                      opportunity={
-                        item.related_opportunity_id
-                          ? oppMap.get(item.related_opportunity_id)
-                          : null
-                      }
-                    />
-                  ))}
+                ? (filteredReviews ?? []).map((item: HomepageReview) =>
+                    item ? <PlatformReviewCard key={item.id || item.quote} item={item} /> : null
+                  )
+                : (filteredReviews ?? []).map((item: Testimonial) =>
+                    item ? (
+                      <CompanyReviewCard
+                        key={item.id || item.quote}
+                        item={item}
+                        opportunity={
+                          item?.related_opportunity_id
+                            ? oppMap.get(item.related_opportunity_id)
+                            : null
+                        }
+                      />
+                    ) : null
+                  )}
             </motion.div>
           </AnimatePresence>
         )}
