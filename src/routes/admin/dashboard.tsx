@@ -66,6 +66,7 @@ import {
   Loader2,
   RefreshCw,
   Briefcase,
+  Building2,
   ChevronRight,
   ChevronLeft,
   BookOpen,
