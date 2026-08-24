@@ -1,10 +1,19 @@
 import { useState, useMemo, useEffect } from "react";
-import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, Star, Search, Building2, Coins } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import type { HomepageReview, Testimonial, Opportunity } from "@/lib/database.types";
+import {
+  fetchOpportunitiesSSR,
+  fetchTestimonialsSSR,
+  type Opportunity,
+  type Testimonial,
+} from "@/lib/projects";
+import {
+  fetchHomepageReviewsSSR,
+  type HomepageReview,
+} from "@/lib/homepage_reviews";
 
 interface ReviewsSearch {
   q?: string;
@@ -50,8 +59,6 @@ export const Route = createFileRoute("/reviews")({
   }),
   loader: async ({ context }) => {
     try {
-      const { fetchTestimonialsSSR, fetchOpportunitiesSSR } = await import("@/lib/projects");
-      const { fetchHomepageReviewsSSR } = await import("@/lib/homepage_reviews");
       await Promise.allSettled([
         context.queryClient.ensureQueryData({
           queryKey: ["testimonials-all"],
@@ -75,11 +82,11 @@ export const Route = createFileRoute("/reviews")({
 
 // ─── Tab 1 Card: আমাদের রিভিউ (Platform / Homepage Reviews) ────────────
 function PlatformReviewCard({ item }: { item: HomepageReview }) {
-  const rating = item?.rating ? Math.min(5, Math.max(1, Number(item.rating))) : 5;
-  const initial = item?.name ? item.name.charAt(0) : "ব";
-  const name = item?.name || "সম্মানিত বিনিয়োগকারী";
-  const location = item?.location || "বাংলাদেশ";
-  const quote = item?.quote || "";
+  const rating = typeof item?.rating === "number" && item.rating > 0 ? Math.min(5, Math.max(1, item.rating)) : 5;
+  const initial = item?.name && item.name.trim().length > 0 ? item.name.trim().charAt(0) : "ব";
+  const name = item?.name?.trim() || "সম্মানিত বিনিয়োগকারী";
+  const location = item?.location?.trim() || "বাংলাদেশ";
+  const quote = item?.quote?.trim() || "";
 
   return (
     <div className="w-full h-full flex flex-col justify-between rounded-3xl border border-border/80 bg-card p-6 sm:p-7 shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
@@ -148,13 +155,13 @@ function CompanyReviewCard({
   item: Testimonial;
   opportunity?: Opportunity | null;
 }) {
-  const rating = item?.rating ? Math.min(5, Math.max(1, Number(item.rating))) : 5;
-  const initial = item?.name ? item.name.charAt(0) : "ব";
-  const name = item?.name || "বিনিয়োগকারী";
-  const oppName = opportunity?.name || item?.brand_name || null;
+  const rating = typeof item?.rating === "number" && item.rating > 0 ? Math.min(5, Math.max(1, item.rating)) : 5;
+  const initial = item?.name && item.name.trim().length > 0 ? item.name.trim().charAt(0) : "ব";
+  const name = item?.name?.trim() || "বিনিয়োগকারী";
+  const oppName = opportunity?.name?.trim() || item?.brand_name?.trim() || null;
   const oppIdentifier = opportunity?.slug || opportunity?.id || item?.related_opportunity_id || null;
-  const quote = item?.quote || "";
-  const subtitle = [item?.role_title, item?.location].filter(Boolean).join(" • ") || "বিনিয়োগকারী";
+  const quote = item?.quote?.trim() || "";
+  const subtitle = [item?.role_title?.trim(), item?.location?.trim()].filter(Boolean).join(" • ") || "বিনিয়োগকারী";
 
   return (
     <div className="w-full h-full flex flex-col justify-between rounded-3xl border border-border/80 bg-card p-6 sm:p-7 shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
@@ -210,10 +217,10 @@ function CompanyReviewCard({
         </p>
 
         {/* Investment Amount Badge if exists */}
-        {item?.investment_amount && (
+        {item?.investment_amount && item.investment_amount.trim().length > 0 && (
           <div className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
             <Coins className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-            <span>{item.investment_amount}</span>
+            <span>{item.investment_amount.trim()}</span>
           </div>
         )}
       </div>
@@ -246,7 +253,7 @@ function CompanyReviewCard({
 
 // ─── Main Reviews Page Component ─────────────────────────────────────
 function ReviewsPage() {
-  const searchParams = useSearch({ from: "/reviews" });
+  const searchParams = Route.useSearch();
   const navigate = Route.useNavigate();
 
   const currentTab = searchParams?.tab === "company" ? "company" : "platform";
@@ -254,15 +261,7 @@ function ReviewsPage() {
   // Fetch Homepage Reviews (Tab 1: আমাদের রিভিউ)
   const { data: rawHomepageReviews = [], isLoading: isLoadingHomepage } = useQuery({
     queryKey: ["homepage-reviews-all"],
-    queryFn: async () => {
-      try {
-        const { fetchHomepageReviewsSSR } = await import("@/lib/homepage_reviews");
-        return (await fetchHomepageReviewsSSR()) ?? [];
-      } catch (err) {
-        console.error("Error fetching homepage reviews:", err);
-        return [];
-      }
-    },
+    queryFn: () => fetchHomepageReviewsSSR(),
     staleTime: 1000 * 60 * 5,
   });
 
@@ -275,15 +274,7 @@ function ReviewsPage() {
   // Fetch Testimonials (Tab 2: কোম্পানি রিভিউ)
   const { data: rawTestimonials = [], isLoading: isLoadingTestimonials } = useQuery({
     queryKey: ["testimonials-all"],
-    queryFn: async () => {
-      try {
-        const { fetchTestimonialsSSR } = await import("@/lib/projects");
-        return (await fetchTestimonialsSSR()) ?? [];
-      } catch (err) {
-        console.error("Error fetching testimonials:", err);
-        return [];
-      }
-    },
+    queryFn: () => fetchTestimonialsSSR(),
     staleTime: 1000 * 60 * 5,
   });
 
@@ -294,15 +285,7 @@ function ReviewsPage() {
   // Fetch Opportunities for resolving linked company names
   const { data: rawOpportunities = [] } = useQuery({
     queryKey: ["opportunities-all"],
-    queryFn: async () => {
-      try {
-        const { fetchOpportunitiesSSR } = await import("@/lib/projects");
-        return (await fetchOpportunitiesSSR()) ?? [];
-      } catch (err) {
-        console.error("Error fetching opportunities:", err);
-        return [];
-      }
-    },
+    queryFn: () => fetchOpportunitiesSSR(),
     staleTime: 1000 * 60 * 5,
   });
 
@@ -399,7 +382,8 @@ function ReviewsPage() {
         (t.brand_name && String(t.brand_name).toLowerCase().includes(q)) ||
         (t.location && String(t.location).toLowerCase().includes(q));
 
-      const matchesRating = selectedRating === null || Number(t.rating || 5) === selectedRating;
+      const ratingVal = typeof t.rating === "number" && t.rating > 0 ? t.rating : 5;
+      const matchesRating = selectedRating === null || ratingVal === selectedRating;
 
       return Boolean(matchesSearch && matchesRating);
     });
