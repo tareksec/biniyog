@@ -1847,12 +1847,18 @@ function AdminDashboard() {
                                   </td>
 
                                   {/* Created At */}
-                                  <td className="px-5 py-4 text-slate-600 text-xs font-medium">
+                                  <td
+                                    className="px-5 py-4 text-slate-600 text-xs font-medium"
+                                    title={u.created_at ? new Date(u.created_at).toISOString() : undefined}
+                                  >
                                     {u.created_at
-                                      ? new Date(u.created_at).toLocaleDateString("bn-BD", {
+                                      ? new Date(u.created_at).toLocaleString("bn-BD", {
                                           year: "numeric",
-                                          month: "short",
+                                          month: "long",
                                           day: "numeric",
+                                          hour: "2-digit",
+                                          minute: "2-digit",
+                                          hour12: true,
                                         })
                                       : "—"}
                                   </td>
