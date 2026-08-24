@@ -1461,7 +1461,7 @@ function AdminDashboard() {
                   <h1 className="text-2xl font-bold text-[#111827]">ব্লগ আর্টিকেল <Badge className="ml-2 bg-purple-100 text-purple-800 text-xs font-bold border-none">{filteredBlogPosts.length}</Badge></h1>
                   <div className="flex items-center gap-2">
                     <Button variant="outline" size="sm" onClick={() => setCategoryManagerOpen(true)} className="rounded-xl text-xs font-semibold h-9 gap-1.5 border-gray-200 cursor-pointer"><Settings2 className="h-3.5 w-3.5" /> ক্যাটাগরি</Button>
-                    <Button size="sm" asChild className="rounded-xl bg-[#1a6b4a] hover:bg-[#145a3d] text-white text-xs font-bold gap-1.5 h-9 px-4 cursor-pointer"><Link to="/admin/dashboard_/blog/new"><Plus className="h-3.5 w-3.5" /> নতুন পোস্ট</Link></Button>
+                    <Button size="sm" asChild className="rounded-xl bg-[#1a6b4a] hover:bg-[#145a3d] text-white text-xs font-bold gap-1.5 h-9 px-4 cursor-pointer"><Link to="/admin/dashboard/blog/new"><Plus className="h-3.5 w-3.5" /> নতুন পোস্ট</Link></Button>
                   </div>
                 </div>
 
@@ -1539,7 +1539,7 @@ function AdminDashboard() {
                               <td className="px-4 py-3.5 text-right">
                                 <div className="flex items-center justify-end gap-1">
                                   <Button variant="ghost" size="icon" asChild className="w-8 h-8 rounded-lg hover:bg-gray-100"><Link to={`/blog/${post.slug}`} target="_blank"><Eye className="h-3.5 w-3.5 text-[#6b7280]" /></Link></Button>
-                                  <Button variant="ghost" size="icon" asChild className="w-8 h-8 rounded-lg hover:bg-gray-100"><Link to="/admin/dashboard_/blog/$postId/edit" params={{ postId: post.id }}><Pencil className="h-3.5 w-3.5 text-[#6b7280]" /></Link></Button>
+                                  <Button variant="ghost" size="icon" asChild className="w-8 h-8 rounded-lg hover:bg-gray-100"><Link to="/admin/dashboard/blog/$postId/edit" params={{ postId: post.id }}><Pencil className="h-3.5 w-3.5 text-[#6b7280]" /></Link></Button>
                                   <Button variant="ghost" size="icon" onClick={() => setDeletingPost(post)} className="w-8 h-8 rounded-lg hover:bg-red-50 text-red-500"><Trash2 className="h-3.5 w-3.5" /></Button>
                                 </div>
                               </td>
