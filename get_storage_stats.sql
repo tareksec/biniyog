@@ -1,70 +1,49 @@
--- Run this SQL in your Supabase SQL Editor to enable Live Storage Stats:
+-- Drop existing function if any
+DROP FUNCTION IF EXISTS public.get_storage_stats();
 
+-- Create or replace get_storage_stats function
 CREATE OR REPLACE FUNCTION public.get_storage_stats()
 RETURNS json
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public, storage
 AS $$
 DECLARE
-  v_db_bytes bigint;
-  v_db_pretty text;
-  v_buckets_json json;
-  v_total_storage_bytes bigint;
-  v_total_storage_pretty text;
+  db_bytes bigint;
+  bucket_stats json;
 BEGIN
-  -- 1. Database Size
-  SELECT pg_database_size(current_database()) INTO v_db_bytes;
-  SELECT pg_size_pretty(v_db_bytes) INTO v_db_pretty;
-
-  -- 2. Storage Buckets Size
-  WITH known_buckets AS (
-    SELECT 'opportunity-images' AS bucket_id
-    UNION
-    SELECT 'blog-images' AS bucket_id
-    UNION
-    SELECT id AS bucket_id FROM storage.buckets
-    UNION
-    SELECT DISTINCT bucket_id FROM storage.objects WHERE bucket_id IS NOT NULL
-  ),
-  bucket_stats AS (
+  SELECT pg_database_size(current_database()) INTO db_bytes;
+  
+  SELECT json_agg(
+    json_build_object(
+      'bucket_id', bucket_id,
+      'total_bytes', COALESCE(total_bytes, 0),
+      'file_count', COALESCE(file_count, 0)
+    )
+  ) INTO bucket_stats
+  FROM (
     SELECT 
-      kb.bucket_id,
-      COALESCE(SUM((obj.metadata->>'size')::bigint), 0) AS total_bytes
-    FROM known_buckets kb
-    LEFT JOIN storage.objects obj ON obj.bucket_id = kb.bucket_id
-    GROUP BY kb.bucket_id
-  )
-  SELECT 
-    COALESCE(
-      json_agg(
-        json_build_object(
-          'bucket_id', bs.bucket_id,
-          'total_bytes', bs.total_bytes,
-          'total_pretty', pg_size_pretty(bs.total_bytes)
-        )
-        ORDER BY bs.total_bytes DESC, bs.bucket_id ASC
-      ), 
-      '[]'::json
-    ),
-    COALESCE(SUM(bs.total_bytes), 0)
-  INTO v_buckets_json, v_total_storage_bytes
-  FROM bucket_stats bs;
-
-  SELECT pg_size_pretty(v_total_storage_bytes) INTO v_total_storage_pretty;
+      bucket_id,
+      SUM(COALESCE((metadata->>'size')::bigint, 0)) as total_bytes,
+      COUNT(*) as file_count
+    FROM storage.objects
+    WHERE bucket_id IS NOT NULL
+    GROUP BY bucket_id
+  ) s;
 
   RETURN json_build_object(
-    'db_size_bytes', v_db_bytes,
-    'db_size_pretty', v_db_pretty,
-    'buckets', v_buckets_json,
-    'total_storage_bytes', v_total_storage_bytes,
-    'total_storage_pretty', v_total_storage_pretty
+    'db_size_bytes', db_bytes,
+    'db_size_pretty', pg_size_pretty(db_bytes),
+    'buckets', COALESCE(bucket_stats, '[]'::json)
   );
 END;
 $$;
 
+-- Grant permissions for RPC calls
 GRANT EXECUTE ON FUNCTION public.get_storage_stats() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.get_storage_stats() TO anon;
 GRANT EXECUTE ON FUNCTION public.get_storage_stats() TO service_role;
 
 NOTIFY pgrst, 'reload schema';
+
+-- Verification query (run to inspect storage.objects stats):
+-- SELECT bucket_id, COUNT(*), SUM(COALESCE((metadata->>'size')::bigint, 0)) as total_bytes FROM storage.objects GROUP BY bucket_id;

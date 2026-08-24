@@ -116,15 +116,16 @@ export interface DashboardUser {
 export interface StorageBucketStat {
   bucket_id: string;
   total_bytes: number;
-  total_pretty: string;
+  file_count?: number;
+  total_pretty?: string;
 }
 
 export interface StorageStats {
   db_size_bytes: number;
   db_size_pretty: string;
   buckets: StorageBucketStat[];
-  total_storage_bytes: number;
-  total_storage_pretty: string;
+  total_storage_bytes?: number;
+  total_storage_pretty?: string;
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────
@@ -136,8 +137,8 @@ const getUsageStatus = (percentage: number) => {
   return { bar: "bg-emerald-500", text: "text-emerald-600", track: "bg-emerald-100" };
 };
 
-const formatStorageBytes = (bytes: number): string => {
-  if (!bytes || bytes <= 0) return "0 MB";
+const formatStorageBytes = (bytes: number | null | undefined): string => {
+  if (!bytes || bytes <= 0 || isNaN(bytes)) return "০ MB";
   const mb = bytes / (1024 * 1024);
   if (mb < 0.01) return `${(bytes / 1024).toFixed(1)} KB`;
   if (mb >= 1024) return `${(mb / 1024).toFixed(2)} GB`;
@@ -1107,11 +1108,12 @@ function AdminDashboard() {
                       const dbMax = 500 * 1024 * 1024;
                       const dbPct = Math.min(100, Math.max(0, (dbB / dbMax) * 100));
                       const dbS = getUsageStatus(dbPct);
+                      const dbFormatted = dbB > 0 ? (storageStats?.db_size_pretty || formatStorageBytes(dbB)) : "০ MB";
                       return (
                         <div className="mb-4">
                           <div className="flex items-center justify-between text-xs mb-1.5">
                             <span className="font-semibold text-[#111827] flex items-center gap-1.5"><Database className="h-3.5 w-3.5 text-[#6b7280]" /> ডেটাবেজ</span>
-                            <span className="font-mono text-[11px] text-[#6b7280]">{storageStats?.db_size_pretty || formatStorageBytes(dbB)} / 500 MB</span>
+                            <span className="font-mono text-[11px] text-[#6b7280]">{dbFormatted} / 500 MB</span>
                           </div>
                           <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
                             <div className={`h-full ${dbS.bar} rounded-full transition-all duration-500`} style={{ width: `${Math.max(dbPct > 0 ? 2 : 0, dbPct)}%` }} />
@@ -1122,28 +1124,50 @@ function AdminDashboard() {
 
                     {/* Buckets */}
                     {(() => {
-                      const oppBucket = storageStats?.buckets?.find((b) => b.bucket_id === "opportunity-images");
-                      const blogBucket = storageStats?.buckets?.find((b) => b.bucket_id === "blog-images");
-                      const totalB = storageStats?.total_storage_bytes || 0;
+                      const buckets = Array.isArray(storageStats?.buckets) ? storageStats.buckets : [];
+                      const oppBucket = buckets.find((b) => b.bucket_id === "opportunity-images");
+                      const blogBucket = buckets.find((b) => b.bucket_id === "blog-images");
+                      const otherBuckets = buckets.filter(
+                        (b) => b.bucket_id !== "opportunity-images" && b.bucket_id !== "blog-images"
+                      );
+
+                      const oppSize = oppBucket && oppBucket.total_bytes > 0
+                        ? (oppBucket.total_pretty || formatStorageBytes(oppBucket.total_bytes))
+                        : "০ MB";
+                      const blogSize = blogBucket && blogBucket.total_bytes > 0
+                        ? (blogBucket.total_pretty || formatStorageBytes(blogBucket.total_bytes))
+                        : "০ MB";
+
+                      const totalB = storageStats?.total_storage_bytes ?? buckets.reduce((acc, b) => acc + (b.total_bytes || 0), 0);
                       const maxB = 1024 * 1024 * 1024;
                       const pct = Math.min(100, Math.max(0, (totalB / maxB) * 100));
                       const s = getUsageStatus(pct);
+                      const totalFormatted = totalB > 0 ? (storageStats?.total_storage_pretty || formatStorageBytes(totalB)) : "০ MB";
+
                       return (
                         <>
                           <div className="space-y-2.5 mb-4 text-xs">
                             <div className="flex justify-between text-[#6b7280]">
                               <span className="flex items-center gap-1.5"><ImageIcon className="h-3.5 w-3.5" /> opportunity-images</span>
-                              <span className="font-mono font-semibold text-[#111827]">{oppBucket ? oppBucket.total_pretty || formatStorageBytes(oppBucket.total_bytes) : "0 MB"}</span>
+                              <span className="font-mono font-semibold text-[#111827]">{oppSize}</span>
                             </div>
                             <div className="flex justify-between text-[#6b7280]">
                               <span className="flex items-center gap-1.5"><BookOpen className="h-3.5 w-3.5" /> blog-images</span>
-                              <span className="font-mono font-semibold text-[#111827]">{blogBucket ? blogBucket.total_pretty || formatStorageBytes(blogBucket.total_bytes) : "0 MB"}</span>
+                              <span className="font-mono font-semibold text-[#111827]">{blogSize}</span>
                             </div>
+                            {otherBuckets.map((b) => (
+                              <div key={b.bucket_id} className="flex justify-between text-[#6b7280]">
+                                <span className="flex items-center gap-1.5"><HardDrive className="h-3.5 w-3.5" /> {b.bucket_id}</span>
+                                <span className="font-mono font-semibold text-[#111827]">
+                                  {b.total_bytes > 0 ? (b.total_pretty || formatStorageBytes(b.total_bytes)) : "০ MB"}
+                                </span>
+                              </div>
+                            ))}
                           </div>
                           <div className="pt-3 border-t border-gray-100">
                             <div className="flex items-center justify-between text-xs mb-1.5">
                               <span className="font-semibold text-[#111827]">মোট Storage</span>
-                              <span className="font-mono text-[11px] text-[#6b7280]">{storageStats?.total_storage_pretty || formatStorageBytes(totalB)} / 1 GB</span>
+                              <span className="font-mono text-[11px] text-[#6b7280]">{totalFormatted} / 1 GB</span>
                             </div>
                             <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
                               <div className={`h-full ${s.bar} rounded-full transition-all duration-500`} style={{ width: `${Math.max(pct > 0 ? 2 : 0, pct)}%` }} />
