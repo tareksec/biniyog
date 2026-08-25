@@ -44,16 +44,39 @@ export const Route = createFileRoute("/opportunities/$id")({
       return { meta: [{ title: "Not found · বিনিয়োগ বৃদ্ধি" }, { name: "robots", content: "noindex" }] };
     }
     const p = loaderData.project;
-    const title = `${p.name} · বিনিয়োগ বৃদ্ধি`;
-    const desc = (p.description || "যাচাইকৃত বিনিয়োগের সুযোগ").slice(0, 155);
+    const title = `${p.name} | SME বিনিয়োগ সুযোগ | বিনিয়োগ বৃদ্ধি`;
+    const description = `${p.name} এ বিনিয়োগ করুন। ${p.expected_profit} মুনাফা। নূন্যতম বিনিয়োগ: ${p.investment_amount}। যাচাইকৃত ব্যবসা বিনিয়োগ বাংলাদেশ।`;
+    const ogImage = (Array.isArray(p.image_urls) && p.image_urls[0]) || p.image_url || "/og-image.jpg";
+    const jsonLd = {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": p.name,
+      "description": p.description,
+      "offers": {
+        "@type": "Offer",
+        "priceCurrency": "BDT",
+        "availability": "https://schema.org/InStock",
+      },
+    };
+
     return {
       meta: [
         { title },
-        { name: "description", content: desc },
+        { name: "description", content: description },
         { property: "og:title", content: title },
-        { property: "og:description", content: desc },
+        { property: "og:description", content: description },
+        { property: "og:image", content: ogImage },
+        { property: "og:type", content: "website" },
+        { name: "twitter:card", content: "summary_large_image" },
         { name: "twitter:title", content: title },
-        { name: "twitter:description", content: desc },
+        { name: "twitter:description", content: description },
+        { name: "twitter:image", content: ogImage },
+      ],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify(jsonLd),
+        },
       ],
     };
   },
@@ -117,51 +140,6 @@ function OpportunityDetailsPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify([
-            {
-              "@context": "https://schema.org",
-              "@type": "BreadcrumbList",
-              itemListElement: [
-                {
-                  "@type": "ListItem",
-                  position: 1,
-                  name: "Home",
-                  item: "https://samriddhi.techvrs.com",
-                },
-                {
-                  "@type": "ListItem",
-                  position: 2,
-                  name: "Opportunities",
-                  item: "https://samriddhi.techvrs.com/opportunities",
-                },
-                {
-                  "@type": "ListItem",
-                  position: 3,
-                  name: project.name,
-                  item: `https://samriddhi.techvrs.com/opportunities/${project.slug || project.id}`,
-                },
-              ],
-            },
-            {
-              "@context": "https://schema.org",
-              "@type": "Product",
-              name: project.name,
-              description: project.description || "একটি বিনিয়োগ সুযোগ",
-              image: resolveImageUrl(project),
-              offers: {
-                "@type": "Offer",
-                price: parseFloat((project.investment_amount || "0").replace(/[^0-9.]/g, "")) || 0,
-                priceCurrency: "BDT",
-                availability: funded ? "https://schema.org/SoldOut" : "https://schema.org/InStock",
-                url: `https://samriddhi.techvrs.com/opportunities/${project.slug || project.id}`,
-              },
-            },
-          ]),
-        }}
-      />
       <header className="sticky top-0 z-20 border-b border-border/70 bg-background/85 backdrop-blur">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-5 py-4 sm:px-8">
           <button
@@ -200,7 +178,7 @@ function OpportunityDetailsPage() {
                   <CarouselItem key={i}>
                     <img
                       src={url}
-                      alt={`${project.name || "প্রজেক্টের ছবি"} ${i + 1}`}
+                      alt={`${project.name} SME বিনিয়োগ সুযোগ বাংলাদেশ`}
                       className="h-64 w-full object-cover sm:h-80 lg:h-96"
                       onError={(e) => {
                         (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=1200&auto=format&fit=crop";
@@ -217,7 +195,7 @@ function OpportunityDetailsPage() {
           ) : (
             <img
               src={resolveImageUrl(project)}
-              alt={project.name || "প্রজেক্টের ছবি"}
+              alt={`${project.name} SME বিনিয়োগ সুযোগ বাংলাদেশ`}
               className="h-64 w-full object-cover sm:h-80 lg:h-96"
               onError={(e) => {
                 (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=1200&auto=format&fit=crop";
@@ -570,7 +548,7 @@ function OpportunityTestimonials({ project }: { project: Opportunity }) {
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "Product",
-              "@id": `https://samriddhi.techvrs.com/opportunities/${project.slug || project.id}`,
+              "@id": `https://biniyogbriddhi.com/opportunities/${project.slug || project.id}`,
               review: testimonials.filter(t => t.rating).map(t => ({
                 "@type": "Review",
                 author: {

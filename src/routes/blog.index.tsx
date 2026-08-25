@@ -9,11 +9,33 @@ import { usePrefersReducedMotion, revealVariants, staggerContainer } from "@/lib
 export const Route = createFileRoute("/blog/")({
   head: () => ({
     meta: [
-      { title: "ব্লগ ও ইনসাইটস · বিনিয়োগ বৃদ্ধি" },
-      { name: "description", content: "হালাল বিনিয়োগ, এসএমই ব্যবসা, অর্থায়ন ও পার্সোনাল ফাইন্যান্স নিয়ে বিশেষজ্ঞ মতামত ও গাইড।" },
-      { property: "og:title", content: "ব্লগ ও ইনসাইটস · বিনিয়োগ বৃদ্ধি" },
-      { property: "og:description", content: "হালাল বিনিয়োগ ও এসএমই ব্যবসা সংক্রান্ত তথ্যের নির্ভরযোগ্য প্ল্যাটফর্ম।" },
+      { title: "বিনিয়োগ ব্লগ | SME ব্যবসা বিনিয়োগ গাইড | বিনিয়োগ বৃদ্ধি" },
+      {
+        name: "description",
+        content:
+          "SME ব্যবসায় বিনিয়োগ, লাভজনক বিনিয়োগ কৌশল ও co-investment সম্পর্কে বিশেষজ্ঞ গাইড পড়ুন।",
+      },
+      {
+        property: "og:title",
+        content: "বিনিয়োগ ব্লগ | SME ব্যবসা বিনিয়োগ গাইড | বিনিয়োগ বৃদ্ধি",
+      },
+      {
+        property: "og:description",
+        content:
+          "SME ব্যবসায় বিনিয়োগ, লাভজনক বিনিয়োগ কৌশল ও co-investment সম্পর্কে বিশেষজ্ঞ গাইড পড়ুন।",
+      },
+      { property: "og:url", content: "https://biniyogbriddhi.com/blog" },
       { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      {
+        name: "twitter:title",
+        content: "বিনিয়োগ ব্লগ | SME ব্যবসা বিনিয়োগ গাইড | বিনিয়োগ বৃদ্ধি",
+      },
+      {
+        name: "twitter:description",
+        content:
+          "SME ব্যবসায় বিনিয়োগ, লাভজনক বিনিয়োগ কৌশল ও co-investment সম্পর্কে বিশেষজ্ঞ গাইড পড়ুন।",
+      },
     ],
   }),
   component: BlogListingPage,
@@ -139,11 +161,11 @@ function BlogListingPage() {
           </div>
 
           <h1 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight text-foreground leading-[1.2]">
-            হালাল বিনিয়োগ ও এসএমই ফাইন্যান্স ব্লগ
+            SME ব্যবসায় বিনিয়োগ ও ফাইন্যান্স ব্লগ
           </h1>
 
           <p className="mx-auto max-w-2xl text-base sm:text-lg leading-relaxed text-muted-foreground">
-            ব্যবসা পরিচালনা, শরীয়াহ সম্মত আর্থিক মডেল, বাজার বিশ্লেষণ এবং সফল উদ্যোক্তাদের অভিজ্ঞতা নিয়ে নিয়মিত তথ্য ও গাইডলাইন।
+            ব্যবসা পরিচালনা, লাভজনক আর্থিক মডেল, বাজার বিশ্লেষণ এবং সফল উদ্যোক্তাদের অভিজ্ঞতা নিয়ে নিয়মিত তথ্য ও গাইডলাইন।
           </p>
 
           {/* Search bar */}

@@ -29,6 +29,57 @@ type OpportunitiesSearch = {
 };
 
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "বিনিয়োগ বৃদ্ধি | যাচাইকৃত SME ব্যবসায় বিনিয়োগ বাংলাদেশ" },
+      {
+        name: "description",
+        content:
+          "বাংলাদেশের যাচাইকৃত SME ব্যবসায় বিনিয়োগ করুন। লাভজনক co-investment সুযোগ। বিনিয়োগ বৃদ্ধি — বাংলাদেশের বিশ্বস্ত বিনিয়োগ প্ল্যাটফর্ম।",
+      },
+      {
+        property: "og:title",
+        content: "বিনিয়োগ বৃদ্ধি | যাচাইকৃত SME ব্যবসায় বিনিয়োগ বাংলাদেশ",
+      },
+      {
+        property: "og:description",
+        content:
+          "বাংলাদেশের যাচাইকৃত SME ব্যবসায় বিনিয়োগ করুন। লাভজনক co-investment সুযোগ। বিনিয়োগ বৃদ্ধি — বাংলাদেশের বিশ্বস্ত বিনিয়োগ প্ল্যাটফর্ম।",
+      },
+      { property: "og:url", content: "https://biniyogbriddhi.com" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      {
+        name: "twitter:title",
+        content: "বিনিয়োগ বৃদ্ধি | যাচাইকৃত SME ব্যবসায় বিনিয়োগ বাংলাদেশ",
+      },
+      {
+        name: "twitter:description",
+        content:
+          "বাংলাদেশের যাচাইকৃত SME ব্যবসায় বিনিয়োগ করুন। লাভজনক co-investment সুযোগ। বিনিয়োগ বৃদ্ধি — বাংলাদেশের বিশ্বস্ত বিনিয়োগ প্ল্যাটফর্ম।",
+      },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FinancialService",
+          name: "বিনিয়োগ বৃদ্ধি",
+          url: "https://biniyogbriddhi.com",
+          description: "যাচাইকৃত SME ব্যবসায় বিনিয়োগ প্ল্যাটফর্ম, বাংলাদেশ",
+          areaServed: "BD",
+          currenciesAccepted: "BDT",
+          telephone: "+8801316110209",
+          email: "support@biniyogbriddhi.com",
+          sameAs: [
+            "https://www.facebook.com/mohaimin1",
+            "https://www.linkedin.com/in/mohaimin-patwary-cfa-a8416aab/",
+          ],
+        }),
+      },
+    ],
+  }),
   loader: async ({ context }) => {
     const { fetchOpportunitiesSSR } = await import("@/lib/projects");
     const { fetchHomepageReviewsSSR } = await import("@/lib/homepage_reviews");
@@ -78,30 +129,6 @@ function LandingPage() {
     <div
       className="bg-background min-h-screen text-foreground antialiased"
     >
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Organization",
-            name: "বিনিয়োগ বৃদ্ধি",
-            url: "https://samriddhi.techvrs.com",
-            logo: "https://samriddhi.techvrs.com/favicon.svg",
-            description: "বিনিয়োগ বৃদ্ধি একটি বিশ্বস্ত ও নিরাপদ হালাল বিনিয়োগ প্ল্যাটফর্ম।",
-            contactPoint: {
-              "@type": "ContactPoint",
-              telephone: "+880-1616-248740",
-              contactType: "Customer Service",
-              areaServed: "BD",
-              availableLanguage: ["Bengali", "English"]
-            },
-            sameAs: [
-              "https://www.facebook.com/groups/samriddhi.techvrs.bd",
-              "https://www.youtube.com/@Samriddhibd"
-            ]
-          }),
-        }}
-      />
       <Hero stats={heroStats} opportunities={opportunities} />
       <WhyChooseSection />
       <PolicySection />
@@ -653,17 +680,17 @@ function LatestBlogSection() {
         tag: "বিনিয়োগ গাইড",
         date: "৩১ জুলাই ২০২৬",
         readTime: "৮ মিনিট পড়া",
-        excerpt: "বাংলাদেশে হালাল ও স্বচ্ছ উপায়ে SME ব্যবসায় বিনিয়োগের সুযোগ দিন দিন বাড়ছে। সঠিক প্ল্যাটফর্ম বেছে নেওয়ার গাইডলাইন...",
+        excerpt: "বাংলাদেশে যাচাইকৃত ও স্বচ্ছ উপায়ে SME ব্যবসায় বিনিয়োগের সুযোগ দিন দিন বাড়ছে। সঠিক প্ল্যাটফর্ম বেছে নেওয়ার গাইডলাইন...",
         image: "https://images.unsplash.com/photo-1579532537598-459ecdaf39cc?q=80&w=800&auto=format&fit=crop",
         link: "/insights/keno-somriddhite-biniyog",
       },
       {
         id: "fallback-2",
-        title: "এসএমই (SME) খাতে হালাল বিনিয়োগের নিয়মাবলী",
-        tag: "শরীয়াহ গাইড",
+        title: "এসএমই (SME) খাতে লাভজনক বিনিয়োগের নিয়মাবলী",
+        tag: "বিনিয়োগ গাইড",
         date: "১৫ আগস্ট ২০২৬",
         readTime: "৫ মিনিট পড়া",
-        excerpt: "ছোট ও মাঝারি ব্যবসায় হালাল উপায়ে কীভাবে বিনিয়োগ করবেন এবং শরীয়াহ সম্মত মুনাফা নিশ্চিত করবেন তার বিস্তারিত দিকনির্দেশনা।",
+        excerpt: "ছোট ও মাঝারি ব্যবসায় যাচাইকৃত উপায়ে কীভাবে বিনিয়োগ করবেন এবং লাভজনক মুনাফা নিশ্চিত করবেন তার বিস্তারিত দিকনির্দেশনা।",
         image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=800&auto=format&fit=crop",
         link: "/insights/sme-halal-biniyog",
       },

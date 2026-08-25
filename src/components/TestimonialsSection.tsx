@@ -220,7 +220,7 @@ export function TestimonialsSection() {
                 "@context": "https://schema.org",
                 "@type": "Organization",
                 name: "বিনিয়োগ বৃদ্ধি",
-                url: "https://samriddhi.techvrs.com",
+                url: "https://biniyogbriddhi.com",
                 review: testimonials.filter(t => t.rating).map(t => ({
                   "@type": "Review",
                   author: {

@@ -1,5 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useBlogPostBySlug, useRelatedBlogPosts, sanitizeBlogHtml } from "@/lib/blog";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { fetchBlogPostBySlug, useBlogPostBySlug, useRelatedBlogPosts, sanitizeBlogHtml } from "@/lib/blog";
 import { Loader2, ChevronLeft, ArrowRight, Calendar, User, Clock, Share2, Sparkles, BookOpen } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -7,13 +7,61 @@ import { motion } from "framer-motion";
 import { usePrefersReducedMotion, revealVariants, staggerContainer } from "@/lib/animations";
 
 export const Route = createFileRoute("/blog/$slug")({
-  head: ({ match }) => {
-    // In TanStack Start, loaderData can provide SSR SEO or client fallback
+  loader: async ({ params, context }) => {
+    const post = await fetchBlogPostBySlug(params.slug);
+    if (!post) throw notFound();
+    return { post };
+  },
+  head: ({ loaderData }) => {
+    if (!loaderData?.post) {
+      return {
+        meta: [
+          { title: "Not found · বিনিয়োগ বৃদ্ধি" },
+          { name: "robots", content: "noindex" },
+        ],
+      };
+    }
+    const post = loaderData.post;
+    const title = `${post.title} | বিনিয়োগ বৃদ্ধি`;
+    const description = post.meta_description || post.excerpt || `${post.title} সম্পর্কে বিস্তারিত পড়ুন।`;
+    const ogImage = post.cover_image_url ?? "/og-image.jpg";
+
+    const jsonLd = {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: post.title,
+      description: post.excerpt,
+      author: {
+        "@type": "Person",
+        name: post.author_name || "বিনিয়োগ বৃদ্ধি টিম",
+      },
+      publisher: {
+        "@type": "Organization",
+        name: "বিনিয়োগ বৃদ্ধি",
+        url: "https://biniyogbriddhi.com",
+      },
+      datePublished: post.published_at,
+      dateModified: post.updated_at,
+    };
+
     return {
       meta: [
-        { title: "ব্লগ আর্টিকেল · বিনিয়োগ বৃদ্ধি" },
-        { name: "description", content: "হালাল বিনিয়োগ, ব্যবসা ও ফাইন্যান্স নিয়ে বিস্তারিত জানুন।" },
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:image", content: ogImage },
         { property: "og:type", content: "article" },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+        { name: "twitter:image", content: ogImage },
+      ],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify(jsonLd),
+        },
       ],
     };
   },
@@ -280,7 +328,7 @@ function BlogDetailPage() {
           <div className="absolute -top-12 -right-12 h-40 w-40 rounded-full bg-primary/10 blur-2xl pointer-events-none" />
           
           <h2 className="font-display text-xl sm:text-2xl font-bold text-foreground">
-            স্বচ্ছ ও হালাল ব্যবসায় বিনিয়োগে অংশ নিন
+            স্বচ্ছ ও লাভজনক ব্যবসায় বিনিয়োগে অংশ নিন
           </h2>
           <p className="mt-3 text-sm sm:text-[15px] leading-relaxed text-muted-foreground max-w-lg mx-auto">
             যাচাইকৃত সম্ভাবনাময় এসএমই প্রকল্পগুলোতে সরাসরি ও নিরাপদে বিনিয়োগ করতে যুক্ত থাকুন।

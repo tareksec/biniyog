@@ -49,12 +49,33 @@ interface OpportunitiesSearch {
 export const Route = createFileRoute("/opportunities/")({
   head: () => ({
     meta: [
-      { title: "সকল বিনিয়োগের সুযোগ · বিনিয়োগ বৃদ্ধি" },
-      { name: "description", content: "বিনিয়োগ বৃদ্ধির সকল যাচাইকৃত হালাল বিনিয়োগের সুযোগগুলো এক্সপ্লোর করুন। আপনার পছন্দমতো সেক্টর ও মুনাফার হার অনুযায়ী বিনিয়োগ বেছে নিন।" },
-      { property: "og:title", content: "সকল বিনিয়োগের সুযোগ · বিনিয়োগ বৃদ্ধি" },
-      { property: "og:description", content: "বিনিয়োগ বৃদ্ধির সকল যাচাইকৃত হালাল বিনিয়োগের সুযোগগুলো এক্সপ্লোর করুন। আপনার পছন্দমতো সেক্টর ও মুনাফার হার অনুযায়ী বিনিয়োগ বেছে নিন।" },
-      { name: "twitter:title", content: "সকল বিনিয়োগের সুযোগ · বিনিয়োগ বৃদ্ধি" },
-      { name: "twitter:description", content: "বিনিয়োগ বৃদ্ধির সকল যাচাইকৃত হালাল বিনিয়োগের সুযোগগুলো এক্সপ্লোর করুন। আপনার পছন্দমতো সেক্টর ও মুনাফার হার অনুযায়ী বিনিয়োগ বেছে নিন।" },
+      { title: "বিনিয়োগের সুযোগ | যাচাইকৃত SME বিনিয়োগ বাংলাদেশ | বিনিয়োগ বৃদ্ধি" },
+      {
+        name: "description",
+        content:
+          "বাংলাদেশের যাচাইকৃত SME ব্যবসায় লাভজনক বিনিয়োগের সুযোগ দেখুন। co-investment platform Bangladesh।",
+      },
+      {
+        property: "og:title",
+        content: "বিনিয়োগের সুযোগ | যাচাইকৃত SME বিনিয়োগ বাংলাদেশ | বিনিয়োগ বৃদ্ধি",
+      },
+      {
+        property: "og:description",
+        content:
+          "বাংলাদেশের যাচাইকৃত SME ব্যবসায় লাভজনক বিনিয়োগের সুযোগ দেখুন। co-investment platform Bangladesh।",
+      },
+      { property: "og:url", content: "https://biniyogbriddhi.com/opportunities" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      {
+        name: "twitter:title",
+        content: "বিনিয়োগের সুযোগ | যাচাইকৃত SME বিনিয়োগ বাংলাদেশ | বিনিয়োগ বৃদ্ধি",
+      },
+      {
+        name: "twitter:description",
+        content:
+          "বাংলাদেশের যাচাইকৃত SME ব্যবসায় লাভজনক বিনিয়োগের সুযোগ দেখুন। co-investment platform Bangladesh।",
+      },
     ],
   }),
   component: OpportunitiesPage,
@@ -351,13 +372,13 @@ function OpportunitiesPage() {
                 "@type": "ListItem",
                 position: 1,
                 name: "Home",
-                item: "https://samriddhi.techvrs.com"
+                item: "https://biniyogbriddhi.com"
               },
               {
                 "@type": "ListItem",
                 position: 2,
                 name: "Opportunities",
-                item: "https://samriddhi.techvrs.com/opportunities"
+                item: "https://biniyogbriddhi.com/opportunities"
               }
             ]
           }),
