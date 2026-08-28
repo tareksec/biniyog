@@ -9,7 +9,7 @@ try {
   
   // Try to commit
   try {
-    execSync('git commit -m "feat: Implement static fallback data snapshot for SSR"', { stdio: 'pipe' });
+    execSync('git commit -m "feat: Add user reviews system with admin approval and ReviewRatingModal"', { stdio: 'pipe' });
   } catch (e) {}
   
   // Pull remote changes (merge commit style, no rebase to avoid rewriting history)

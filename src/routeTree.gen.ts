@@ -35,6 +35,7 @@ import { Route as OpportunitiesIndexRouteImport } from './routes/opportunities.i
 import { Route as OpportunitiesIdRouteImport } from './routes/opportunities.$id'
 import { Route as ApiAdminDeleteUserRouteImport } from './routes/api/admin/delete-user'
 import { Route as ApiPublicRevealDetailsRouteImport } from './routes/api/public/reveal-details'
+import { Route as ApiPublicSubmitReviewRouteImport } from './routes/api/public/submit-review'
 import { Route as AdminDashboardBlogNewRouteImport } from './routes/admin/dashboard_.blog.new'
 import { Route as AdminDashboardBlogPostIdEditRouteImport } from './routes/admin/dashboard_.blog.$postId.edit'
 
@@ -171,6 +172,11 @@ const ApiPublicRevealDetailsRoute = ApiPublicRevealDetailsRouteImport.update({
   path: '/api/public/reveal-details',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicSubmitReviewRoute = ApiPublicSubmitReviewRouteImport.update({
+  id: '/api/public/submit-review',
+  path: '/api/public/submit-review',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminDashboardBlogNewRoute = AdminDashboardBlogNewRouteImport.update({
   id: '/admin/dashboard_/blog/new',
   path: '/admin/dashboard/blog/new',
@@ -210,6 +216,7 @@ export interface FileRoutesByFullPath {
   '/opportunities/': typeof OpportunitiesIndexRoute
   '/api/admin/delete-user': typeof ApiAdminDeleteUserRoute
   '/api/public/reveal-details': typeof ApiPublicRevealDetailsRoute
+  '/api/public/submit-review': typeof ApiPublicSubmitReviewRoute
   '/admin/dashboard/blog/new': typeof AdminDashboardBlogNewRoute
   '/admin/dashboard/blog/$postId/edit': typeof AdminDashboardBlogPostIdEditRoute
 }
@@ -239,6 +246,7 @@ export interface FileRoutesByTo {
   '/opportunities': typeof OpportunitiesIndexRoute
   '/api/admin/delete-user': typeof ApiAdminDeleteUserRoute
   '/api/public/reveal-details': typeof ApiPublicRevealDetailsRoute
+  '/api/public/submit-review': typeof ApiPublicSubmitReviewRoute
   '/admin/dashboard/blog/new': typeof AdminDashboardBlogNewRoute
   '/admin/dashboard/blog/$postId/edit': typeof AdminDashboardBlogPostIdEditRoute
 }
@@ -270,6 +278,7 @@ export interface FileRoutesById {
   '/opportunities/': typeof OpportunitiesIndexRoute
   '/api/admin/delete-user': typeof ApiAdminDeleteUserRoute
   '/api/public/reveal-details': typeof ApiPublicRevealDetailsRoute
+  '/api/public/submit-review': typeof ApiPublicSubmitReviewRoute
   '/admin/dashboard_/blog/new': typeof AdminDashboardBlogNewRoute
   '/admin/dashboard_/blog/$postId/edit': typeof AdminDashboardBlogPostIdEditRoute
 }
@@ -302,6 +311,7 @@ export interface FileRouteTypes {
     | '/opportunities/'
     | '/api/admin/delete-user'
     | '/api/public/reveal-details'
+    | '/api/public/submit-review'
     | '/admin/dashboard/blog/new'
     | '/admin/dashboard/blog/$postId/edit'
   fileRoutesByTo: FileRoutesByTo
@@ -331,6 +341,7 @@ export interface FileRouteTypes {
     | '/opportunities'
     | '/api/admin/delete-user'
     | '/api/public/reveal-details'
+    | '/api/public/submit-review'
     | '/admin/dashboard/blog/new'
     | '/admin/dashboard/blog/$postId/edit'
   id:
@@ -361,6 +372,7 @@ export interface FileRouteTypes {
     | '/opportunities/'
     | '/api/admin/delete-user'
     | '/api/public/reveal-details'
+    | '/api/public/submit-review'
     | '/admin/dashboard_/blog/new'
     | '/admin/dashboard_/blog/$postId/edit'
   fileRoutesById: FileRoutesById
@@ -386,6 +398,7 @@ export interface RootRouteChildren {
   OpportunitiesIndexRoute: typeof OpportunitiesIndexRoute
   ApiAdminDeleteUserRoute: typeof ApiAdminDeleteUserRoute
   ApiPublicRevealDetailsRoute: typeof ApiPublicRevealDetailsRoute
+  ApiPublicSubmitReviewRoute: typeof ApiPublicSubmitReviewRoute
   AdminDashboardBlogNewRoute: typeof AdminDashboardBlogNewRoute
   AdminDashboardBlogPostIdEditRoute: typeof AdminDashboardBlogPostIdEditRoute
 }
@@ -574,6 +587,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicRevealDetailsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/submit-review': {
+      id: '/api/public/submit-review'
+      path: '/api/public/submit-review'
+      fullPath: '/api/public/submit-review'
+      preLoaderRoute: typeof ApiPublicSubmitReviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/dashboard_/blog/new': {
       id: '/admin/dashboard_/blog/new'
       path: '/admin/dashboard/blog/new'
@@ -634,6 +654,7 @@ const rootRouteChildren: RootRouteChildren = {
   OpportunitiesIndexRoute: OpportunitiesIndexRoute,
   ApiAdminDeleteUserRoute: ApiAdminDeleteUserRoute,
   ApiPublicRevealDetailsRoute: ApiPublicRevealDetailsRoute,
+  ApiPublicSubmitReviewRoute: ApiPublicSubmitReviewRoute,
   AdminDashboardBlogNewRoute: AdminDashboardBlogNewRoute,
   AdminDashboardBlogPostIdEditRoute: AdminDashboardBlogPostIdEditRoute,
 }

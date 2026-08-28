@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, Star, Search, Building2, Coins } from "lucide-react";
+import { Loader2, Star, Search, Building2, Coins, MessageSquarePlus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   fetchOpportunitiesSSR,
@@ -14,6 +14,13 @@ import {
   fetchHomepageReviewsSSR,
   type HomepageReview,
 } from "@/lib/homepage_reviews";
+import {
+  getApprovedReviews,
+  submitUserReview,
+  type UserReview,
+} from "@/lib/user_reviews";
+import { UserReviewCard } from "@/components/UserReviewCard";
+import { ReviewRatingModal } from "@/components/ReviewRatingModal";
 
 interface ReviewsSearch {
   q?: string;
@@ -285,6 +292,25 @@ function ReviewsPage() {
     return Array.isArray(rawTestimonials) ? rawTestimonials : [];
   }, [rawTestimonials]);
 
+  // Fetch Approved User Reviews
+  const { data: rawUserReviews = [], isLoading: isLoadingUserReviews } = useQuery({
+    queryKey: ["approved_user_reviews"],
+    queryFn: () => getApprovedReviews(),
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+
+  // Partition user reviews by target
+  const platformUserReviews = useMemo(
+    () => rawUserReviews.filter((r) => r.target_type === "homepage" || r.target_type === "general"),
+    [rawUserReviews]
+  );
+  const companyUserReviews = useMemo(
+    () => rawUserReviews.filter((r) => r.target_type === "opportunity"),
+    [rawUserReviews]
+  );
+
   // Fetch Opportunities for resolving linked company names
   const { data: rawOpportunities = [] } = useQuery({
     queryKey: ["opportunities-all"],
@@ -306,11 +332,14 @@ function ReviewsPage() {
   }, [opportunities]);
 
   const activeReviews = useMemo(() => {
-    const list = currentTab === "company" ? testimonials : homepageReviews;
-    return Array.isArray(list) ? list : [];
-  }, [currentTab, homepageReviews, testimonials]);
+    if (currentTab === "company") {
+      return [...companyUserReviews, ...testimonials];
+    }
+    return [...platformUserReviews, ...homepageReviews];
+  }, [currentTab, homepageReviews, testimonials, platformUserReviews, companyUserReviews]);
 
-  const isLoading = currentTab === "company" ? isLoadingTestimonials : isLoadingHomepage;
+  const isLoading =
+    (currentTab === "company" ? isLoadingTestimonials : isLoadingHomepage) || isLoadingUserReviews;
 
   const [searchQuery, setSearchQuery] = useState(searchParams?.q || "");
   const [selectedRating, setSelectedRating] = useState<number | null>(
@@ -359,15 +388,22 @@ function ReviewsPage() {
   // Statistics
   const stats = useMemo(() => {
     const total = activeReviews?.length ?? 0;
-    const ratedList = (activeReviews ?? []).filter(
-      (t) => t && typeof t.rating === "number" && t.rating > 0
-    );
+    const scores: number[] = [];
+    (activeReviews ?? []).forEach((t: any) => {
+      if (!t) return;
+      if (typeof t.rating === "number") {
+        if ("reviewer_name" in t && t.rating <= 1) {
+          // Convert 0.0-1.0 to 1-5 scale
+          scores.push(Number((t.rating * 4 + 1).toFixed(1)));
+        } else if (t.rating > 0) {
+          scores.push(t.rating);
+        }
+      }
+    });
+
     const avg =
-      ratedList.length > 0
-        ? (
-            ratedList.reduce((sum, t) => sum + Number(t.rating || 5), 0) /
-            ratedList.length
-          ).toFixed(1)
+      scores.length > 0
+        ? (scores.reduce((sum, s) => sum + s, 0) / scores.length).toFixed(1)
         : "৫.০";
     return { total, avg };
   }, [activeReviews]);
@@ -378,15 +414,27 @@ function ReviewsPage() {
     return activeReviews.filter((t: any) => {
       if (!t) return false;
       const q = (searchQuery || "").trim().toLowerCase();
+      const name = t.reviewer_name || t.name || "";
+      const text = t.note || t.quote || "";
+      const brand = t.brand_name || "";
+      const loc = t.location || "";
+
       const matchesSearch =
         q === "" ||
-        (t.name && String(t.name).toLowerCase().includes(q)) ||
-        (t.quote && String(t.quote).toLowerCase().includes(q)) ||
-        (t.brand_name && String(t.brand_name).toLowerCase().includes(q)) ||
-        (t.location && String(t.location).toLowerCase().includes(q));
+        String(name).toLowerCase().includes(q) ||
+        String(text).toLowerCase().includes(q) ||
+        String(brand).toLowerCase().includes(q) ||
+        String(loc).toLowerCase().includes(q);
 
-      const ratingVal = typeof t.rating === "number" && t.rating > 0 ? t.rating : 5;
-      const matchesRating = selectedRating === null || ratingVal === selectedRating;
+      let starVal = 5;
+      if (typeof t.rating === "number") {
+        if ("reviewer_name" in t && t.rating <= 1) {
+          starVal = t.rating >= 0.75 ? 5 : t.rating >= 0.5 ? 4 : t.rating >= 0.3 ? 3 : 2;
+        } else if (t.rating > 0) {
+          starVal = Math.round(t.rating);
+        }
+      }
+      const matchesRating = selectedRating === null || starVal === selectedRating;
 
       return Boolean(matchesSearch && matchesRating);
     });
@@ -435,7 +483,7 @@ function ReviewsPage() {
           </p>
 
           {/* ─── Pill-style Tabs ─── */}
-          <div className="mt-8 flex justify-center">
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <div className="inline-flex p-1.5 rounded-2xl bg-muted/80 border border-border shadow-xs">
               <button
                 type="button"
@@ -454,7 +502,7 @@ function ReviewsPage() {
                       : "bg-muted text-muted-foreground"
                   }`}
                 >
-                  {homepageReviews.length}
+                  {platformUserReviews.length + homepageReviews.length}
                 </span>
               </button>
 
@@ -475,10 +523,20 @@ function ReviewsPage() {
                       : "bg-muted text-muted-foreground"
                   }`}
                 >
-                  {testimonials.length}
+                  {companyUserReviews.length + testimonials.length}
                 </span>
               </button>
             </div>
+
+            {/* Submit review button */}
+            <button
+              type="button"
+              onClick={() => setIsReviewModalOpen(true)}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1a6b4a] hover:bg-[#145a3d] text-white font-bold text-xs shadow-md transition-all hover:scale-105 active:scale-95 cursor-pointer"
+            >
+              <MessageSquarePlus className="w-4 h-4" />
+              <span>আপনার রিভিউ লিখুন</span>
+            </button>
           </div>
 
           {/* Stats Bar */}
@@ -587,27 +645,56 @@ function ReviewsPage() {
               transition={{ duration: 0.25 }}
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             >
-              {currentTab === "platform"
-                ? (filteredReviews ?? []).map((item: HomepageReview) =>
-                    item ? <PlatformReviewCard key={item.id || item.quote} item={item} /> : null
-                  )
-                : (filteredReviews ?? []).map((item: Testimonial) =>
-                    item ? (
-                      <CompanyReviewCard
-                        key={item.id || item.quote}
-                        item={item}
-                        opportunity={
-                          item?.related_opportunity_id
-                            ? oppMap.get(item.related_opportunity_id)
-                            : null
-                        }
-                      />
-                    ) : null
-                  )}
+              {(filteredReviews ?? []).map((item: any) => {
+                if (!item) return null;
+                // If it's a user review
+                if ("reviewer_name" in item && "target_type" in item) {
+                  return (
+                    <UserReviewCard
+                      key={`ur-${item.id}`}
+                      review={item as UserReview}
+                      opportunity={item.target_id ? oppMap.get(item.target_id) : null}
+                    />
+                  );
+                }
+
+                // If it's a platform homepage review
+                if (currentTab === "platform") {
+                  return <PlatformReviewCard key={`hr-${item.id || item.quote}`} item={item} />;
+                }
+
+                // If it's a company testimonial
+                return (
+                  <CompanyReviewCard
+                    key={`test-${item.id || item.quote}`}
+                    item={item}
+                    opportunity={
+                      item?.related_opportunity_id
+                        ? oppMap.get(item.related_opportunity_id)
+                        : null
+                    }
+                  />
+                );
+              })}
             </motion.div>
           </AnimatePresence>
         )}
       </section>
+
+      {/* Review Rating Modal */}
+      <ReviewRatingModal
+        isOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+        targetType={currentTab === "company" ? "general" : "homepage"}
+        onSubmit={async (rating, note) => {
+          await submitUserReview({
+            reviewer_name: "বিনিয়োগকারী",
+            rating,
+            note,
+            target_type: currentTab === "company" ? "general" : "homepage",
+          });
+        }}
+      />
     </div>
   );
 }

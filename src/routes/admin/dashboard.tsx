@@ -8,6 +8,7 @@ import type { BlogPost, BlogCategory } from "@/lib/database.types";
 import { OpportunityForm } from "@/components/admin/OpportunityForm";
 import { TestimonialForm } from "@/components/admin/TestimonialForm";
 import { HomepageReviewForm } from "@/components/admin/HomepageReviewForm";
+import { UserReviewManager } from "@/components/admin/UserReviewManager";
 import { CountUp } from "@/components/CountUp";
 import { motion } from "framer-motion";
 import {
@@ -240,7 +241,7 @@ function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<
     "overview" | "opportunities" | "blog" | "users" | "reviews"
   >("overview");
-  const [reviewSubTab, setReviewSubTab] = useState<"homepage" | "company">("homepage");
+  const [reviewSubTab, setReviewSubTab] = useState<"user_reviews" | "homepage" | "company">("user_reviews");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // ─── Opportunities state ─────────────────────────────────────
@@ -1662,7 +1663,7 @@ function AdminDashboard() {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    {reviewSubTab === "homepage" ? (
+                    {reviewSubTab === "homepage" && (
                       <Button
                         size="sm"
                         onClick={() => {
@@ -1673,7 +1674,8 @@ function AdminDashboard() {
                       >
                         <Plus className="h-3.5 w-3.5" /> নতুন হোম রিভিউ
                       </Button>
-                    ) : (
+                    )}
+                    {reviewSubTab === "company" && (
                       <Button
                         size="sm"
                         onClick={() => {
@@ -1689,7 +1691,18 @@ function AdminDashboard() {
                 </div>
 
                 {/* Sub-tabs Navigation */}
-                <div className="bg-white rounded-2xl p-2 shadow-[0_2px_8px_rgba(0,0,0,0.04)] inline-flex gap-1.5">
+                <div className="bg-white rounded-2xl p-2 shadow-[0_2px_8px_rgba(0,0,0,0.04)] inline-flex flex-wrap gap-1.5">
+                  <button
+                    onClick={() => setReviewSubTab("user_reviews")}
+                    className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      reviewSubTab === "user_reviews"
+                        ? "bg-[#1a6b4a] text-white shadow-xs"
+                        : "text-gray-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    <span>ইউজার রিভিউ (অনুমোদন)</span>
+                  </button>
+
                   <button
                     onClick={() => setReviewSubTab("homepage")}
                     className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
@@ -1730,6 +1743,11 @@ function AdminDashboard() {
                     </span>
                   </button>
                 </div>
+
+                {/* Sub-tab 0: ইউজার রিভিউ অনুমোদন */}
+                {reviewSubTab === "user_reviews" && (
+                  <UserReviewManager opportunities={opportunities} />
+                )}
 
                 {/* Sub-tab 1: হোম রিভিউ Table */}
                 {reviewSubTab === "homepage" && (

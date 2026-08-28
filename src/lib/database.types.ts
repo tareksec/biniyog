@@ -382,6 +382,59 @@ export type Database = {
         };
         Relationships: [];
       };
+      user_reviews: {
+        Row: {
+          id: string;
+          created_at: string;
+          reviewer_name: string;
+          reviewer_email: string | null;
+          rating: number;
+          note: string | null;
+          status: "pending" | "approved" | "rejected";
+          target_type: "opportunity" | "homepage" | "general";
+          target_id: string | null;
+          admin_note: string | null;
+          ip_address: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          created_at?: string;
+          reviewer_name?: string;
+          reviewer_email?: string | null;
+          rating: number;
+          note?: string | null;
+          status?: "pending" | "approved" | "rejected";
+          target_type: "opportunity" | "homepage" | "general";
+          target_id?: string | null;
+          admin_note?: string | null;
+          ip_address?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          created_at?: string;
+          reviewer_name?: string;
+          reviewer_email?: string | null;
+          rating?: number;
+          note?: string | null;
+          status?: "pending" | "approved" | "rejected";
+          target_type?: "opportunity" | "homepage" | "general";
+          target_id?: string | null;
+          admin_note?: string | null;
+          ip_address?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_reviews_target_id_fkey";
+            columns: ["target_id"];
+            isOneToOne: false;
+            referencedRelation: "opportunities";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -427,4 +480,9 @@ export type BlogPostUpdate = Database["public"]["Tables"]["blog_posts"]["Update"
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 export type ProfileInsert = Database["public"]["Tables"]["profiles"]["Insert"];
 export type ProfileUpdate = Database["public"]["Tables"]["profiles"]["Update"];
+
+export type UserReview = Database["public"]["Tables"]["user_reviews"]["Row"];
+export type UserReviewInsert = Database["public"]["Tables"]["user_reviews"]["Insert"];
+export type UserReviewUpdate = Database["public"]["Tables"]["user_reviews"]["Update"];
+
 

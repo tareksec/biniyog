@@ -17,7 +17,9 @@ import { InvestmentCalculator } from "@/components/InvestmentCalculator";
 import { FaqSection } from "@/components/FaqSection";
 import { PolicySection } from "@/components/PolicySection";
 import { WhyChooseSection } from "@/components/WhyChooseSection";
-import { Loader2, CalendarCheck, MapPin, Sparkles, ArrowRight } from "lucide-react";
+import { ReviewRatingModal } from "@/components/ReviewRatingModal";
+import { submitUserReview } from "@/lib/user_reviews";
+import { Loader2, CalendarCheck, MapPin, Sparkles, ArrowRight, Star } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { usePrefersReducedMotion, revealVariants, staggerContainer, scaleIn } from "@/lib/animations";
 import { FlipFadeText } from "@/components/ui/flip-fade-text";
@@ -105,6 +107,7 @@ export const Route = createFileRoute("/")({
 
 function LandingPage() {
   const { data: opportunities = [] } = useOpportunities();
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   const heroStats = useMemo(() => {
     // Filter to non-funded opportunities for stat computation
@@ -139,7 +142,22 @@ function LandingPage() {
       <div className="bg-background/75 backdrop-blur-[2px]">
         <InvestmentCalculator />
       </div>
-      <TestimonialsSection />
+
+      {/* Testimonials with Review Button */}
+      <div className="relative">
+        <TestimonialsSection />
+        <div className="mx-auto max-w-7xl px-5 sm:px-8 pb-12 flex justify-center -mt-6 relative z-10">
+          <button
+            type="button"
+            onClick={() => setIsReviewModalOpen(true)}
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-sm shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95 cursor-pointer"
+          >
+            <Star className="w-4 h-4 fill-amber-300 text-amber-300" />
+            <span>আপনার অভিজ্ঞতা কেমন ছিল? রিভিউ দিন</span>
+          </button>
+        </div>
+      </div>
+
       <FaqSection />
       <FinalCTA />
       
@@ -156,6 +174,21 @@ function LandingPage() {
           </svg>
         </Link>
       </div>
+
+      {/* Homepage Review Modal */}
+      <ReviewRatingModal
+        isOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+        targetType="homepage"
+        onSubmit={async (rating, note) => {
+          await submitUserReview({
+            reviewer_name: "বিনিয়োগকারী",
+            rating,
+            note,
+            target_type: "homepage",
+          });
+        }}
+      />
     </div>
   );
 }

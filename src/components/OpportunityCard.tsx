@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Heart } from "lucide-react";
 import { useBookmarks } from "@/hooks/useBookmarks";
+import { ReviewRatingModal } from "@/components/ReviewRatingModal";
+import { submitUserReview } from "@/lib/user_reviews";
 import {
   type Opportunity,
   isFullyFunded,
@@ -128,6 +130,7 @@ export function OpportunityCard({
   const { isBookmarked, toggleBookmark } = useBookmarks();
   const saved = isBookmarked(project.id);
   const navigate = useNavigate();
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
 
   const handleCardClick = () => {
     if (onQuickView) {
@@ -323,21 +326,39 @@ export function OpportunityCard({
               </svg>
               যোগাযোগ ও ব্যাংক তথ্য (গুগল শিট)
             </a>
-            <a
-              href={`https://form.techvrs.com/?business=${encodeURIComponent(project.name || "")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="inline-flex w-full min-h-[44px] items-center justify-center gap-1.5 rounded-xl border border-border/40 bg-transparent px-4 py-3 text-[11px] font-medium text-muted-foreground transition-colors hover:border-primary/30 hover:text-primary"
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setReviewModalOpen(true);
+              }}
+              className="inline-flex w-full min-h-[44px] items-center justify-center gap-1.5 rounded-xl border border-border/40 bg-transparent px-4 py-3 text-[11px] font-medium text-muted-foreground transition-colors hover:border-primary/30 hover:text-primary cursor-pointer"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
               রিভিউ দিন
-            </a>
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Review Modal */}
+      <ReviewRatingModal
+        isOpen={reviewModalOpen}
+        onClose={() => setReviewModalOpen(false)}
+        targetType="opportunity"
+        targetId={project.id}
+        onSubmit={async (rating, note) => {
+          await submitUserReview({
+            reviewer_name: "বিনিয়োগকারী",
+            rating,
+            note,
+            target_type: "opportunity",
+            target_id: project.id,
+          });
+        }}
+      />
     </motion.div>
   );
 }
