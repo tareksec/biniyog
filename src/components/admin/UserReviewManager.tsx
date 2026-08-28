@@ -374,6 +374,11 @@ export function UserReviewManager({ opportunities = [] }: UserReviewManagerProps
                               {r.reviewer_email}
                             </span>
                           )}
+                          {r.user_id && (
+                            <span className="text-[10px] text-gray-400 font-mono">
+                              User ID: {r.user_id.slice(0, 8)}...
+                            </span>
+                          )}
                           {r.ip_address && (
                             <span className="text-[10px] text-gray-400 font-mono">
                               IP: {r.ip_address}

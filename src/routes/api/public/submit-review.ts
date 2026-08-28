@@ -35,6 +35,34 @@ export const Route = createFileRoute("/api/public/submit-review")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        // Authentication check: verify JWT from Authorization header
+        const authHeader = request.headers.get("authorization") || request.headers.get("Authorization");
+        const token = authHeader?.replace(/^Bearer\s+/i, "")?.trim();
+
+        if (!token) {
+          return Response.json(
+            { success: false, error: "মতামত জমা দিতে অনুগ্রহ করে লগইন করুন" },
+            { status: 401 }
+          );
+        }
+
+        let authenticatedUser: any = null;
+        try {
+          const { data: authData, error: authErr } = await supabase.auth.getUser(token);
+          if (authErr || !authData?.user) {
+            return Response.json(
+              { success: false, error: "অবৈধ বা মেয়াদোত্তীর্ণ লগইন সেশন। অনুগ্রহ করে আবার লগইন করুন।" },
+              { status: 401 }
+            );
+          }
+          authenticatedUser = authData.user;
+        } catch {
+          return Response.json(
+            { success: false, error: "লগইন যাচাইকরণে ত্রুটি হয়েছে।" },
+            { status: 401 }
+          );
+        }
+
         let payload: {
           reviewer_name?: string;
           reviewer_email?: string;
@@ -76,6 +104,14 @@ export const Route = createFileRoute("/api/public/submit-review")({
           );
         }
 
+        const cleanNote = (note || "").trim();
+        if (!cleanNote) {
+          return Response.json(
+            { success: false, error: "অনুগ্রহ করে আপনার মতামত লিখুন" },
+            { status: 400 }
+          );
+        }
+
         if (typeof has_invested !== "boolean") {
           return Response.json(
             { success: false, error: "আপনি কি বিনিয়োগ করেছেন তা নির্বাচন করুন" },
@@ -99,9 +135,12 @@ export const Route = createFileRoute("/api/public/submit-review")({
           );
         }
 
-        const name = (reviewer_name || "").trim() || "বিনিয়োগকারী";
-        const email = (reviewer_email || "").trim() || null;
-        const cleanNote = (note || "").trim() || null;
+        // Pull verified reviewer details from authenticated profile/user metadata to prevent spoofing
+        let verifiedName = (reviewer_name || "").trim();
+        if (!verifiedName || verifiedName === "বিনিয়োগকারী") {
+          verifiedName = authenticatedUser.user_metadata?.full_name || authenticatedUser.email?.split("@")[0] || "বিনিয়োগকারী";
+        }
+        const verifiedEmail = authenticatedUser.email || (reviewer_email || "").trim() || null;
         const cleanDetails = (investment_details || "").trim() || null;
 
         // Rate Limiting by IP
@@ -158,10 +197,11 @@ export const Route = createFileRoute("/api/public/submit-review")({
           console.warn("[submit-review] DB rate limit check non-fatal error:", dbErr);
         }
 
-        // Insert pending review (explicitly status='pending')
+        // Insert pending review (explicitly status='pending' and linked to authenticated user_id)
         const insertPayload = {
-          reviewer_name: name,
-          reviewer_email: email,
+          user_id: authenticatedUser.id,
+          reviewer_name: verifiedName,
+          reviewer_email: verifiedEmail,
           rating: Number(rating.toFixed(2)),
           note: cleanNote,
           status: "pending" as const,
@@ -175,8 +215,6 @@ export const Route = createFileRoute("/api/public/submit-review")({
 
         console.log("[submit-review] Executing insert with payload:", insertPayload);
 
-        // Note: Do NOT chain .select().single() when using public anon client because
-        // RLS prevents unauthenticated users from reading status='pending' rows.
         const { error } = await dbClient
           .from("user_reviews")
           .insert(insertPayload);

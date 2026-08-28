@@ -4,10 +4,11 @@ import type { Database, UserReview, UserReviewInsert, UserReviewUpdate } from "@
 export type { UserReview, UserReviewInsert, UserReviewUpdate };
 
 export interface SubmitReviewInput {
+  user_id?: string;
   reviewer_name?: string;
   reviewer_email?: string;
   rating: number;
-  note?: string;
+  note: string;
   target_type: "opportunity" | "homepage" | "general";
   target_id?: string;
   has_invested: boolean;
@@ -17,14 +18,39 @@ export interface SubmitReviewInput {
 
 /**
  * Submits a user review via the server API endpoint with rate limiting.
+ * Requires an authenticated user session.
  * Falls back to direct Supabase client insert if API endpoint is unreachable.
  */
 export async function submitUserReview(data: SubmitReviewInput): Promise<{ success: boolean; message?: string }> {
+  // 1. Verify user is authenticated
+  const { data: sessionData } = await supabase.auth.getSession();
+  const session = sessionData?.session;
+  if (!session?.user) {
+    throw new Error("মতামত জমা দিতে অনুগ্রহ করে প্রথমে লগইন করুন।");
+  }
+
+  const userId = session.user.id;
+  const userEmail = session.user.email || null;
+  const cleanNote = (data.note || "").trim();
+  if (!cleanNote) {
+    throw new Error("অনুগ্রহ করে আপনার মতামত লিখুন।");
+  }
+
+  const payload = {
+    ...data,
+    user_id: userId,
+    reviewer_email: data.reviewer_email || userEmail || undefined,
+    note: cleanNote,
+  };
+
   try {
     const res = await fetch("/api/public/submit-review", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify(payload),
     });
 
     const json = await res.json().catch(() => ({}));
@@ -33,21 +59,31 @@ export async function submitUserReview(data: SubmitReviewInput): Promise<{ succe
       return { success: true, message: json.message };
     }
 
+    if (res.status === 401) {
+      throw new Error("মতামত জমা দিতে অনুগ্রহ করে প্রথমে লগইন করুন।");
+    }
+
     if (res.status === 429) {
       throw new Error(json.error || "আপনি অতিরিক্ত রিভিউ পাঠিয়েছেন। কিছুক্ষণ পর চেষ্টা করুন।");
     }
     throw new Error(json.error || "রিভিউ জমা দিতে ত্রুটি হয়েছে");
   } catch (apiErr: any) {
-    if (apiErr?.message && (apiErr.message.includes("অতিরিক্ত রিভিউ") || apiErr.message.includes("১ ঘন্টায় সর্বোচ্চ"))) {
+    if (
+      apiErr?.message &&
+      (apiErr.message.includes("লগইন করুন") ||
+        apiErr.message.includes("অতিরিক্ত রিভিউ") ||
+        apiErr.message.includes("১ ঘন্টায় সর্বোচ্চ"))
+    ) {
       throw apiErr;
     }
     console.warn("[submitUserReview] API route fallback to direct insert:", apiErr);
 
     const { error } = await supabase.from("user_reviews").insert({
+      user_id: userId,
       reviewer_name: (data.reviewer_name || "").trim() || "বিনিয়োগকারী",
-      reviewer_email: (data.reviewer_email || "").trim() || null,
+      reviewer_email: userEmail,
       rating: Math.max(0, Math.min(1, data.rating)),
-      note: (data.note || "").trim() || null,
+      note: cleanNote,
       status: "pending",
       target_type: data.target_type,
       target_id: data.target_type === "opportunity" && data.target_id ? data.target_id : null,

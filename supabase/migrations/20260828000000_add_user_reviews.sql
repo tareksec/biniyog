@@ -2,10 +2,11 @@
 CREATE TABLE IF NOT EXISTS public.user_reviews (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
+  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
   reviewer_name text NOT NULL DEFAULT 'বিনিয়োগকারী',
   reviewer_email text,
   rating numeric(3,2) NOT NULL CHECK (rating >= 0.0 AND rating <= 1.0),
-  note text,
+  note text NOT NULL,
   status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
   target_type text NOT NULL CHECK (target_type IN ('opportunity', 'homepage', 'general')),
   target_id uuid REFERENCES public.opportunities(id) ON DELETE CASCADE,
@@ -38,6 +39,7 @@ ALTER TABLE public.user_reviews ENABLE ROW LEVEL SECURITY;
 -- Drop existing policies if any
 DROP POLICY IF EXISTS "Public can read approved user reviews" ON public.user_reviews;
 DROP POLICY IF EXISTS "Public can insert pending user reviews" ON public.user_reviews;
+DROP POLICY IF EXISTS "Authenticated users can insert pending user reviews" ON public.user_reviews;
 DROP POLICY IF EXISTS "Authenticated users have full access on user_reviews" ON public.user_reviews;
 
 -- 1. Public SELECT: only approved reviews
@@ -47,12 +49,16 @@ CREATE POLICY "Public can read approved user reviews"
   TO public
   USING (status = 'approved');
 
--- 2. Public / Anon INSERT: anyone can submit pending reviews
-CREATE POLICY "Public can insert pending user reviews"
+-- 2. Authenticated INSERT: ONLY logged-in users can submit pending reviews
+CREATE POLICY "Authenticated users can insert pending user reviews"
   ON public.user_reviews
   FOR INSERT
-  TO public
-  WITH CHECK (status = 'pending');
+  TO authenticated
+  WITH CHECK (
+    auth.uid() IS NOT NULL AND 
+    (user_id IS NULL OR user_id = auth.uid()) AND
+    status = 'pending'
+  );
 
 -- 3. Authenticated (Admin): full access (SELECT all statuses, UPDATE, DELETE, INSERT)
 CREATE POLICY "Authenticated users have full access on user_reviews"

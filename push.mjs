@@ -9,7 +9,7 @@ try {
   
   // Try to commit
   try {
-    execSync('git commit -m "feat: Add extra fields to user review modal and integrate reviews in opportunity details page"', { stdio: 'pipe' });
+    execSync('git commit -m "feat: Restrict review submission to authenticated users and make feedback mandatory"', { stdio: 'pipe' });
   } catch (e) {}
   
   // Pull remote changes (merge commit style, no rebase to avoid rewriting history)

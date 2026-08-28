@@ -3,7 +3,9 @@
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Loader2, CheckCircle2 } from "lucide-react";
+import { X, Loader2, CheckCircle2, Lock, LogIn, UserCheck } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { Link } from "@tanstack/react-router";
 
 export interface ReviewRatingModalSubmitData {
   rating: number;
@@ -101,13 +103,13 @@ export function ReviewRatingModal({
   targetType,
   targetId,
 }: ReviewRatingModalProps) {
+  const { user, profile, loading: authLoading } = useAuth();
   const [sliderValue, setSliderValue] = React.useState<number>(0.5);
   const [note, setNote] = React.useState<string>("");
-  const [isNoteOpen, setIsNoteOpen] = React.useState<boolean>(false);
   const [hasInvested, setHasInvested] = React.useState<boolean | null>(null);
   const [userIdentity, setUserIdentity] = React.useState<string>("");
   const [investmentDetails, setInvestmentDetails] = React.useState<string>("");
-  const [errors, setErrors] = React.useState<{ hasInvested?: string; userIdentity?: string }>({});
+  const [errors, setErrors] = React.useState<{ hasInvested?: string; userIdentity?: string; note?: string }>({});
   const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
   const [isSuccess, setIsSuccess] = React.useState<boolean>(false);
   const autoCloseTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -117,7 +119,6 @@ export function ReviewRatingModal({
     if (isOpen) {
       setSliderValue(0.5);
       setNote("");
-      setIsNoteOpen(false);
       setHasInvested(null);
       setUserIdentity("");
       setInvestmentDetails("");
@@ -154,7 +155,7 @@ export function ReviewRatingModal({
   const mouthPathD = `M 55 95 Q 80 ${controlPointY} 105 95`;
 
   const validateForm = (): boolean => {
-    const newErrors: { hasInvested?: string; userIdentity?: string } = {};
+    const newErrors: { hasInvested?: string; userIdentity?: string; note?: string } = {};
 
     if (hasInvested === null) {
       newErrors.hasInvested = "অনুগ্রহ করে বিনিয়োগ করেছেন কিনা তা নির্বাচন করুন";
@@ -162,6 +163,10 @@ export function ReviewRatingModal({
 
     if (!userIdentity.trim()) {
       newErrors.userIdentity = "আপনার পেশা বা পরিচয় উল্লেখ করুন (যেমন: ব্যবসায়ী, চাকরিজীবী)";
+    }
+
+    if (!note.trim()) {
+      newErrors.note = "অনুগ্রহ করে আপনার মতামত লিখুন";
     }
 
     setErrors(newErrors);
@@ -199,6 +204,8 @@ export function ReviewRatingModal({
     }
   };
 
+  const reviewerDisplayName = profile?.full_name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "সম্মানিত বিনিয়োগকারী";
+
   return (
     <DialogPrimitive.Root open={isOpen} onOpenChange={(open) => !open && !isSubmitting && onClose()}>
       <DialogPrimitive.Portal>
@@ -220,7 +227,7 @@ export function ReviewRatingModal({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.92, y: 20 }}
               transition={{ type: "spring", damping: 25, stiffness: 320 }}
-              style={{ backgroundColor }}
+              style={{ backgroundColor: !user ? "#F8FAFC" : backgroundColor }}
               className="relative w-full max-w-md rounded-3xl p-6 sm:p-7 shadow-2xl transition-colors duration-150 ease-out border border-white/40 text-[#051F20]"
             >
               {/* Accessibility Description */}
@@ -228,335 +235,363 @@ export function ReviewRatingModal({
                 বিনিয়োগ বৃদ্ধি প্ল্যাটফর্মে আপনার অভিজ্ঞতার রেটিং এবং মতামত জমা দিন।
               </DialogPrimitive.Description>
 
-              {/* Top Row: Close IconButton (top-left) + Title "আপনার অভিজ্ঞতা কেমন ছিল?" (centered) */}
+              {/* Top Row: Close IconButton (top-left) + Title (centered) */}
               <div className="relative flex items-center justify-between pb-3">
                 <button
                   type="button"
                   onClick={onClose}
                   disabled={isSubmitting}
                   aria-label="বন্ধ করুন"
-                  className="p-2 rounded-full text-[#163832]/80 hover:text-[#051F20] hover:bg-black/5 active:scale-95 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#163832] disabled:opacity-40"
+                  className="p-2 rounded-full text-[#163832]/80 hover:text-[#051F20] hover:bg-black/5 active:scale-95 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#163832] disabled:opacity-40 cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
 
                 <DialogPrimitive.Title className="text-lg sm:text-xl font-bold font-display text-[#163832] text-center flex-1 pr-9">
-                  আপনার অভিজ্ঞতা কেমন ছিল?
+                  {!user ? "মতামত প্রদান" : "আপনার অভিজ্ঞতা কেমন ছিল?"}
                 </DialogPrimitive.Title>
               </div>
 
-              {/* Center: Animated SVG Face (Fixed 160x160 container) */}
-              <div className="flex justify-center items-center py-2">
-                <div className="relative w-[160px] h-[160px] flex items-center justify-center">
-                  <svg
-                    viewBox="0 0 160 160"
-                    className="w-full h-full drop-shadow-xs select-none"
-                    aria-hidden="true"
-                  >
-                    {/* Face boundary background */}
-                    <circle
-                      cx="80"
-                      cy="80"
-                      r="70"
-                      fill="rgba(255, 255, 255, 0.45)"
-                      stroke="rgba(22, 56, 50, 0.12)"
-                      strokeWidth="2"
-                    />
-
-                    {/* Left Eye */}
-                    <circle cx="55" cy="55" r="7" fill="#163832" />
-
-                    {/* Right Eye */}
-                    <circle cx="105" cy="55" r="7" fill="#163832" />
-
-                    {/* Animated Mouth Path */}
-                    <motion.path
-                      d={mouthPathD}
-                      animate={{ d: mouthPathD }}
-                      transition={{ type: "spring", damping: 20, stiffness: 280 }}
-                      fill="none"
-                      stroke="#163832"
-                      strokeWidth="7"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-
-                  {isSuccess && (
-                    <motion.div
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      className="absolute -top-1 -right-1 bg-emerald-600 text-white rounded-full p-1 shadow-md"
-                    >
-                      <CheckCircle2 className="w-6 h-6" />
-                    </motion.div>
-                  )}
+              {/* ─── Case 1: Visitor is Logged Out ─── */}
+              {authLoading ? (
+                <div className="py-12 text-center text-[#163832]">
+                  <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-[#163832]" />
+                  <span className="text-sm font-semibold">যাচাই করা হচ্ছে...</span>
                 </div>
-              </div>
-
-              {/* Status Text with AnimatePresence mode="wait" */}
-              <div className="h-11 flex items-center justify-center my-1">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={isSuccess ? "success" : statusText}
-                    initial={{ opacity: 0, scale: 0.85, y: 5 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.85, y: -5 }}
-                    transition={{ duration: 0.18, ease: "easeOut" }}
-                    className="text-center"
-                  >
-                    {isSuccess ? (
-                      <span className="text-base sm:text-lg font-bold text-emerald-950 font-display">
-                        ধন্যবাদ! আপনার মতামত পাঠানো হয়েছে
-                      </span>
-                    ) : (
-                      <span className="text-2xl sm:text-3xl font-black tracking-[0.1em] text-[#163832] uppercase font-sans">
-                        {statusText}
-                      </span>
-                    )}
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-
-              {/* Custom Slider & Labels */}
-              {!isSuccess && (
-                <div className="mt-3 mb-4 space-y-2">
-                  {/* Range Input with custom appearance */}
-                  <div className="relative flex items-center py-1">
-                    <input
-                      type="range"
-                      min={0}
-                      max={100}
-                      step={1}
-                      value={Math.round(sliderValue * 100)}
-                      onChange={(e) => setSliderValue(Number(e.target.value) / 100)}
-                      disabled={isSubmitting || isSuccess}
-                      aria-label="রেটিং নির্বাচন করুন"
-                      className="review-rating-slider w-full h-3 bg-black/10 rounded-full appearance-none cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#163832]/50 disabled:cursor-not-allowed"
-                    />
+              ) : !user ? (
+                <div className="py-5 px-2 text-center space-y-4">
+                  <div className="mx-auto w-16 h-16 rounded-3xl bg-[#163832]/10 text-[#163832] flex items-center justify-center border border-[#163832]/20 shadow-xs">
+                    <Lock className="w-8 h-8" />
                   </div>
 
-                  {/* 5 Tick Mark Dots Above Labels */}
-                  <div className="flex justify-between items-center px-3">
-                    {[0, 0.25, 0.5, 0.75, 1.0].map((step, idx) => {
-                      const isActive = sliderValue >= step;
-                      return (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => setSliderValue(step)}
+                  <div className="space-y-2 max-w-sm mx-auto">
+                    <h3 className="text-xl font-bold font-display text-[#163832]">
+                      মতামত দিতে লগইন করুন
+                    </h3>
+                    <p className="text-xs sm:text-sm text-[#051F20]/80 leading-relaxed">
+                      প্ল্যাটফর্ম ও বিনিয়োগ সুযোগের স্বচ্ছতা ও নির্ভরযোগ্যতা নিশ্চিত করতে শুধুমাত্র নিবন্ধিত ও লগইনকৃত বিনিয়োগকারীগণ রিভিউ জমা দিতে পারেন।
+                    </p>
+                  </div>
+
+                  <div className="pt-3 flex flex-col gap-2.5 max-w-xs mx-auto">
+                    <Link
+                      to="/login"
+                      onClick={onClose}
+                      className="w-full inline-flex items-center justify-center gap-2 py-3 px-5 rounded-full bg-[#163832] text-white font-bold text-sm shadow-md hover:bg-[#0B2B26] hover:shadow-lg active:scale-95 transition-all cursor-pointer"
+                    >
+                      <LogIn className="w-4 h-4" />
+                      <span>লগইন করুন</span>
+                    </Link>
+
+                    <Link
+                      to="/register"
+                      onClick={onClose}
+                      className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-5 rounded-full bg-white/80 text-[#163832] font-bold text-xs sm:text-sm border border-black/10 hover:bg-white active:scale-95 transition-all cursor-pointer shadow-xs"
+                    >
+                      <span>নতুন অ্যাকাউন্ট তৈরি করুন</span>
+                    </Link>
+
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      className="text-xs text-[#163832]/70 hover:text-[#163832] font-semibold pt-1 cursor-pointer transition-colors"
+                    >
+                      পরে করব
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* ─── Case 2: User is Authenticated ─── */
+                <>
+                  {/* Verified Reviewer Header Badge */}
+                  <div className="flex items-center justify-between gap-2 px-3.5 py-2 rounded-2xl bg-white/60 backdrop-blur-xs border border-black/5 text-xs text-[#163832] mb-3">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-6 h-6 rounded-full bg-[#163832]/15 text-[#163832] font-bold text-xs flex items-center justify-center shrink-0">
+                        {reviewerDisplayName.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="truncate">
+                        <span className="font-bold text-[#051F20]">{reviewerDisplayName}</span>
+                        {user.email && (
+                          <span className="text-[11px] text-gray-500 ml-1.5 hidden sm:inline">
+                            ({user.email})
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-full shrink-0 border border-emerald-200">
+                      ✓ যাচাইকৃত
+                    </span>
+                  </div>
+
+                  {/* Center: Animated SVG Face (Fixed 160x160 container) */}
+                  <div className="flex justify-center items-center py-2">
+                    <div className="relative w-[160px] h-[160px] flex items-center justify-center">
+                      <svg
+                        viewBox="0 0 160 160"
+                        className="w-full h-full drop-shadow-xs select-none"
+                        aria-hidden="true"
+                      >
+                        {/* Face boundary background */}
+                        <circle
+                          cx="80"
+                          cy="80"
+                          r="70"
+                          fill="#FFFFFF"
+                          fillOpacity="0.45"
+                          stroke="#163832"
+                          strokeWidth="3.5"
+                        />
+
+                        {/* Two static circle eyes */}
+                        <circle cx="55" cy="62" r="6" fill="#163832" />
+                        <circle cx="105" cy="62" r="6" fill="#163832" />
+
+                        {/* Dynamic mouth using quadratic bezier curve Q cx cy ex ey */}
+                        <path
+                          d={mouthPathD}
+                          fill="none"
+                          stroke="#163832"
+                          strokeWidth="4"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+
+                  {/* Success State Overlay */}
+                  <AnimatePresence>
+                    {isSuccess && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.85 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.85 }}
+                        className="flex flex-col items-center justify-center py-3 text-center"
+                      >
+                        <CheckCircle2 className="w-10 h-10 text-[#163832] mb-1.5 animate-bounce" />
+                        <p className="text-base font-bold text-[#163832]">ধন্যবাদ!</p>
+                        <p className="text-xs text-[#163832]/80 mt-0.5">
+                          আপনার মতামত সফলভাবে জমা হয়েছে।
+                        </p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Rating Slider & Stepper */}
+                  {!isSuccess && (
+                    <div className="space-y-2.5 pt-1 pb-2">
+                      <div className="relative px-2">
+                        <input
+                          type="range"
+                          min="0"
+                          max="1"
+                          step="0.01"
+                          value={sliderValue}
+                          onChange={(e) => setSliderValue(parseFloat(e.target.value))}
                           disabled={isSubmitting || isSuccess}
-                          className="group p-1 -m-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#163832] rounded-full transition-transform hover:scale-125 disabled:cursor-not-allowed"
-                          aria-label={`রেটিং ${step * 100}%`}
+                          aria-label="রেটিং নির্বাচন করুন"
+                          className="review-rating-slider w-full h-3 bg-black/10 rounded-full appearance-none cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#163832]"
+                        />
+                      </div>
+
+                      {/* Row with 5 Tick points */}
+                      <div className="flex justify-between items-center px-3 text-[#163832]/50 text-xs select-none">
+                        {[0.0, 0.25, 0.5, 0.75, 1.0].map((tick) => {
+                          const isClose = Math.abs(sliderValue - tick) < 0.12;
+                          return (
+                            <button
+                              key={tick}
+                              type="button"
+                              onClick={() => setSliderValue(tick)}
+                              className={`w-2.5 h-2.5 rounded-full transition-all duration-150 cursor-pointer ${
+                                isClose
+                                  ? "bg-[#163832] scale-125 ring-2 ring-white/60"
+                                  : "bg-black/20 hover:bg-[#163832]/60"
+                              }`}
+                              aria-label={`রেটিং সেট করুন ${tick * 100}%`}
+                            />
+                          );
+                        })}
+                      </div>
+
+                      {/* Row with "Bad", "Not Bad", "Good" labels */}
+                      <div className="flex justify-between items-center text-xs sm:text-sm font-bold text-[#163832]/80 px-1 pt-0.5 select-none">
+                        <span
+                          onClick={() => setSliderValue(0.0)}
+                          className={`cursor-pointer transition-colors ${
+                            statusText === "BAD" ? "text-[#163832] font-black scale-105" : "hover:text-[#163832]"
+                          }`}
                         >
-                          <span
-                            className={`block w-2.5 h-2.5 rounded-full transition-all duration-200 ${
-                              isActive
-                                ? "bg-[#163832] scale-110 shadow-xs"
-                                : "bg-black/20 group-hover:bg-black/40"
+                          Bad
+                        </span>
+                        <span
+                          onClick={() => setSliderValue(0.5)}
+                          className={`cursor-pointer transition-colors ${
+                            statusText === "NOT BAD" ? "text-[#163832] font-black scale-105" : "hover:text-[#163832]"
+                          }`}
+                        >
+                          Not Bad
+                        </span>
+                        <span
+                          onClick={() => setSliderValue(1.0)}
+                          className={`cursor-pointer transition-colors ${
+                            statusText === "GOOD" ? "text-[#163832] font-black scale-105" : "hover:text-[#163832]"
+                          }`}
+                        >
+                          Good
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ─── Form Fields (Investment status, Identity, Mandatory Note, Details) ─── */}
+                  {!isSuccess && (
+                    <div className="space-y-3.5 pt-1 pb-1">
+                      {/* Field 1: আপনি কি বিনিয়োগ করেছেন? */}
+                      <div>
+                        <label className="block text-xs sm:text-sm font-bold text-[#163832] mb-1.5">
+                          আপনি কি বিনিয়োগ করেছেন? <span className="text-rose-600 font-bold">*</span>
+                        </label>
+                        <div className="grid grid-cols-2 gap-2.5">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setHasInvested(true);
+                              if (errors.hasInvested) {
+                                setErrors((prev) => ({ ...prev, hasInvested: undefined }));
+                              }
+                            }}
+                            className={`flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer border ${
+                              hasInvested === true
+                                ? "bg-[#163832] text-white border-[#163832] shadow-sm"
+                                : "bg-white/40 text-[#163832] border-black/10 hover:bg-white/60"
                             }`}
-                          />
-                        </button>
-                      );
-                    })}
-                  </div>
+                          >
+                            <span className="w-3 h-3 rounded-full border border-current flex items-center justify-center">
+                              {hasInvested === true && <span className="w-1.5 h-1.5 rounded-full bg-current" />}
+                            </span>
+                            <span>হ্যাঁ</span>
+                          </button>
 
-                  {/* Row with "Bad", "Not Bad", "Good" labels justified space-between */}
-                  <div className="flex justify-between items-center text-xs sm:text-sm font-bold text-[#163832]/80 px-1 pt-0.5 select-none">
-                    <span
-                      onClick={() => setSliderValue(0.0)}
-                      className={`cursor-pointer transition-colors ${
-                        statusText === "BAD" ? "text-[#163832] font-black scale-105" : "hover:text-[#163832]"
-                      }`}
-                    >
-                      Bad
-                    </span>
-                    <span
-                      onClick={() => setSliderValue(0.5)}
-                      className={`cursor-pointer transition-colors ${
-                        statusText === "NOT BAD" ? "text-[#163832] font-black scale-105" : "hover:text-[#163832]"
-                      }`}
-                    >
-                      Not Bad
-                    </span>
-                    <span
-                      onClick={() => setSliderValue(1.0)}
-                      className={`cursor-pointer transition-colors ${
-                        statusText === "GOOD" ? "text-[#163832] font-black scale-105" : "hover:text-[#163832]"
-                      }`}
-                    >
-                      Good
-                    </span>
-                  </div>
-                </div>
-              )}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setHasInvested(false);
+                              if (errors.hasInvested) {
+                                setErrors((prev) => ({ ...prev, hasInvested: undefined }));
+                              }
+                            }}
+                            className={`flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer border ${
+                              hasInvested === false
+                                ? "bg-[#163832] text-white border-[#163832] shadow-sm"
+                                : "bg-white/40 text-[#163832] border-black/10 hover:bg-white/60"
+                            }`}
+                          >
+                            <span className="w-3 h-3 rounded-full border border-current flex items-center justify-center">
+                              {hasInvested === false && <span className="w-1.5 h-1.5 rounded-full bg-current" />}
+                            </span>
+                            <span>না</span>
+                          </button>
+                        </div>
+                        {errors.hasInvested && (
+                          <p className="text-[11px] font-semibold text-rose-600 mt-1 pl-1">
+                            {errors.hasInvested}
+                          </p>
+                        )}
+                      </div>
 
-              {/* ─── Extra Fields Form (Investment status, Identity, Investment details) ─── */}
-              {!isSuccess && (
-                <div className="space-y-3.5 pt-1 pb-1">
-                  {/* Field 1: আপনি কি বিনিয়োগ করেছেন? */}
-                  <div>
-                    <label className="block text-xs sm:text-sm font-bold text-[#163832] mb-1.5">
-                      আপনি কি বিনিয়োগ করেছেন? <span className="text-rose-600 font-bold">*</span>
-                    </label>
-                    <div className="grid grid-cols-2 gap-2.5">
+                      {/* Field 2: আপনার পরিচয় */}
+                      <div>
+                        <label className="block text-xs sm:text-sm font-bold text-[#163832] mb-1.5">
+                          আপনার পরিচয় <span className="text-rose-600 font-bold">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={userIdentity}
+                          onChange={(e) => {
+                            setUserIdentity(e.target.value);
+                            if (errors.userIdentity && e.target.value.trim()) {
+                              setErrors((prev) => ({ ...prev, userIdentity: undefined }));
+                            }
+                          }}
+                          placeholder="আপনি বর্তমানে কি করছেন? (যেমন: ব্যবসায়ী, চাকরিজীবী)"
+                          disabled={isSubmitting || isSuccess}
+                          className="w-full rounded-xl border border-black/10 bg-white/75 backdrop-blur-xs px-3.5 py-2.5 text-xs sm:text-sm text-[#051F20] placeholder:text-[#163832]/45 focus:bg-white focus:border-[#163832] focus:outline-none focus:ring-2 focus:ring-[#163832]/25 transition-all shadow-inner"
+                        />
+                        {errors.userIdentity && (
+                          <p className="text-[11px] font-semibold text-rose-600 mt-1 pl-1">
+                            {errors.userIdentity}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Field 3: মতামত দিন (MANDATORY, ALWAYS VISIBLE) */}
+                      <div>
+                        <label className="block text-xs sm:text-sm font-bold text-[#163832] mb-1.5">
+                          মতামত দিন <span className="text-rose-600 font-bold">*</span>
+                        </label>
+                        <textarea
+                          value={note}
+                          onChange={(e) => {
+                            setNote(e.target.value);
+                            if (errors.note && e.target.value.trim()) {
+                              setErrors((prev) => ({ ...prev, note: undefined }));
+                            }
+                          }}
+                          placeholder="আপনার মূল্যবান মতামত ও অভিজ্ঞতা বিস্তারিত লিখুন..."
+                          rows={3}
+                          disabled={isSubmitting || isSuccess}
+                          className="w-full rounded-xl border border-black/10 bg-white/75 backdrop-blur-xs p-3 text-xs sm:text-sm text-[#051F20] placeholder:text-[#163832]/45 focus:bg-white focus:border-[#163832] focus:outline-none focus:ring-2 focus:ring-[#163832]/25 resize-none transition-all shadow-inner"
+                        />
+                        {errors.note && (
+                          <p className="text-[11px] font-semibold text-rose-600 mt-1 pl-1">
+                            {errors.note}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Field 4: বিনিয়োগের বিবরণ (ঐচ্ছিক) */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <label className="text-xs sm:text-sm font-bold text-[#163832]">
+                            বিনিয়োগের বিবরণ
+                          </label>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-black/5 text-[#163832]/70 font-semibold border border-black/5">
+                            ঐচ্ছিক
+                          </span>
+                        </div>
+                        <textarea
+                          value={investmentDetails}
+                          onChange={(e) => setInvestmentDetails(e.target.value)}
+                          placeholder="আপনি মোট কত টাকা বিনিয়োগ করেছেন এবং রিটার্ন কেমন পাচ্ছেন? (যদি আপনার আপত্তি না থাকে)"
+                          rows={2}
+                          disabled={isSubmitting || isSuccess}
+                          className="w-full rounded-xl border border-black/10 bg-white/75 backdrop-blur-xs p-3 text-xs sm:text-sm text-[#051F20] placeholder:text-[#163832]/45 focus:bg-white focus:border-[#163832] focus:outline-none focus:ring-2 focus:ring-[#163832]/25 resize-none transition-all shadow-inner"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Submit Button */}
+                  {!isSuccess && (
+                    <div className="pt-3">
                       <button
                         type="button"
-                        onClick={() => {
-                          setHasInvested(true);
-                          if (errors.hasInvested) {
-                            setErrors((prev) => ({ ...prev, hasInvested: undefined }));
-                          }
-                        }}
-                        className={`flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer border ${
-                          hasInvested === true
-                            ? "bg-[#163832] text-white border-[#163832] shadow-sm"
-                            : "bg-white/40 text-[#163832] border-black/10 hover:bg-white/60"
-                        }`}
+                        onClick={handleSubmit}
+                        disabled={isSubmitting || isSuccess}
+                        className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 rounded-full bg-[#163832] text-white font-bold text-sm shadow-md hover:bg-[#0B2B26] hover:shadow-lg active:scale-98 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                       >
-                        <span className="w-3 h-3 rounded-full border border-current flex items-center justify-center">
-                          {hasInvested === true && <span className="w-1.5 h-1.5 rounded-full bg-current" />}
-                        </span>
-                        <span>হ্যাঁ</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setHasInvested(false);
-                          if (errors.hasInvested) {
-                            setErrors((prev) => ({ ...prev, hasInvested: undefined }));
-                          }
-                        }}
-                        className={`flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer border ${
-                          hasInvested === false
-                            ? "bg-[#163832] text-white border-[#163832] shadow-sm"
-                            : "bg-white/40 text-[#163832] border-black/10 hover:bg-white/60"
-                        }`}
-                      >
-                        <span className="w-3 h-3 rounded-full border border-current flex items-center justify-center">
-                          {hasInvested === false && <span className="w-1.5 h-1.5 rounded-full bg-current" />}
-                        </span>
-                        <span>না</span>
+                        {isSubmitting ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <span>পাঠানো হচ্ছে...</span>
+                          </>
+                        ) : (
+                          <span>মতামত জমা দিন &rarr;</span>
+                        )}
                       </button>
                     </div>
-                    {errors.hasInvested && (
-                      <p className="text-[11px] font-semibold text-rose-600 mt-1 pl-1">
-                        {errors.hasInvested}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Field 2: আপনার পরিচয় */}
-                  <div>
-                    <label className="block text-xs sm:text-sm font-bold text-[#163832] mb-1.5">
-                      আপনার পরিচয় <span className="text-rose-600 font-bold">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={userIdentity}
-                      onChange={(e) => {
-                        setUserIdentity(e.target.value);
-                        if (errors.userIdentity && e.target.value.trim()) {
-                          setErrors((prev) => ({ ...prev, userIdentity: undefined }));
-                        }
-                      }}
-                      placeholder="আপনি বর্তমানে কি করছেন? (যেমন: ব্যবসায়ী, চাকরিজীবী)"
-                      disabled={isSubmitting || isSuccess}
-                      className="w-full rounded-xl border border-black/10 bg-white/75 backdrop-blur-xs px-3.5 py-2.5 text-xs sm:text-sm text-[#051F20] placeholder:text-[#163832]/45 focus:bg-white focus:border-[#163832] focus:outline-none focus:ring-2 focus:ring-[#163832]/25 transition-all shadow-inner"
-                    />
-                    {errors.userIdentity && (
-                      <p className="text-[11px] font-semibold text-rose-600 mt-1 pl-1">
-                        {errors.userIdentity}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Field 3: বিনিয়োগের বিবরণ (ঐচ্ছিক) */}
-                  <div>
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <label className="text-xs sm:text-sm font-bold text-[#163832]">
-                        বিনিয়োগের বিবরণ
-                      </label>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-black/5 text-[#163832]/70 font-semibold border border-black/5">
-                        ঐচ্ছিক
-                      </span>
-                    </div>
-                    <textarea
-                      value={investmentDetails}
-                      onChange={(e) => setInvestmentDetails(e.target.value)}
-                      placeholder="আপনি মোট কত টাকা বিনিয়োগ করেছেন এবং রিটার্ন কেমন পাচ্ছেন? (যদি আপনার আপত্তি না থাকে)"
-                      rows={2}
-                      disabled={isSubmitting || isSuccess}
-                      className="w-full rounded-xl border border-black/10 bg-white/75 backdrop-blur-xs p-3 text-xs sm:text-sm text-[#051F20] placeholder:text-[#163832]/45 focus:bg-white focus:border-[#163832] focus:outline-none focus:ring-2 focus:ring-[#163832]/25 resize-none transition-all shadow-inner"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Animated Note Textarea */}
-              <AnimatePresence initial={false}>
-                {isNoteOpen && !isSuccess && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-                    animate={{ opacity: 1, height: "auto", marginBottom: 16 }}
-                    exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                    transition={{ duration: 0.25, ease: "easeInOut" }}
-                    className="overflow-hidden"
-                  >
-                    <textarea
-                      value={note}
-                      onChange={(e) => setNote(e.target.value)}
-                      placeholder="আপনার মতামত লিখুন..."
-                      rows={3}
-                      disabled={isSubmitting || isSuccess}
-                      className="w-full rounded-2xl border border-black/10 bg-white/75 backdrop-blur-xs p-3.5 text-sm text-[#051F20] placeholder:text-[#163832]/45 focus:bg-white focus:border-[#163832] focus:outline-none focus:ring-2 focus:ring-[#163832]/25 resize-none transition-all shadow-inner"
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* Bottom Row: "নোট যোগ করুন" TextButton + pill-shaped "জমা দিন →" submit button */}
-              {!isSuccess && (
-                <div className="flex items-center justify-between gap-3 pt-2">
-                  <motion.button
-                    type="button"
-                    onClick={() => setIsNoteOpen((prev) => !prev)}
-                    disabled={isSubmitting || isSuccess}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.96 }}
-                    style={{
-                      borderColor: themeColor,
-                      borderWidth: "2px",
-                      borderStyle: "solid",
-                    }}
-                    className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs sm:text-sm text-[#051F20] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#163832] cursor-pointer shadow-xs ${
-                      isNoteOpen
-                        ? "bg-white/60 font-bold"
-                        : "bg-white/20 hover:bg-white/40 font-semibold"
-                    }`}
-                  >
-                    <span className="material-symbols-outlined text-[19px] leading-none select-none text-[#163832]">
-                      note_add
-                    </span>
-                    <span>{isNoteOpen ? "নোট লুকান" : "নোট যোগ করুন"}</span>
-                  </motion.button>
-
-                  <button
-                    type="button"
-                    onClick={handleSubmit}
-                    disabled={isSubmitting || isSuccess}
-                    className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#163832] text-white font-semibold text-sm shadow-md hover:bg-[#0B2B26] hover:shadow-lg active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 cursor-pointer"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>পাঠানো হচ্ছে...</span>
-                      </>
-                    ) : (
-                      <span>জমা দিন &rarr;</span>
-                    )}
-                  </button>
-                </div>
+                  )}
+                </>
               )}
 
               {/* Inline CSS for range slider styling */}
@@ -583,29 +618,23 @@ export function ReviewRatingModal({
                   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
                   transition: transform 0.15s ease, background-color 0.15s ease;
                 }
-                .review-rating-slider::-webkit-slider-thumb:hover {
-                  transform: scale(1.15);
-                  background: #0B2B26;
-                }
-                .review-rating-slider::-webkit-slider-thumb:active {
-                  transform: scale(1.25);
-                }
                 .review-rating-slider::-moz-range-thumb {
                   width: 26px;
                   height: 26px;
                   border-radius: 50%;
                   background: #163832;
                   cursor: pointer;
-                  border: none;
                   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
                   transition: transform 0.15s ease, background-color 0.15s ease;
+                  border: none;
                 }
-                .review-rating-slider::-moz-range-thumb:hover {
-                  transform: scale(1.15);
+                .review-rating-slider:hover::-webkit-slider-thumb {
+                  transform: scale(1.1);
                   background: #0B2B26;
                 }
-                .review-rating-slider::-moz-range-thumb:active {
-                  transform: scale(1.25);
+                .review-rating-slider:hover::-moz-range-thumb {
+                  transform: scale(1.1);
+                  background: #0B2B26;
                 }
               `}</style>
             </motion.div>

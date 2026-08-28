@@ -386,10 +386,11 @@ export type Database = {
         Row: {
           id: string;
           created_at: string;
+          user_id: string | null;
           reviewer_name: string;
           reviewer_email: string | null;
           rating: number;
-          note: string | null;
+          note: string;
           status: "pending" | "approved" | "rejected";
           target_type: "opportunity" | "homepage" | "general";
           target_id: string | null;
@@ -403,10 +404,11 @@ export type Database = {
         Insert: {
           id?: string;
           created_at?: string;
+          user_id?: string | null;
           reviewer_name?: string;
           reviewer_email?: string | null;
           rating: number;
-          note?: string | null;
+          note: string;
           status?: "pending" | "approved" | "rejected";
           target_type: "opportunity" | "homepage" | "general";
           target_id?: string | null;
@@ -420,10 +422,11 @@ export type Database = {
         Update: {
           id?: string;
           created_at?: string;
+          user_id?: string | null;
           reviewer_name?: string;
           reviewer_email?: string | null;
           rating?: number;
-          note?: string | null;
+          note?: string;
           status?: "pending" | "approved" | "rejected";
           target_type?: "opportunity" | "homepage" | "general";
           target_id?: string | null;
