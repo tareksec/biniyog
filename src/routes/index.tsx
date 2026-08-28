@@ -268,6 +268,59 @@ const HERO_STATUS_COLORS: Record<string, string> = {
   "বিনিয়োগ নেওয়া শেষ-সামনে আবার শুরু হবে": "#64748b",
 };
 
+function StatusDonutChart({
+  data,
+  total,
+}: {
+  data: { name: string; value: number }[];
+  total: number;
+}) {
+  const size = 100;
+  const strokeWidth = 14;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+
+  let accumulatedPercent = 0;
+
+  return (
+    <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full -rotate-90">
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="transparent"
+        stroke="currentColor"
+        strokeWidth={strokeWidth}
+        className="text-muted/20"
+      />
+      {total > 0 &&
+        data.map((item, i) => {
+          const percent = item.value / total;
+          const strokeDasharray = `${percent * circumference} ${circumference}`;
+          const strokeDashoffset = -accumulatedPercent * circumference;
+          accumulatedPercent += percent;
+          const color = HERO_STATUS_COLORS[item.name] || "#94a3b8";
+
+          return (
+            <circle
+              key={i}
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              fill="transparent"
+              stroke={color}
+              strokeWidth={strokeWidth}
+              strokeDasharray={strokeDasharray}
+              strokeDashoffset={strokeDashoffset}
+              strokeLinecap="round"
+              className="transition-all duration-500"
+            />
+          );
+        })}
+    </svg>
+  );
+}
+
 function Hero({
   stats,
   opportunities,
@@ -462,24 +515,7 @@ function Hero({
           <StickyNoteCard label="স্ট্যাটাস ডিস্ট্রিবিউশন" delay={0.18} prefersReduced={prefersReduced}>
             <div className="flex flex-col items-center">
               <div className="relative size-28">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={statusData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={32}
-                      outerRadius={50}
-                      paddingAngle={2}
-                      dataKey="value"
-                      stroke="none"
-                    >
-                      {statusData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={HERO_STATUS_COLORS[entry.name] || "#94a3b8"} />
-                      ))}
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
+                <StatusDonutChart data={statusData} total={opportunities.length} />
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                   <span className="text-lg font-bold text-foreground num">{opportunities.length}</span>
                   <span className="text-[9px] text-muted-foreground">মোট</span>

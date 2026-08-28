@@ -1,8 +1,0 @@
-PUSH ERROR:
-
-remote: Invalid username or token. Password authentication is not supported for Git operations.
-fatal: Authentication failed for 'https://github.com/tareksec/biniyog.git/'
-
-Command failed: git -c credential.helper= push https://x-access-token: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@github.com/tareksec/biniyog.git main
-remote: Invalid username or token. Password authentication is not supported for Git operations.
-fatal: Authentication failed for 'https://github.com/tareksec/biniyog.git/'
