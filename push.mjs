@@ -9,7 +9,7 @@ try {
   
   // Try to commit
   try {
-    execSync('git commit -m "feat: Restrict review submission to authenticated users and make feedback mandatory"', { stdio: 'pipe' });
+    execSync('git commit -m "refactor: Remove Google Sheets button from cards and remove legacy techvrs review link"', { stdio: 'pipe' });
   } catch (e) {}
   
   // Pull remote changes (merge commit style, no rebase to avoid rewriting history)

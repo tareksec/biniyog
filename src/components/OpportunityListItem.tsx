@@ -173,18 +173,6 @@ export function OpportunityListItem({
           >
             বিস্তারিত দেখুন
           </Link>
-          <a
-            href={`https://form.techvrs.com/?business=${encodeURIComponent(project.name || "")}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="inline-flex items-center justify-center gap-1 rounded-xl border border-border/40 bg-transparent px-3 py-2.5 text-[11px] sm:text-xs font-medium text-muted-foreground transition-colors hover:border-primary/30 hover:text-primary"
-          >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            </svg>
-            রিভিউ দিন
-          </a>
         </div>
       </div>
     </motion.div>

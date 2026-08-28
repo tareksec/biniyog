@@ -311,21 +311,6 @@ export function OpportunityCard({
             >
               বিস্তারিত দেখুন
             </Link>
-            <a
-              href="https://docs.google.com/spreadsheets/d/1HsSR7t_2zZaNbvqmbhWiuYikfYsF8rfzcQK2gmfIB4U/edit?gid=0#gid=0"
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="inline-flex w-full min-h-[44px] items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-3 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary shadow-2xs"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <polyline points="14 2 14 8 20 8" />
-                <line x1="16" y1="13" x2="8" y2="13" />
-                <line x1="16" y1="17" x2="8" y2="17" />
-              </svg>
-              যোগাযোগ ও ব্যাংক তথ্য (গুগল শিট)
-            </a>
             <button
               type="button"
               onClick={(e) => {

@@ -599,20 +599,6 @@ function OpportunityTestimonials({ project }: { project: Opportunity }) {
           এখনও কোনো মতামত যোগ করা হয়নি। প্রথম রিভিউটি আপনি দিন!
         </div>
       )}
-
-      <div className="mt-4 flex justify-center border-t border-border/50 pt-8">
-        <a 
-          href={`https://form.techvrs.com/?business=${encodeURIComponent(project.name || "")}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-6 py-2.5 text-sm font-semibold text-primary hover:bg-primary hover:text-primary-foreground transition-colors shadow-sm"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-          </svg>
-          রিভিউ দিন
-        </a>
-      </div>
     </section>
   );
 }
