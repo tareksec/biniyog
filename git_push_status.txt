@@ -1,12 +1,8 @@
-CLEANED & IN SYNC:
-On branch main
-Your branch is up to date with 'origin/main'.
+PUSH ERROR:
 
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-	cleanup.mjs
+remote: Invalid username or token. Password authentication is not supported for Git operations.
+fatal: Authentication failed for 'https://github.com/tareksec/biniyog.git/'
 
-nothing added to commit but untracked files present (use "git add" to track)
-
-1707065 feat: Add user reviews system with admin approval and ReviewRatingModal
-93e23a3 feat(seo): add robots.txt, dynamic sitemap.xml, and structured JSON-LD schemas
+Command failed: git -c credential.helper= push https://x-access-token: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@github.com/tareksec/biniyog.git main
+remote: Invalid username or token. Password authentication is not supported for Git operations.
+fatal: Authentication failed for 'https://github.com/tareksec/biniyog.git/'
