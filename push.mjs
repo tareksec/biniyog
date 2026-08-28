@@ -9,7 +9,7 @@ try {
   
   // Try to commit
   try {
-    execSync('git commit -m "feat: Add user reviews system with admin approval and ReviewRatingModal"', { stdio: 'pipe' });
+    execSync('git commit -m "feat: Add extra fields to user review modal and integrate reviews in opportunity details page"', { stdio: 'pipe' });
   } catch (e) {}
   
   // Pull remote changes (merge commit style, no rebase to avoid rewriting history)

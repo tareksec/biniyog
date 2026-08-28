@@ -393,6 +393,9 @@ export type Database = {
           status: "pending" | "approved" | "rejected";
           target_type: "opportunity" | "homepage" | "general";
           target_id: string | null;
+          has_invested: boolean;
+          user_identity: string;
+          investment_details: string | null;
           admin_note: string | null;
           ip_address: string | null;
           updated_at: string;
@@ -407,6 +410,9 @@ export type Database = {
           status?: "pending" | "approved" | "rejected";
           target_type: "opportunity" | "homepage" | "general";
           target_id?: string | null;
+          has_invested?: boolean;
+          user_identity?: string;
+          investment_details?: string | null;
           admin_note?: string | null;
           ip_address?: string | null;
           updated_at?: string;
@@ -421,6 +427,9 @@ export type Database = {
           status?: "pending" | "approved" | "rejected";
           target_type?: "opportunity" | "homepage" | "general";
           target_id?: string | null;
+          has_invested?: boolean;
+          user_identity?: string;
+          investment_details?: string | null;
           admin_note?: string | null;
           ip_address?: string | null;
           updated_at?: string;

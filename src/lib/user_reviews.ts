@@ -10,6 +10,9 @@ export interface SubmitReviewInput {
   note?: string;
   target_type: "opportunity" | "homepage" | "general";
   target_id?: string;
+  has_invested: boolean;
+  user_identity: string;
+  investment_details?: string;
 }
 
 /**
@@ -24,19 +27,18 @@ export async function submitUserReview(data: SubmitReviewInput): Promise<{ succe
       body: JSON.stringify(data),
     });
 
-    if (res.ok) {
-      const json = await res.json();
+    const json = await res.json().catch(() => ({}));
+
+    if (res.ok && json.success) {
       return { success: true, message: json.message };
     }
 
-    const errJson = await res.json().catch(() => ({}));
     if (res.status === 429) {
-      throw new Error(errJson.error || "আপনি অতিরিক্ত রিভিউ পাঠিয়েছেন। কিছুক্ষণ পর চেষ্টা করুন।");
+      throw new Error(json.error || "আপনি অতিরিক্ত রিভিউ পাঠিয়েছেন। কিছুক্ষণ পর চেষ্টা করুন।");
     }
-    throw new Error(errJson.error || "রিভিউ জমা দিতে ত্রুটি হয়েছে");
+    throw new Error(json.error || "রিভিউ জমা দিতে ত্রুটি হয়েছে");
   } catch (apiErr: any) {
-    // If client fetch to API fails, fallback to direct insert to ensure UX continuity
-    if (apiErr?.message && apiErr.message.includes("অতিরিক্ত রিভিউ")) {
+    if (apiErr?.message && (apiErr.message.includes("অতিরিক্ত রিভিউ") || apiErr.message.includes("১ ঘন্টায় সর্বোচ্চ"))) {
       throw apiErr;
     }
     console.warn("[submitUserReview] API route fallback to direct insert:", apiErr);
@@ -49,9 +51,13 @@ export async function submitUserReview(data: SubmitReviewInput): Promise<{ succe
       status: "pending",
       target_type: data.target_type,
       target_id: data.target_type === "opportunity" && data.target_id ? data.target_id : null,
+      has_invested: Boolean(data.has_invested),
+      user_identity: (data.user_identity || "").trim(),
+      investment_details: (data.investment_details || "").trim() || null,
     });
 
     if (error) {
+      console.error("[submitUserReview] Fallback direct insert error:", error);
       throw new Error(error.message || "রিভিউ জমা দেওয়া সম্ভব হয়নি");
     }
 

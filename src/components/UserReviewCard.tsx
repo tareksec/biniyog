@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Star, MessageSquare, Building2, User, Sparkles, Smile, Meh, Frown } from "lucide-react";
+import { Star, MessageSquare, Building2, User, Sparkles, Smile, Meh, Frown, ChevronDown, Coins, Check } from "lucide-react";
 import type { UserReview } from "@/lib/user_reviews";
 import type { Opportunity } from "@/lib/database.types";
 import { Link } from "@tanstack/react-router";
@@ -76,6 +76,7 @@ export function UserReviewCard({
   opportunity,
   showTargetBadge = true,
 }: UserReviewCardProps) {
+  const [isDetailsOpen, setIsDetailsOpen] = React.useState(false);
   const rating = typeof review.rating === "number" ? review.rating : 0.5;
   const sentiment = getRatingSentiment(rating);
   const name = (review.reviewer_name || "").trim() || "সম্মানিত বিনিয়োগকারী";
@@ -85,16 +86,30 @@ export function UserReviewCard({
   return (
     <div className="w-full h-full flex flex-col justify-between rounded-3xl border border-border/80 bg-card p-6 sm:p-7 shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] group">
       <div>
-        {/* Top Header: Rating Sentiment Badge & Score */}
-        <div className="flex items-center justify-between gap-2 mb-4">
-          <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-bold ${sentiment.bg} ${sentiment.color}`}>
-            {sentiment.icon}
-            <span>{sentiment.label} ({percentScore}%)</span>
+        {/* Top Header: Rating Sentiment Badge, Has Invested Badge, and Progress */}
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-bold ${sentiment.bg} ${sentiment.color}`}>
+              {sentiment.icon}
+              <span>{sentiment.label} ({percentScore}%)</span>
+            </div>
+
+            {/* Has Invested Badge */}
+            {review.has_invested ? (
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+                <Check className="w-3 h-3 text-emerald-600" />
+                <span>✓ বিনিয়োগকারী</span>
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-600 border border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700">
+                <span>বিনিয়োগ করেননি</span>
+              </span>
+            )}
           </div>
 
           {/* Rating Progress Bar */}
           <div className="flex items-center gap-2">
-            <div className="w-20 sm:w-24 h-2 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden">
+            <div className="w-16 sm:w-20 h-2 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden">
               <div
                 className={`h-full rounded-full ${sentiment.barBg} transition-all duration-500`}
                 style={{ width: `${percentScore}%` }}
@@ -146,9 +161,36 @@ export function UserReviewCard({
             ) : null}
           </div>
         )}
+
+        {/* Investment Details Expandable Section */}
+        {review.investment_details && review.investment_details.trim() && (
+          <div className="mt-4 pt-3 border-t border-border/50">
+            <button
+              type="button"
+              onClick={() => setIsDetailsOpen((prev) => !prev)}
+              className="flex items-center justify-between w-full text-left text-xs font-bold text-[#1a6b4a] hover:text-[#145a3d] transition-colors py-1 cursor-pointer"
+            >
+              <span className="flex items-center gap-1.5">
+                <Coins className="w-3.5 h-3.5 text-[#1a6b4a]" />
+                <span>বিনিয়োগের অভিজ্ঞতা</span>
+              </span>
+              <ChevronDown
+                className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                  isDetailsOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            {isDetailsOpen && (
+              <div className="mt-2 p-3 rounded-2xl bg-muted/60 border border-border/60 text-xs leading-relaxed text-foreground animate-in fade-in-50 duration-200">
+                {review.investment_details}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Footer: Reviewer Info + Date */}
+      {/* Footer: Reviewer Info (Name + Identity) + Date */}
       <footer className="mt-6 flex items-center justify-between gap-3 pt-4 border-t border-border/60">
         <div className="flex items-center gap-3 min-w-0">
           <div className="h-10 w-10 shrink-0 rounded-full bg-[#1a6b4a]/10 text-[#1a6b4a] dark:bg-primary/20 dark:text-primary-foreground flex items-center justify-center font-bold text-sm border border-[#1a6b4a]/20">
@@ -159,7 +201,7 @@ export function UserReviewCard({
               {name}
             </div>
             <div className="truncate text-xs text-muted-foreground font-medium">
-              যাচাইকৃত মতামত
+              {review.user_identity || "যাচাইকৃত মতামত"}
             </div>
           </div>
         </div>

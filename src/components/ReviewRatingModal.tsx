@@ -5,10 +5,18 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Loader2, CheckCircle2 } from "lucide-react";
 
+export interface ReviewRatingModalSubmitData {
+  rating: number;
+  note: string;
+  has_invested: boolean;
+  user_identity: string;
+  investment_details?: string;
+}
+
 export interface ReviewRatingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (rating: number, note: string) => Promise<void>;
+  onSubmit: (data: ReviewRatingModalSubmitData) => Promise<void>;
   targetType: "opportunity" | "homepage" | "general";
   targetId?: string;
 }
@@ -96,6 +104,10 @@ export function ReviewRatingModal({
   const [sliderValue, setSliderValue] = React.useState<number>(0.5);
   const [note, setNote] = React.useState<string>("");
   const [isNoteOpen, setIsNoteOpen] = React.useState<boolean>(false);
+  const [hasInvested, setHasInvested] = React.useState<boolean | null>(null);
+  const [userIdentity, setUserIdentity] = React.useState<string>("");
+  const [investmentDetails, setInvestmentDetails] = React.useState<string>("");
+  const [errors, setErrors] = React.useState<{ hasInvested?: string; userIdentity?: string }>({});
   const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
   const [isSuccess, setIsSuccess] = React.useState<boolean>(false);
   const autoCloseTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -106,6 +118,10 @@ export function ReviewRatingModal({
       setSliderValue(0.5);
       setNote("");
       setIsNoteOpen(false);
+      setHasInvested(null);
+      setUserIdentity("");
+      setInvestmentDetails("");
+      setErrors({});
       setIsSubmitting(false);
       setIsSuccess(false);
     } else {
@@ -137,13 +153,38 @@ export function ReviewRatingModal({
   const controlPointY = 110 - activeSliderValue * 40;
   const mouthPathD = `M 55 95 Q 80 ${controlPointY} 105 95`;
 
+  const validateForm = (): boolean => {
+    const newErrors: { hasInvested?: string; userIdentity?: string } = {};
+
+    if (hasInvested === null) {
+      newErrors.hasInvested = "অনুগ্রহ করে বিনিয়োগ করেছেন কিনা তা নির্বাচন করুন";
+    }
+
+    if (!userIdentity.trim()) {
+      newErrors.userIdentity = "আপনার পেশা বা পরিচয় উল্লেখ করুন (যেমন: ব্যবসায়ী, চাকরিজীবী)";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting || isSuccess) return;
 
+    if (!validateForm()) {
+      return;
+    }
+
     try {
       setIsSubmitting(true);
-      await onSubmit(sliderValue, note.trim());
+      await onSubmit({
+        rating: sliderValue,
+        note: note.trim(),
+        has_invested: Boolean(hasInvested),
+        user_identity: userIdentity.trim(),
+        investment_details: investmentDetails.trim() || undefined,
+      });
       setIsSuccess(true);
 
       // Auto close after 2 seconds
@@ -345,6 +386,109 @@ export function ReviewRatingModal({
                     >
                       Good
                     </span>
+                  </div>
+                </div>
+              )}
+
+              {/* ─── Extra Fields Form (Investment status, Identity, Investment details) ─── */}
+              {!isSuccess && (
+                <div className="space-y-3.5 pt-1 pb-1">
+                  {/* Field 1: আপনি কি বিনিয়োগ করেছেন? */}
+                  <div>
+                    <label className="block text-xs sm:text-sm font-bold text-[#163832] mb-1.5">
+                      আপনি কি বিনিয়োগ করেছেন? <span className="text-rose-600 font-bold">*</span>
+                    </label>
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setHasInvested(true);
+                          if (errors.hasInvested) {
+                            setErrors((prev) => ({ ...prev, hasInvested: undefined }));
+                          }
+                        }}
+                        className={`flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer border ${
+                          hasInvested === true
+                            ? "bg-[#163832] text-white border-[#163832] shadow-sm"
+                            : "bg-white/40 text-[#163832] border-black/10 hover:bg-white/60"
+                        }`}
+                      >
+                        <span className="w-3 h-3 rounded-full border border-current flex items-center justify-center">
+                          {hasInvested === true && <span className="w-1.5 h-1.5 rounded-full bg-current" />}
+                        </span>
+                        <span>হ্যাঁ</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setHasInvested(false);
+                          if (errors.hasInvested) {
+                            setErrors((prev) => ({ ...prev, hasInvested: undefined }));
+                          }
+                        }}
+                        className={`flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer border ${
+                          hasInvested === false
+                            ? "bg-[#163832] text-white border-[#163832] shadow-sm"
+                            : "bg-white/40 text-[#163832] border-black/10 hover:bg-white/60"
+                        }`}
+                      >
+                        <span className="w-3 h-3 rounded-full border border-current flex items-center justify-center">
+                          {hasInvested === false && <span className="w-1.5 h-1.5 rounded-full bg-current" />}
+                        </span>
+                        <span>না</span>
+                      </button>
+                    </div>
+                    {errors.hasInvested && (
+                      <p className="text-[11px] font-semibold text-rose-600 mt-1 pl-1">
+                        {errors.hasInvested}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Field 2: আপনার পরিচয় */}
+                  <div>
+                    <label className="block text-xs sm:text-sm font-bold text-[#163832] mb-1.5">
+                      আপনার পরিচয় <span className="text-rose-600 font-bold">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={userIdentity}
+                      onChange={(e) => {
+                        setUserIdentity(e.target.value);
+                        if (errors.userIdentity && e.target.value.trim()) {
+                          setErrors((prev) => ({ ...prev, userIdentity: undefined }));
+                        }
+                      }}
+                      placeholder="আপনি বর্তমানে কি করছেন? (যেমন: ব্যবসায়ী, চাকরিজীবী)"
+                      disabled={isSubmitting || isSuccess}
+                      className="w-full rounded-xl border border-black/10 bg-white/75 backdrop-blur-xs px-3.5 py-2.5 text-xs sm:text-sm text-[#051F20] placeholder:text-[#163832]/45 focus:bg-white focus:border-[#163832] focus:outline-none focus:ring-2 focus:ring-[#163832]/25 transition-all shadow-inner"
+                    />
+                    {errors.userIdentity && (
+                      <p className="text-[11px] font-semibold text-rose-600 mt-1 pl-1">
+                        {errors.userIdentity}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Field 3: বিনিয়োগের বিবরণ (ঐচ্ছিক) */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <label className="text-xs sm:text-sm font-bold text-[#163832]">
+                        বিনিয়োগের বিবরণ
+                      </label>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-black/5 text-[#163832]/70 font-semibold border border-black/5">
+                        ঐচ্ছিক
+                      </span>
+                    </div>
+                    <textarea
+                      value={investmentDetails}
+                      onChange={(e) => setInvestmentDetails(e.target.value)}
+                      placeholder="আপনি মোট কত টাকা বিনিয়োগ করেছেন এবং রিটার্ন কেমন পাচ্ছেন? (যদি আপনার আপত্তি না থাকে)"
+                      rows={2}
+                      disabled={isSubmitting || isSuccess}
+                      className="w-full rounded-xl border border-black/10 bg-white/75 backdrop-blur-xs p-3 text-xs sm:text-sm text-[#051F20] placeholder:text-[#163832]/45 focus:bg-white focus:border-[#163832] focus:outline-none focus:ring-2 focus:ring-[#163832]/25 resize-none transition-all shadow-inner"
+                    />
                   </div>
                 </div>
               )}

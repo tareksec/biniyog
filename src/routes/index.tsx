@@ -180,11 +180,14 @@ function LandingPage() {
         isOpen={isReviewModalOpen}
         onClose={() => setIsReviewModalOpen(false)}
         targetType="homepage"
-        onSubmit={async (rating, note) => {
+        onSubmit={async (data) => {
           await submitUserReview({
             reviewer_name: "বিনিয়োগকারী",
-            rating,
-            note,
+            rating: data.rating,
+            note: data.note,
+            has_invested: data.has_invested,
+            user_identity: data.user_identity,
+            investment_details: data.investment_details,
             target_type: "homepage",
           });
         }}

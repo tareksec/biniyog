@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { createClient } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 
 // In-memory fallback rate limiter for server runtime (IP -> array of timestamps)
@@ -41,6 +42,9 @@ export const Route = createFileRoute("/api/public/submit-review")({
           note?: string;
           target_type?: "opportunity" | "homepage" | "general";
           target_id?: string | null;
+          has_invested?: boolean;
+          user_identity?: string;
+          investment_details?: string | null;
         };
 
         try {
@@ -59,12 +63,30 @@ export const Route = createFileRoute("/api/public/submit-review")({
           note,
           target_type = "general",
           target_id = null,
+          has_invested,
+          user_identity,
+          investment_details,
         } = payload;
 
         // Validation
         if (typeof rating !== "number" || isNaN(rating) || rating < 0 || rating > 1) {
           return Response.json(
             { success: false, error: "রেটিং মান ০ থেকে ১ এর মধ্যে হতে হবে" },
+            { status: 400 }
+          );
+        }
+
+        if (typeof has_invested !== "boolean") {
+          return Response.json(
+            { success: false, error: "আপনি কি বিনিয়োগ করেছেন তা নির্বাচন করুন" },
+            { status: 400 }
+          );
+        }
+
+        const cleanIdentity = (user_identity || "").trim();
+        if (!cleanIdentity) {
+          return Response.json(
+            { success: false, error: "আপনার পরিচয় উল্লেখ করুন (যেমন: ব্যবসায়ী, চাকরিজীবী)" },
             { status: 400 }
           );
         }
@@ -80,6 +102,7 @@ export const Route = createFileRoute("/api/public/submit-review")({
         const name = (reviewer_name || "").trim() || "বিনিয়োগকারী";
         const email = (reviewer_email || "").trim() || null;
         const cleanNote = (note || "").trim() || null;
+        const cleanDetails = (investment_details || "").trim() || null;
 
         // Rate Limiting by IP
         const ip =
@@ -99,10 +122,24 @@ export const Route = createFileRoute("/api/public/submit-review")({
           );
         }
 
+        // Initialize server DB client: use service role key if available, otherwise default client
+        let dbClient = supabase;
+        const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
+        if (supabaseUrl && serviceRoleKey) {
+          try {
+            dbClient = createClient(supabaseUrl, serviceRoleKey, {
+              auth: { autoRefreshToken: false, persistSession: false },
+            }) as any;
+          } catch (clientErr) {
+            console.warn("[submit-review] Error initializing service role client:", clientErr);
+          }
+        }
+
         // 2. Database rate check (past 1 hour count)
         try {
           const oneHourAgo = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString();
-          const { count, error: countError } = await supabase
+          const { count, error: countError } = await dbClient
             .from("user_reviews")
             .select("id", { count: "exact", head: true })
             .eq("ip_address", ip)
@@ -121,34 +158,46 @@ export const Route = createFileRoute("/api/public/submit-review")({
           console.warn("[submit-review] DB rate limit check non-fatal error:", dbErr);
         }
 
-        // Insert pending review
-        const { data, error } = await supabase
+        // Insert pending review (explicitly status='pending')
+        const insertPayload = {
+          reviewer_name: name,
+          reviewer_email: email,
+          rating: Number(rating.toFixed(2)),
+          note: cleanNote,
+          status: "pending" as const,
+          target_type,
+          target_id: target_type === "opportunity" && target_id ? target_id : null,
+          has_invested,
+          user_identity: cleanIdentity,
+          investment_details: cleanDetails,
+          ip_address: ip,
+        };
+
+        console.log("[submit-review] Executing insert with payload:", insertPayload);
+
+        // Note: Do NOT chain .select().single() when using public anon client because
+        // RLS prevents unauthenticated users from reading status='pending' rows.
+        const { error } = await dbClient
           .from("user_reviews")
-          .insert({
-            reviewer_name: name,
-            reviewer_email: email,
-            rating: Number(rating.toFixed(2)),
-            note: cleanNote,
-            status: "pending",
-            target_type,
-            target_id: target_type === "opportunity" && target_id ? target_id : null,
-            ip_address: ip,
-          })
-          .select()
-          .single();
+          .insert(insertPayload);
 
         if (error) {
-          console.error("[submit-review] Error inserting review:", error);
+          console.error("[submit-review] Supabase insert error:", error);
           return Response.json(
-            { success: false, error: "রিভিউ জমা দিতে সমস্যা হয়েছে, অনুগ্রহ করে আবার চেষ্টা করুন।" },
+            {
+              success: false,
+              error: error.message || "রিভিউ জমা দিতে সমস্যা হয়েছে, অনুগ্রহ করে আবার চেষ্টা করুন।",
+              details: error,
+            },
             { status: 500 }
           );
         }
 
+        console.log("[submit-review] Insert executed successfully with status='pending'");
+
         return Response.json({
           success: true,
           message: "আপনার মতামত সফলভাবে জমা হয়েছে। পর্যালোচনার পর এটি প্রকাশিত হবে।",
-          data,
         });
       },
     },

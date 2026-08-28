@@ -52,17 +52,26 @@ export function UserReviewManager({ opportunities = [] }: UserReviewManagerProps
   const [adminNoteInput, setAdminNoteInput] = React.useState<string>("");
   const [deletingReviewId, setDeletingReviewId] = React.useState<string | null>(null);
 
-  // Fetch reviews using TanStack Query
+  // Fetch all reviews using TanStack Query
   const {
-    data: reviews = [],
+    data: allReviews = [],
     isLoading,
     isFetching,
     refetch,
   } = useQuery({
-    queryKey: ["admin_user_reviews", statusFilter],
-    queryFn: () => getAllReviewsAdmin(statusFilter),
-    staleTime: 1000 * 30, // 30 seconds
+    queryKey: ["admin_user_reviews"],
+    queryFn: async () => {
+      console.log("[UserReviewManager] Querying all user reviews from Supabase...");
+      const data = await getAllReviewsAdmin("all");
+      console.log(`[UserReviewManager] Successfully fetched ${data?.length ?? 0} reviews:`, data);
+      return data;
+    },
+    staleTime: 1000 * 15, // 15 seconds
   });
+
+  const reviewsList = React.useMemo(() => {
+    return Array.isArray(allReviews) ? allReviews : [];
+  }, [allReviews]);
 
   // Opportunity lookup map
   const oppMap = React.useMemo(() => {
@@ -72,6 +81,22 @@ export function UserReviewManager({ opportunities = [] }: UserReviewManagerProps
     });
     return map;
   }, [opportunities]);
+
+  // Tab counts
+  const counts = React.useMemo(() => {
+    return {
+      all: reviewsList.length,
+      pending: reviewsList.filter((r) => r.status === "pending").length,
+      approved: reviewsList.filter((r) => r.status === "approved").length,
+      rejected: reviewsList.filter((r) => r.status === "rejected").length,
+    };
+  }, [reviewsList]);
+
+  // Status filtered list
+  const reviewsByStatus = React.useMemo(() => {
+    if (statusFilter === "all") return reviewsList;
+    return reviewsList.filter((r) => r.status === statusFilter);
+  }, [reviewsList, statusFilter]);
 
   // Mutation for updating status
   const statusMutation = useMutation({
@@ -86,11 +111,11 @@ export function UserReviewManager({ opportunities = [] }: UserReviewManagerProps
     }) => updateReviewStatus(id, status, adminNote),
     onMutate: async ({ id, status, adminNote }) => {
       await queryClient.cancelQueries({ queryKey: ["admin_user_reviews"] });
-      const previousReviews = queryClient.getQueryData<UserReview[]>(["admin_user_reviews", statusFilter]);
+      const previousReviews = queryClient.getQueryData<UserReview[]>(["admin_user_reviews"]);
 
       if (previousReviews) {
         queryClient.setQueryData<UserReview[]>(
-          ["admin_user_reviews", statusFilter],
+          ["admin_user_reviews"],
           previousReviews.map((r) =>
             r.id === id ? { ...r, status, admin_note: adminNote !== undefined ? adminNote : r.admin_note } : r
           )
@@ -101,7 +126,7 @@ export function UserReviewManager({ opportunities = [] }: UserReviewManagerProps
     },
     onError: (err, variables, context) => {
       if (context?.previousReviews) {
-        queryClient.setQueryData(["admin_user_reviews", statusFilter], context.previousReviews);
+        queryClient.setQueryData(["admin_user_reviews"], context.previousReviews);
       }
       console.error("Failed to update review status:", err);
     },
@@ -126,9 +151,9 @@ export function UserReviewManager({ opportunities = [] }: UserReviewManagerProps
     },
   });
 
-  // Filtered reviews
+  // Search filtered reviews
   const filteredReviews = React.useMemo(() => {
-    return reviews.filter((r) => {
+    return reviewsByStatus.filter((r) => {
       if (!r) return false;
       const q = searchQuery.toLowerCase().trim();
       if (!q) return true;
@@ -139,17 +164,14 @@ export function UserReviewManager({ opportunities = [] }: UserReviewManagerProps
       return (
         r.reviewer_name?.toLowerCase().includes(q) ||
         r.reviewer_email?.toLowerCase().includes(q) ||
+        r.user_identity?.toLowerCase().includes(q) ||
+        r.investment_details?.toLowerCase().includes(q) ||
         r.note?.toLowerCase().includes(q) ||
         r.admin_note?.toLowerCase().includes(q) ||
         oppName.toLowerCase().includes(q)
       );
     });
-  }, [reviews, searchQuery, oppMap]);
-
-  // Counts for tabs
-  const pendingCount = React.useMemo(() => {
-    return reviews.filter((r) => r.status === "pending").length;
-  }, [reviews]);
+  }, [reviewsByStatus, searchQuery, oppMap]);
 
   const handleOpenAdminNoteModal = (review: UserReview) => {
     setAdminNoteModalReview(review);
@@ -175,9 +197,9 @@ export function UserReviewManager({ opportunities = [] }: UserReviewManagerProps
             <h2 className="text-2xl font-bold text-[#111827]">
               ইউজার রিভিউ অনুমোদন
             </h2>
-            {pendingCount > 0 && (
+            {counts.pending > 0 && (
               <Badge className="bg-amber-100 text-amber-900 border-amber-300 font-bold px-2.5 py-0.5">
-                {pendingCount} টি অপেক্ষমান
+                {counts.pending} টি অপেক্ষমান
               </Badge>
             )}
           </div>
@@ -192,7 +214,7 @@ export function UserReviewManager({ opportunities = [] }: UserReviewManagerProps
             size="sm"
             onClick={() => refetch()}
             disabled={isFetching}
-            className="rounded-xl text-xs font-semibold gap-1.5 h-9"
+            className="rounded-xl text-xs font-semibold gap-1.5 h-9 cursor-pointer"
           >
             <Loader2 className={`w-3.5 h-3.5 ${isFetching ? "animate-spin" : ""}`} />
             রিফ্রেশ
@@ -205,10 +227,10 @@ export function UserReviewManager({ opportunities = [] }: UserReviewManagerProps
         {/* Status Filters */}
         <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
           {[
-            { id: "all" as const, label: "সকল" },
-            { id: "pending" as const, label: "অপেক্ষমান" },
-            { id: "approved" as const, label: "অনুমোদিত" },
-            { id: "rejected" as const, label: "প্রত্যাখ্যাত" },
+            { id: "all" as const, label: `সকল (${counts.all})` },
+            { id: "pending" as const, label: `অপেক্ষমান (${counts.pending})` },
+            { id: "approved" as const, label: `অনুমোদিত (${counts.approved})` },
+            { id: "rejected" as const, label: `প্রত্যাখ্যাত (${counts.rejected})` },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -229,7 +251,7 @@ export function UserReviewManager({ opportunities = [] }: UserReviewManagerProps
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <Input
             type="text"
-            placeholder="নাম, মতামত বা প্রজেক্ট খুঁজুন..."
+            placeholder="নাম, পেশা, মতামত বা প্রজেক্ট খুঁজুন..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 h-9 text-xs rounded-xl"
@@ -243,9 +265,9 @@ export function UserReviewManager({ opportunities = [] }: UserReviewManagerProps
           <table className="w-full text-left text-xs">
             <thead className="bg-gray-50/80 text-[#6b7280] font-bold text-[11px] uppercase tracking-wider border-b border-gray-100">
               <tr>
-                <th className="px-5 py-3.5">রিভিউয়ার</th>
+                <th className="px-5 py-3.5">রিভিউয়ার ও পরিচয়</th>
                 <th className="px-5 py-3.5">রেটিং</th>
-                <th className="px-5 py-3.5">মতামত / নোট</th>
+                <th className="px-5 py-3.5">মতামত ও বিনিয়োগ বিবরণ</th>
                 <th className="px-5 py-3.5">টার্গেট</th>
                 <th className="px-5 py-3.5">তারিখ</th>
                 <th className="px-5 py-3.5">স্ট্যাটাস</th>
@@ -260,14 +282,38 @@ export function UserReviewManager({ opportunities = [] }: UserReviewManagerProps
                     <span>রিভিউ লোড হচ্ছে...</span>
                   </td>
                 </tr>
-              ) : filteredReviews.length === 0 ? (
+              ) : reviewsList.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-5 py-12 text-center text-gray-500">
                     <MessageSquare className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-                    <p className="font-semibold">কোনো ইউজার রিভিউ পাওয়া যায়নি</p>
+                    <p className="font-semibold">কোনো ইউজার রিভিউ জমা হয়নি</p>
                     <p className="text-[11px] text-gray-400 mt-0.5">
-                      ফিল্টার পরিবর্তন করে আবার চেষ্টা করুন
+                      ব্যবহারকারীরা রিভিউ সাবমিট করলে এখানে প্রদর্শিত হবে।
                     </p>
+                  </td>
+                </tr>
+              ) : reviewsByStatus.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-5 py-12 text-center text-gray-500">
+                    <MessageSquare className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                    <p className="font-semibold">
+                      {statusFilter === "pending"
+                        ? "কোনো অপেক্ষমান ইউজার রিভিউ নেই"
+                        : statusFilter === "approved"
+                        ? "কোনো অনুমোদিত ইউজার রিভিউ নেই"
+                        : "কোনো প্রত্যাখ্যাত ইউজার রিভিউ নেই"}
+                    </p>
+                    <p className="text-[11px] text-gray-400 mt-0.5">
+                      অন্য ফিল্টার ট্যাবে ক্লিক করে চেক করুন।
+                    </p>
+                  </td>
+                </tr>
+              ) : filteredReviews.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-5 py-12 text-center text-gray-500">
+                    <Search className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                    <p className="font-semibold">অনুসন্ধানের সাথে মিল রয়েছে এমন কোনো রিভিউ নেই</p>
+                    <p className="text-[11px] text-gray-400 mt-0.5">অন্য কীওয়ার্ড দিয়ে চেষ্টা করুন।</p>
                   </td>
                 </tr>
               ) : (
@@ -299,12 +345,30 @@ export function UserReviewManager({ opportunities = [] }: UserReviewManagerProps
                           : "hover:bg-gray-50/60"
                       }`}
                     >
-                      {/* Reviewer */}
+                      {/* Reviewer & Identity */}
                       <td className="px-5 py-4">
-                        <div className="flex flex-col">
-                          <span className="font-bold text-[#111827] text-sm">
-                            {r.reviewer_name || "বিনিয়োগকারী"}
-                          </span>
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-bold text-[#111827] text-sm">
+                              {r.reviewer_name || "বিনিয়োগকারী"}
+                            </span>
+                            {r.has_invested ? (
+                              <span className="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                                ✓ বিনিয়োগকারী
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 border border-gray-200">
+                                বিনিয়োগ করেননি
+                              </span>
+                            )}
+                          </div>
+
+                          {r.user_identity && (
+                            <span className="text-[11px] font-semibold text-[#1a6b4a]">
+                              {r.user_identity}
+                            </span>
+                          )}
+
                           {r.reviewer_email && (
                             <span className="text-[11px] text-gray-500">
                               {r.reviewer_email}
@@ -334,9 +398,9 @@ export function UserReviewManager({ opportunities = [] }: UserReviewManagerProps
                         </div>
                       </td>
 
-                      {/* Note */}
+                      {/* Note & Investment details */}
                       <td className="px-5 py-4 max-w-xs">
-                        <div className="space-y-1">
+                        <div className="space-y-1.5">
                           {r.note ? (
                             <p className="text-gray-800 text-xs leading-relaxed line-clamp-2">
                               "{r.note}"
@@ -345,6 +409,13 @@ export function UserReviewManager({ opportunities = [] }: UserReviewManagerProps
                             <span className="text-gray-400 italic text-[11px]">
                               মন্তব্য নেই
                             </span>
+                          )}
+
+                          {r.investment_details && (
+                            <div className="text-[11px] text-gray-700 bg-gray-50 p-2 rounded-xl border border-gray-200/80">
+                              <span className="font-bold text-[#1a6b4a] block mb-0.5">বিনিয়োগের অভিজ্ঞতা:</span>
+                              <span className="italic">{r.investment_details}</span>
+                            </div>
                           )}
 
                           {r.admin_note && (

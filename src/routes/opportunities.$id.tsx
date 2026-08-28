@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import { createFileRoute, Link, notFound, useRouter, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import type { Testimonial } from "@/lib/database.types";
 import { TestimonialCard } from "@/components/TestimonialsSection";
+import { UserReviewCard } from "@/components/UserReviewCard";
+import { ReviewRatingModal } from "@/components/ReviewRatingModal";
+import { getApprovedReviews, submitUserReview } from "@/lib/user_reviews";
 import {
   fetchOpportunitiesSSR,
   fetchOpportunities,
@@ -25,7 +28,7 @@ import {
 import { InvestmentCalculator } from "@/components/InvestmentCalculator";
 import { motion } from "framer-motion";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { Lock, Building2, Copy, Check, ShieldCheck, ArrowRight, Clock, ShieldAlert } from "lucide-react";
+import { Lock, Building2, Copy, Check, ShieldCheck, ArrowRight, Clock, ShieldAlert, MessageSquarePlus } from "lucide-react";
 
 export const Route = createFileRoute("/opportunities/$id")({
   loader: async ({ params, context }) => {
@@ -37,6 +40,10 @@ export const Route = createFileRoute("/opportunities/$id")({
       queryKey: ["testimonials-opp", project.id],
       queryFn: () => fetchTestimonialsSSR(project.id),
     });
+    await context.queryClient.ensureQueryData({
+      queryKey: ["user-reviews-opp", project.id],
+      queryFn: () => getApprovedReviews("opportunity", project.id),
+    });
     return { project, ...subsections };
   },
   head: ({ loaderData }) => {
@@ -46,7 +53,7 @@ export const Route = createFileRoute("/opportunities/$id")({
     const p = loaderData.project;
     const title = `${p.name} | SME বিনিয়োগ সুযোগ | বিনিয়োগ বৃদ্ধি`;
     const description = `${p.name} এ বিনিয়োগ করুন। ${p.expected_profit} মুনাফা। নূন্যতম বিনিয়োগ: ${p.investment_amount}। যাচাইকৃত ব্যবসা বিনিয়োগ বাংলাদেশ।`;
-    const ogImage = (Array.isArray(p.image_urls) && p.image_urls[0]) || p.image_url || "/og-image.jpg";
+    const ogImage = (Array.isArray(p.image_urls) && p.image_urls[0]) || (p as any).image_url || "/og-image.jpg";
     const jsonLd = {
       "@context": "https://schema.org",
       "@type": "Product",
@@ -319,6 +326,8 @@ function OpportunityDetailsPage() {
         <InvestmentCalculator />
 
         <OpportunityTestimonials project={project} />
+
+        <OpportunityUserReviews project={project} />
 
         <BankDetailsSection project={project} funded={funded} />
 
@@ -604,6 +613,101 @@ function OpportunityTestimonials({ project }: { project: Opportunity }) {
           রিভিউ দিন
         </a>
       </div>
+    </section>
+  );
+}
+
+function OpportunityUserReviews({ project }: { project: Opportunity }) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const queryClient = useQueryClient();
+
+  const { data: reviews = [], isLoading } = useQuery({
+    queryKey: ["user-reviews-opp", project.id],
+    queryFn: () => getApprovedReviews("opportunity", project.id),
+  });
+
+  return (
+    <section className="mt-14 border-t border-border/80 pt-10">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-3 border-l-4 border-primary pl-3.5">
+          <div>
+            <h3 className="font-display text-xl font-bold text-foreground sm:text-2xl">
+              বিনিয়োগকারীদের মতামত
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              এই প্রতিষ্ঠানে বিনিয়োগকারীদের বাস্তব অভিজ্ঞতা ও মূল্যায়ন
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setIsModalOpen(true)}
+          className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-2 text-xs sm:text-sm font-semibold text-primary bg-primary/10 border border-primary/20 hover:bg-primary hover:text-primary-foreground transition-all cursor-pointer shadow-xs self-start sm:self-auto"
+        >
+          <MessageSquarePlus className="w-4 h-4" />
+          <span>রিভিউ দিন</span>
+        </button>
+      </div>
+
+      {isLoading ? (
+        <div className="py-12 text-center text-sm text-muted-foreground">
+          রিভিউ লোড হচ্ছে...
+        </div>
+      ) : reviews.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {reviews.map((r) => (
+            <div key={r.id} className="h-full">
+              <UserReviewCard
+                review={r}
+                opportunity={project}
+                showTargetBadge={false}
+              />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-3xl border border-dashed border-border/80 bg-card/40 p-8 sm:p-12 text-center">
+          <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-3">
+            <MessageSquarePlus className="w-6 h-6" />
+          </div>
+          <p className="text-base font-bold text-foreground mb-1">
+            এখনো কোনো মতামত নেই। প্রথম মতামত দিন!
+          </p>
+          <p className="text-xs text-muted-foreground mb-5 max-w-sm mx-auto">
+            আপনার অভিজ্ঞতা শেয়ার করে অন্য বিনিয়োগকারীদের সঠিক সিদ্ধান্ত নিতে সহায়তা করুন।
+          </p>
+          <button
+            type="button"
+            onClick={() => setIsModalOpen(true)}
+            className="inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-xs sm:text-sm font-semibold text-white bg-[#163832] hover:bg-[#0B2B26] shadow-sm hover:shadow transition-all cursor-pointer"
+          >
+            <MessageSquarePlus className="w-4 h-4" />
+            <span>প্রথম মতামত দিন</span>
+          </button>
+        </div>
+      )}
+
+      {/* Review Rating Modal */}
+      <ReviewRatingModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        targetType="opportunity"
+        targetId={project.id}
+        onSubmit={async (data) => {
+          await submitUserReview({
+            reviewer_name: "বিনিয়োগকারী",
+            rating: data.rating,
+            note: data.note,
+            has_invested: data.has_invested,
+            user_identity: data.user_identity,
+            investment_details: data.investment_details,
+            target_type: "opportunity",
+            target_id: project.id,
+          });
+          queryClient.invalidateQueries({ queryKey: ["user-reviews-opp", project.id] });
+        }}
+      />
     </section>
   );
 }
