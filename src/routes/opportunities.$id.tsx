@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { createFileRoute, Link, notFound, useRouter, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
@@ -28,6 +28,8 @@ import {
 import { motion } from "framer-motion";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Lock, Building2, Copy, Check, ShieldCheck, ArrowRight, Clock, ShieldAlert, MessageSquarePlus } from "lucide-react";
+
+const InvestmentCalculator = lazy(() => import("@/components/InvestmentCalculator").then(m => ({ default: m.InvestmentCalculator })));
 
 export const Route = createFileRoute("/opportunities/$id")({
   loader: async ({ params, context }) => {
@@ -327,7 +329,9 @@ function OpportunityDetailsPage() {
           </section>
         )}
 
-        <InvestmentCalculator />
+        <Suspense fallback={null}>
+          <InvestmentCalculator />
+        </Suspense>
 
         <OpportunityTestimonials project={project} />
 
