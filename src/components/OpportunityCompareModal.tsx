@@ -46,6 +46,8 @@ export function OpportunityCompareModal({
                           src={resolveImageUrl(p)} 
                           alt="" 
                           className="h-full w-full object-cover"
+                          loading="lazy"
+                          decoding="async"
                           onError={(e) => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=80&auto=format&fit=crop"; }}
                         />
                       </div>

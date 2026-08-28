@@ -290,6 +290,7 @@ function BlogListingPage() {
                       src={post.cover_image_url || "https://images.unsplash.com/photo-1579532537598-459ecdaf39cc?q=80&w=800&auto=format&fit=crop"}
                       alt={post.title}
                       loading="lazy"
+                      decoding="async"
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     {post.category && (

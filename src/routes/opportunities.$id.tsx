@@ -25,7 +25,6 @@ import {
   type OpportunityPayout,
   type OpportunityLegalCheck,
 } from "@/lib/projects";
-import { InvestmentCalculator } from "@/components/InvestmentCalculator";
 import { motion } from "framer-motion";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Lock, Building2, Copy, Check, ShieldCheck, ArrowRight, Clock, ShieldAlert, MessageSquarePlus } from "lucide-react";
@@ -187,6 +186,9 @@ function OpportunityDetailsPage() {
                       src={url}
                       alt={`${project.name} SME বিনিয়োগ সুযোগ বাংলাদেশ`}
                       className="h-64 w-full object-cover sm:h-80 lg:h-96"
+                      loading={i === 0 ? "eager" : "lazy"}
+                      decoding="async"
+                      fetchPriority={i === 0 ? "high" : "auto"}
                       onError={(e) => {
                         (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=1200&auto=format&fit=crop";
                       }}
@@ -204,6 +206,8 @@ function OpportunityDetailsPage() {
               src={resolveImageUrl(project)}
               alt={`${project.name} SME বিনিয়োগ সুযোগ বাংলাদেশ`}
               className="h-64 w-full object-cover sm:h-80 lg:h-96"
+              decoding="async"
+              fetchPriority="high"
               onError={(e) => {
                 (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=1200&auto=format&fit=crop";
               }}

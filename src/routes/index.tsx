@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, lazy, Suspense } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { OpportunityCard, getCategoryIcon } from "@/components/OpportunityCard";
 import { useOpportunities, isFullyFunded, isOpen, statusLabel, parseAmount, parseRoi } from "@/lib/projects";
@@ -13,17 +13,18 @@ import {
 } from "@/components/InstructorSection";
 import { OpportunityFilters, type SortKey } from "@/components/OpportunityFilters";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
-import { InvestmentCalculator } from "@/components/InvestmentCalculator";
-import { FaqSection } from "@/components/FaqSection";
-import { PolicySection } from "@/components/PolicySection";
-import { WhyChooseSection } from "@/components/WhyChooseSection";
 import { ReviewRatingModal } from "@/components/ReviewRatingModal";
 import { submitUserReview } from "@/lib/user_reviews";
 import { Loader2, CalendarCheck, MapPin, Sparkles, ArrowRight, Star } from "lucide-react";
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { usePrefersReducedMotion, revealVariants, staggerContainer, scaleIn } from "@/lib/animations";
 import { FlipFadeText } from "@/components/ui/flip-fade-text";
 import { usePublishedBlogPosts } from "@/lib/blog";
+
+// Lazy-load heavy below-fold sections to reduce initial bundle size
+const WhyChooseSection = lazy(() => import("@/components/WhyChooseSection").then(m => ({ default: m.WhyChooseSection })));
+const InvestmentCalculator = lazy(() => import("@/components/InvestmentCalculator").then(m => ({ default: m.InvestmentCalculator })));
+const FaqSection = lazy(() => import("@/components/FaqSection").then(m => ({ default: m.FaqSection })));
+const PolicySection = lazy(() => import("@/components/PolicySection").then(m => ({ default: m.PolicySection })));
 
 type OpportunitiesSearch = {
   category?: string;
@@ -133,15 +134,21 @@ function LandingPage() {
       className="bg-background min-h-screen text-foreground antialiased"
     >
       <Hero stats={heroStats} opportunities={opportunities} />
-      <WhyChooseSection />
-      <PolicySection />
+      <Suspense fallback={null}>
+        <WhyChooseSection />
+      </Suspense>
+      <Suspense fallback={null}>
+        <PolicySection />
+      </Suspense>
       <LatestBlogSection />
       <InstructorSection />
       <Opportunities opportunities={opportunities} />
       <HowItWorks />
-      <div className="bg-background/75 backdrop-blur-[2px]">
-        <InvestmentCalculator />
-      </div>
+      <Suspense fallback={null}>
+        <div className="bg-background/75 backdrop-blur-[2px]">
+          <InvestmentCalculator />
+        </div>
+      </Suspense>
 
       {/* Testimonials with Review Button */}
       <div className="relative">
@@ -158,7 +165,9 @@ function LandingPage() {
         </div>
       </div>
 
-      <FaqSection />
+      <Suspense fallback={null}>
+        <FaqSection />
+      </Suspense>
       <FinalCTA />
       
       {/* Sticky Mobile CTA — pushed above the bottom dock to avoid overlap */}
@@ -775,6 +784,7 @@ function LatestBlogSection() {
                       src={post.image}
                       alt={post.title}
                       loading="lazy"
+                      decoding="async"
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     <div className="absolute top-3.5 left-3.5">

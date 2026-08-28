@@ -137,6 +137,8 @@ function PlatformReviewCard({ item }: { item: HomepageReview }) {
           <img
             src={item.avatar_url}
             alt={name}
+            loading="lazy"
+            decoding="async"
             className="h-11 w-11 shrink-0 rounded-full object-cover border border-border"
           />
         ) : (
@@ -241,6 +243,8 @@ function CompanyReviewCard({
           <img
             src={item.avatar_url}
             alt={name}
+            loading="lazy"
+            decoding="async"
             className="h-11 w-11 shrink-0 rounded-full object-cover border border-border"
           />
         ) : (

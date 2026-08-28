@@ -73,6 +73,8 @@ export function TestimonialCard({ item }: { item: Testimonial }) {
             src={item.avatar_url}
             alt={item.name}
             className="h-11 w-11 shrink-0 rounded-full object-cover border border-border"
+            loading="lazy"
+            decoding="async"
           />
         ) : (
           <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary/10 text-sm font-bold text-primary">
@@ -109,6 +111,8 @@ export function HomepageReviewCard({ item, index = 0 }: { item: HomepageReview, 
               src={item.avatar_url}
               alt={item.name}
               className="h-10 w-10 sm:h-12 sm:w-12 shrink-0 rounded-full object-cover border-2 border-background shadow-sm"
+              loading="lazy"
+              decoding="async"
             />
           ) : (
             <span className="grid h-10 w-10 sm:h-12 sm:w-12 shrink-0 place-items-center rounded-full bg-primary/10 text-sm font-bold text-primary border-2 border-background shadow-sm">

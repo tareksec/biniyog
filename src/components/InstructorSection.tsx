@@ -49,6 +49,10 @@ export function InstructorSection() {
                   src={cfaImage} 
                   alt="মোহাইমিন পাটোয়ারী" 
                   className="h-full w-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                  width="96"
+                  height="96"
                 />
               </motion.div>
               <h3 className="mt-6 text-2xl font-bold leading-tight text-foreground">

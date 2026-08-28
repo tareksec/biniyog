@@ -226,6 +226,7 @@ function InsightsPage() {
                     src={article.image} 
                     alt={article.title}
                     loading="lazy"
+                    decoding="async"
                     className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                   />
                   <div className="absolute top-4 left-4">

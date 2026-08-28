@@ -259,6 +259,8 @@ function BlogDetailPage() {
                 src={post.cover_image_url}
                 alt={post.title}
                 loading="eager"
+                decoding="async"
+                fetchPriority="high"
                 className="w-full h-full object-cover"
               />
             </div>
@@ -305,6 +307,7 @@ function BlogDetailPage() {
                       src={relPost.cover_image_url || "https://images.unsplash.com/photo-1579532537598-459ecdaf39cc?q=80&w=800&auto=format&fit=crop"}
                       alt={relPost.title}
                       loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
