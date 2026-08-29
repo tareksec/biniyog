@@ -25,7 +25,7 @@ import {
   type OpportunityPayout,
   type OpportunityLegalCheck,
 } from "@/lib/projects";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Lock, Building2, Copy, Check, ShieldCheck, ArrowRight, Clock, ShieldAlert, MessageSquarePlus } from "lucide-react";
 
@@ -122,6 +122,19 @@ function OpportunityDetailsPage() {
   const links = parseLinks(project.website_url);
   const router = useRouter();
   const navigate = useNavigate();
+  const [showStickyCta, setShowStickyCta] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 300) {
+        setShowStickyCta(true);
+      } else {
+        setShowStickyCta(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleBack = (e?: React.MouseEvent) => {
     if (e) e.preventDefault();
@@ -346,23 +359,31 @@ function OpportunityDetailsPage() {
         </div>
       </main>
       
-      {/* Sticky Mobile CTA */}
-      {!funded && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-background/80 backdrop-blur-md border-t border-border/50 md:hidden pb-[max(env(safe-area-inset-bottom),1rem)]">
-          <a
-            href="https://docs.google.com/spreadsheets/d/1HsSR7t_2zZaNbvqmbhWiuYikfYsF8rfzcQK2gmfIB4U/edit?gid=0#gid=0"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex w-full items-center justify-center gap-2 rounded-full px-6 py-3.5 text-[15px] font-semibold text-primary-foreground shadow-lg btn-hover"
-            style={{ background: "var(--gradient-primary)" }}
+      {/* Sleek Floating Mobile CTA on Opportunity Detail */}
+      <AnimatePresence>
+        {!funded && showStickyCta && (
+          <motion.div
+            initial={{ opacity: 0, y: 15, scale: 0.92 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 15, scale: 0.92 }}
+            transition={{ duration: 0.22, ease: "easeOut" }}
+            className="fixed bottom-[74px] left-1/2 -translate-x-1/2 z-[45] md:hidden pointer-events-auto"
           >
-            বিনিয়োগ শুরু করুন
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M5 12h14M13 5l7 7-7 7" />
-            </svg>
-          </a>
-        </div>
-      )}
+            <a
+              href="https://docs.google.com/spreadsheets/d/1HsSR7t_2zZaNbvqmbhWiuYikfYsF8rfzcQK2gmfIB4U/edit?gid=0#gid=0"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-[13.5px] font-bold text-white shadow-[0_8px_25px_rgba(16,185,129,0.35)] border border-white/20 backdrop-blur-md transition-all active:scale-95 whitespace-nowrap"
+              style={{ background: "linear-gradient(135deg, #15803d 0%, #0d5231 100%)" }}
+            >
+              <span>বিনিয়োগ শুরু করুন</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M5 12h14M13 5l7 7-7 7" />
+              </svg>
+            </a>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { useMemo, useState, useEffect, lazy, Suspense } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion, AnimatePresence } from "framer-motion";
 import { OpportunityCard, getCategoryIcon } from "@/components/OpportunityCard";
 import { useOpportunities, isFullyFunded, isOpen, statusLabel, parseAmount, parseRoi } from "@/lib/projects";
 import type { Opportunity } from "@/lib/projects";
@@ -109,6 +109,20 @@ export const Route = createFileRoute("/")({
 function LandingPage() {
   const { data: opportunities = [] } = useOpportunities();
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [showStickyCta, setShowStickyCta] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // Show floating CTA only after user scrolls past the hero section (> 380px)
+      if (window.scrollY > 380) {
+        setShowStickyCta(true);
+      } else {
+        setShowStickyCta(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const heroStats = useMemo(() => {
     // Filter to non-funded opportunities for stat computation
@@ -133,7 +147,8 @@ function LandingPage() {
     <div
       className="bg-background min-h-screen text-foreground antialiased"
     >
-      <Hero stats={heroStats} opportunities={opportunities} />
+      <Hero stats={heroStats} />
+      <GrowthStatsSection opportunities={opportunities} />
       <Suspense fallback={null}>
         <WhyChooseSection />
       </Suspense>
@@ -170,19 +185,27 @@ function LandingPage() {
       </Suspense>
       <FinalCTA />
       
-      {/* Sticky Mobile CTA — pushed above the bottom dock to avoid overlap */}
-      <div className="fixed bottom-[64px] left-0 right-0 z-[51] p-4 bg-background/80 backdrop-blur-md border-t border-border/50 md:hidden pb-[max(env(safe-area-inset-bottom),1rem)]">
-        <Link
-          to="/opportunities"
-          className="flex w-full items-center justify-center gap-2 rounded-full px-6 py-3.5 text-[15px] font-semibold text-primary-foreground shadow-lg btn-hover"
-          style={{ background: "var(--gradient-primary)" }}
-        >
-          বিনিয়োগ শুরু করুন
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M5 12h14M13 5l7 7-7 7" />
-          </svg>
-        </Link>
-      </div>
+      {/* Sleek Floating Mobile CTA — ergonomically positioned above the dock, scroll-aware */}
+      <AnimatePresence>
+        {showStickyCta && (
+          <motion.div
+            initial={{ opacity: 0, y: 15, scale: 0.92 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 15, scale: 0.92 }}
+            transition={{ duration: 0.22, ease: "easeOut" }}
+            className="fixed bottom-[74px] left-1/2 -translate-x-1/2 z-[45] md:hidden pointer-events-auto"
+          >
+            <Link
+              to="/opportunities"
+              className="flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-[13.5px] font-bold text-white shadow-[0_8px_25px_rgba(16,185,129,0.35)] border border-white/20 backdrop-blur-md transition-all active:scale-95 whitespace-nowrap"
+              style={{ background: "linear-gradient(135deg, #15803d 0%, #0d5231 100%)" }}
+            >
+              <span>বিনিয়োগ শুরু করুন</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Homepage Review Modal */}
       <ReviewRatingModal
@@ -323,9 +346,398 @@ function StatusDonutChart({
 
 function Hero({
   stats,
-  opportunities,
 }: {
   stats: { profitMin: number; profitMax: number; verifiedCount: number };
+  opportunities?: Opportunity[];
+}) {
+  const prefersReduced = usePrefersReducedMotion();
+
+  return (
+    <section id="top" className="relative w-full">
+      {/* ── Mobile Hero (below md) ── */}
+      <div
+        className="md:hidden relative overflow-hidden bg-white"
+        style={{
+          minHeight: "100svh",
+        }}
+      >
+        {/* Background illustration */}
+        <img
+          src="/images/hero-bg-mobile.png"
+          alt=""
+          aria-hidden="true"
+          loading="eager"
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "center top",
+            zIndex: 0,
+            pointerEvents: "none",
+          }}
+        />
+
+        {/* Text Content */}
+        <div
+          className="relative text-left"
+          style={{
+            zIndex: 2,
+            padding: "64px 20px 0 20px",
+          }}
+        >
+          {/* Headline */}
+          <h1
+            className="tracking-tight font-[900]"
+            style={{
+              fontSize: "clamp(1.85rem, 7.5vw, 2.5rem)",
+              color: "#0d5231",
+              lineHeight: 1.25,
+              maxWidth: "360px",
+            }}
+          >
+            দেশের সম্ভাবনাময় ব্যবসায় বিনিয়োগ করুন
+          </h1>
+
+          {/* Green underline */}
+          <div
+            style={{
+              width: "48px",
+              height: "4px",
+              borderRadius: "9999px",
+              background: "linear-gradient(to right, #15803d, #84cc16)",
+              margin: "12px 0 16px 0",
+            }}
+          />
+
+          {/* Subtext */}
+          <p
+            style={{
+              color: "#1f2937",
+              fontSize: "0.95rem",
+              fontWeight: 600,
+              lineHeight: 1.5,
+              maxWidth: "320px",
+            }}
+          >
+            যাচাইকৃত ব্যবসা প্রতিষ্ঠানে স্বচ্ছ উপায়ে আকর্ষণীয় লাভ অর্জন করুন।
+          </p>
+
+          {/* Button */}
+          <div style={{ marginTop: "20px" }}>
+            <Link
+              to="/opportunities"
+              className="inline-flex items-center gap-2 font-bold text-white shadow-md transition-transform active:scale-95"
+              style={{
+                backgroundColor: "#0b703e",
+                borderRadius: "9999px",
+                padding: "13px 30px",
+                fontSize: "1rem",
+              }}
+            >
+              বিনিয়োগ করুন →
+            </Link>
+          </div>
+        </div>
+
+        {/* Feature bar floating card */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: "82px",
+            left: "16px",
+            right: "16px",
+            zIndex: 10,
+            backgroundColor: "rgba(255, 255, 255, 0.94)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            borderRadius: "24px",
+            border: "1px solid rgba(255, 255, 255, 0.8)",
+            boxShadow: "0 10px 30px rgba(0, 40, 20, 0.08), 0 2px 6px rgba(0, 0, 0, 0.03)",
+            padding: "14px 8px",
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          {/* Item 1 */}
+          <div
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "6px",
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: "rgba(34, 197, 94, 0.12)",
+                borderRadius: "50%",
+                width: "44px",
+                height: "44px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <span
+                className="material-symbols-outlined"
+                style={{ fontSize: "24px", color: "#0d5231" }}
+              >
+                trending_up
+              </span>
+            </div>
+            <span
+              style={{
+                fontSize: "12px",
+                fontWeight: 700,
+                color: "#1f2937",
+                textAlign: "center",
+              }}
+            >
+              অর্থনৈতিক প্রবৃদ্ধি
+            </span>
+          </div>
+
+          {/* Divider 1 */}
+          <div
+            style={{
+              width: "1px",
+              height: "32px",
+              backgroundColor: "#E5E7EB",
+              alignSelf: "center",
+            }}
+          />
+
+          {/* Item 2 */}
+          <div
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "6px",
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: "rgba(34, 197, 94, 0.12)",
+                borderRadius: "50%",
+                width: "44px",
+                height: "44px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <span
+                className="material-symbols-outlined"
+                style={{ fontSize: "24px", color: "#0d5231" }}
+              >
+                handshake
+              </span>
+            </div>
+            <span
+              style={{
+                fontSize: "12px",
+                fontWeight: 700,
+                color: "#1f2937",
+                textAlign: "center",
+              }}
+            >
+              নিরাপদ বিনিয়োগ
+            </span>
+          </div>
+
+          {/* Divider 2 */}
+          <div
+            style={{
+              width: "1px",
+              height: "32px",
+              backgroundColor: "#E5E7EB",
+              alignSelf: "center",
+            }}
+          />
+
+          {/* Item 3 */}
+          <div
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "6px",
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: "rgba(34, 197, 94, 0.12)",
+                borderRadius: "50%",
+                width: "44px",
+                height: "44px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <span
+                className="material-symbols-outlined"
+                style={{ fontSize: "24px", color: "#0d5231" }}
+              >
+                lightbulb
+              </span>
+            </div>
+            <span
+              style={{
+                fontSize: "12px",
+                fontWeight: 700,
+                color: "#1f2937",
+                textAlign: "center",
+              }}
+            >
+              উজ্জ্বল সম্ভাবনা
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Desktop Hero (md and above) ── */}
+      <div className="hidden md:flex relative overflow-hidden bg-white px-[5%] py-[4%] pt-24 sm:pt-28 lg:py-[4%] min-h-auto lg:min-h-[90vh] flex-col justify-center w-full">
+        {/* Background Image (Desktop) */}
+        <img
+          src="/images/hero-bg.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute top-0 bottom-0 right-0 left-auto h-full w-auto object-contain z-0 pointer-events-none"
+          style={{ objectPosition: "center right" }}
+          loading="eager"
+        />
+
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 z-[1] pointer-events-none hero-gradient-overlay" />
+
+        {/* Desktop Hero Content */}
+        <div className="relative z-[2] mx-auto w-full max-w-7xl">
+          {/* Main Hero Content (Left 55% on desktop) */}
+          <div className="w-full lg:max-w-[55%]">
+            <motion.div
+              className="w-full flex flex-col items-center lg:items-start text-center lg:text-left"
+              initial={prefersReduced ? "show" : "hidden"}
+              animate="show"
+              variants={revealVariants}
+            >
+              {/* 1. Badge */}
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-[#166534] bg-transparent px-3.5 py-1 text-xs sm:text-sm font-semibold text-[#166534]">
+                যাচাইকৃত বিনিয়োগ মডেল
+              </div>
+
+              {/* 2. Headline */}
+              <div className="mt-5 sm:mt-6 w-full">
+                <h1 className="sr-only">দেশের সম্ভাবনাময় ব্যবসায় বিনিয়োগ করুন</h1>
+                <div aria-hidden="true">
+                  <FlipFadeText 
+                    words={["দেশের সম্ভাবনাময় ব্যবসায় বিনিয়োগ করুন"]}
+                    textClassName="font-[900] leading-[1.18] text-[#111827] text-[clamp(2rem,4vw,3.5rem)] flex flex-wrap justify-center lg:justify-start text-center lg:text-left tracking-tight"
+                    className="justify-center lg:justify-start min-h-[auto]"
+                    staggerDelay={0.03}
+                    letterDuration={0.4}
+                    splitMode="word"
+                  />
+                </div>
+              </div>
+
+              {/* 3. Subtext */}
+              <p className="mt-4 sm:mt-5 text-[#6B7280] text-[1.1rem] leading-relaxed max-w-xl">
+                যাচাইকৃত ব্যবসা প্রতিষ্ঠানে স্বচ্ছ উপায়ে আকর্ষণীয় লাভ অর্জন করুন।
+              </p>
+
+              {/* 4. Buttons row */}
+              <div className="mt-6 sm:mt-8 flex flex-wrap items-center justify-center lg:justify-start gap-4">
+                <motion.div
+                  whileHover={prefersReduced ? {} : { y: -2, scale: 1.02 }}
+                  whileTap={prefersReduced ? {} : { scale: 0.98 }}
+                  transition={{ type: "spring", stiffness: 320, damping: 20 }}
+                >
+                  <Link
+                    to="/opportunities"
+                    className="inline-flex items-center gap-2 rounded-full bg-[#166534] hover:bg-[#14532d] px-7 py-3.5 text-[15px] font-semibold text-white shadow-sm transition-all duration-200"
+                  >
+                    বিনিয়োগের সুযোগ দেখুন →
+                  </Link>
+                </motion.div>
+                <a
+                  href={CONSULTANCY_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2.5 rounded-full border border-[#E5E7EB] bg-transparent hover:bg-gray-50 px-5 py-3 text-[14px] font-medium text-[#374151] transition-colors"
+                >
+                  <CalendarCheck className="h-4 w-4 text-[#166534]" />
+                  Book one to one consultation service with Mohaimin Patwary
+                </a>
+              </div>
+
+              {/* 5. Stats row (3 items) */}
+              <div className="mt-8 sm:mt-10 flex flex-wrap items-center justify-center lg:justify-start divide-x divide-[#E5E7EB] pt-6 border-t border-[#E5E7EB] w-full max-w-lg">
+                <div className="pr-4 sm:pr-6 text-center lg:text-left">
+                  <div className="num text-2xl sm:text-3xl font-black text-[#111827]">
+                    {stats.profitMin === stats.profitMax ? (
+                      <CountUp to={stats.profitMin} suffix="%" duration={1.2} />
+                    ) : (
+                      <>
+                        <CountUp to={stats.profitMin} duration={1.2} />-
+                        <CountUp to={stats.profitMax} suffix="+%" duration={1.2} />
+                      </>
+                    )}
+                  </div>
+                  <div className="mt-0.5 text-xs sm:text-sm font-semibold text-[#6B7280]">
+                    বার্ষিক লাভ
+                  </div>
+                </div>
+                <div className="px-4 sm:px-6 text-center lg:text-left">
+                  <div className="num text-2xl sm:text-3xl font-black text-[#111827]">
+                    <CountUp to={stats.verifiedCount} suffix={stats.verifiedCount >= 10 ? "+" : ""} duration={1.2} />
+                  </div>
+                  <div className="mt-0.5 text-xs sm:text-sm font-semibold text-[#6B7280]">
+                    যাচাইকৃত প্রজেক্ট
+                  </div>
+                </div>
+                <div className="pl-4 sm:pl-6 text-center lg:text-left">
+                  <div className="num text-2xl sm:text-3xl font-black text-[#111827]">
+                    <CountUp to={100} suffix="%" duration={1.2} />
+                  </div>
+                  <div className="mt-0.5 text-xs sm:text-sm font-semibold text-[#6B7280]">
+                    সুদ এবং ঘুরিয়ে সুদ মুক্ত
+                  </div>
+                </div>
+              </div>
+
+              {/* 6. Bottom feature icons row (3 items) */}
+              <div className="mt-6 sm:mt-7 flex flex-wrap items-center justify-center lg:justify-start gap-5 sm:gap-6">
+                <div className="flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[18px] text-[#166534]">trending_up</span>
+                  <span className="text-[12px] font-medium text-[#374151]">অর্থনৈতিক প্রবৃদ্ধি</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[18px] text-[#166534]">handshake</span>
+                  <span className="text-[12px] font-medium text-[#374151]">নিরাপদ বিনিয়োগ</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[18px] text-[#166534]">lightbulb</span>
+                  <span className="text-[12px] font-medium text-[#374151]">উজ্জ্বল সম্ভাবনা</span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function GrowthStatsSection({
+  opportunities,
+}: {
   opportunities: Opportunity[];
 }) {
   const prefersReduced = usePrefersReducedMotion();
@@ -382,187 +794,95 @@ function Hero({
   ];
 
   return (
-    <section id="top" className="relative z-[1] overflow-hidden">
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{ background: "var(--gradient-hero)" }}
-        aria-hidden
-      />
-      <div className="relative z-10 mx-auto max-w-7xl overflow-hidden px-5 pt-24 pb-16 sm:px-8 sm:pt-28 lg:pt-32 lg:pb-24 lg:overflow-visible">
-        {/* ── Text block ── */}
-        <motion.div
-          className="mx-auto max-w-3xl text-center"
-          initial={prefersReduced ? "show" : "hidden"}
-          animate="show"
-          variants={revealVariants}
-        >
-          <span className="pill">
-            <span className="grid h-4 w-4 place-items-center rounded-full bg-primary text-primary-foreground">
-              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4">
-                <path d="M5 12l5 5L20 7" />
-              </svg>
-            </span>
-            <span className="text-muted-foreground">যাচাইকৃত · বিনিয়োগ মডেল</span>
-          </span>
-
-          <div className="mt-7">
-            <h1 className="sr-only">দেশের সম্ভাবনাময় ব্যবসায় বিনিয়োগ করুন</h1>
-            <div aria-hidden="true">
-              <FlipFadeText 
-                words={["দেশের সম্ভাবনাময় ব্যবসায় বিনিয়োগ করুন"]}
-                textClassName="text-4xl font-extrabold leading-[1.15] text-foreground sm:text-5xl lg:text-[3.5rem] flex flex-wrap justify-center text-center"
-                className="justify-center min-h-[auto]"
-                staggerDelay={0.03}
-                letterDuration={0.4}
-                splitMode="word"
-              />
-            </div>
-          </div>
-
-          <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            যাচাইকৃত ব্যবসা প্রতিষ্ঠানে স্বচ্ছ উপায়ে আকর্ষণীয় লাভ অর্জন করুন।
-          </p>
-
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-            <motion.div
-              whileHover={prefersReduced ? {} : { y: -3, scale: 1.03 }}
-              whileTap={prefersReduced ? {} : { scale: 0.97 }}
-              transition={{ type: "spring", stiffness: 320, damping: 20 }}
-            >
-              <Link
-                to="/opportunities"
-                className="group inline-flex items-center gap-2.5 rounded-full bg-[#163832] px-7 py-3.5 text-[15px] font-semibold text-white shadow-note hover:shadow-note-lift transition-shadow duration-300"
-              >
-                বিনিয়োগের সুযোগ দেখুন
-                <motion.span
-                  className="inline-flex"
-                  animate={prefersReduced ? {} : { rotate: [0, 14, -8, 0], scale: [1, 1.12, 1] }}
-                  transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  <Sparkles className="size-4" />
-                </motion.span>
-              </Link>
-            </motion.div>
-            <a
-              href={CONSULTANCY_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group inline-flex items-center gap-3 text-[15px] font-medium text-foreground"
-            >
-              <span className="grid h-11 w-11 place-items-center rounded-full border border-border bg-card shadow-sm transition group-hover:border-primary/40 group-hover:text-primary">
-                <CalendarCheck className="h-5 w-5" />
-              </span>
-              Book one to one consultation service with Mohaimin Patwary
-            </a>
-          </div>
-
-          <div className="mx-auto mt-12 grid max-w-lg grid-cols-3 gap-6 border-t border-border/70 pt-7">
-            <Stat 
-              value={
-                stats.profitMin === stats.profitMax 
-                  ? <><CountUp to={stats.profitMin} suffix="%" duration={1.2} /></>
-                  : <><CountUp to={stats.profitMin} duration={1.2} />-<CountUp to={stats.profitMax} suffix="+%" duration={1.2} /></>
-              } 
-              label="বার্ষিক লাভ" 
-            />
-            <Stat 
-              value={<CountUp to={stats.verifiedCount} suffix={stats.verifiedCount >= 10 ? "+" : ""} duration={1.2} />} 
-              label="যাচাইকৃত প্রজেক্ট" 
-            />
-            <Stat 
-              value={<CountUp to={100} suffix="%" duration={1.2} />} 
-              label="সুদ এবং ঘুরিয়ে সুদ মুক্ত" 
-            />
-          </div>
-        </motion.div>
-
-        {/* ── Pinned sticky-note cards ── */}
-        <div className="mx-auto mt-16 grid max-w-5xl gap-10 md:grid-cols-3 md:gap-12 lg:mt-20">
-          {/* Card 1 — Growth Stats */}
-          <StickyNoteCard label="সামগ্রিক প্রবৃদ্ধি" delay={0.05} prefersReduced={prefersReduced}>
-            <ul className="space-y-3">
-              {growthBars.map((bar, i) => (
-                <li key={bar.label} className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-semibold text-muted-foreground">{bar.label}</span>
-                    <span className="text-[11px] font-bold text-foreground num">
-                      {bar.value}{bar.suffix || ""}
-                    </span>
-                  </div>
-                  <div
-                    className="h-1.5 w-full overflow-hidden rounded-full bg-border/60"
-                    role="progressbar"
-                    aria-valuenow={bar.value}
-                    aria-valuemin={0}
-                    aria-valuemax={bar.max}
-                    aria-label={`${bar.label} progress`}
-                  >
-                    <motion.div
-                      className="h-full rounded-full"
-                      style={{ backgroundColor: bar.color }}
-                      initial={{ width: "0%" }}
-                      whileInView={{ width: `${Math.min((bar.value / bar.max) * 100, 100)}%` }}
-                      viewport={{ once: true, amount: 0.6 }}
-                      transition={{ duration: 1.2, delay: 0.3 + i * 0.15, ease: NOTE_EASE }}
-                    />
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </StickyNoteCard>
-
-          {/* Card 2 — Status Distribution */}
-          <StickyNoteCard label="স্ট্যাটাস ডিস্ট্রিবিউশন" delay={0.18} prefersReduced={prefersReduced}>
-            <div className="flex flex-col items-center">
-              <div className="relative size-28">
-                <StatusDonutChart data={statusData} total={opportunities.length} />
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-lg font-bold text-foreground num">{opportunities.length}</span>
-                  <span className="text-[9px] text-muted-foreground">মোট</span>
+    <section
+      className="w-full bg-[#F9FAFB] py-16 px-[5%]"
+      style={{ backgroundColor: "#F9FAFB", padding: "64px 5%" }}
+    >
+      <div className="mx-auto grid max-w-5xl gap-10 md:grid-cols-3 md:gap-12">
+        {/* Card 1 — Growth Stats */}
+        <StickyNoteCard label="সামগ্রিক প্রবৃদ্ধি" delay={0.05} prefersReduced={prefersReduced}>
+          <ul className="space-y-3">
+            {growthBars.map((bar, i) => (
+              <li key={bar.label} className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-muted-foreground">{bar.label}</span>
+                  <span className="text-[11px] font-bold text-foreground num">
+                    {bar.value}{bar.suffix || ""}
+                  </span>
                 </div>
-              </div>
-              <div className="mt-3 w-full space-y-1.5">
-                {statusData.map((s, i) => (
-                  <div key={i} className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <div className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: HERO_STATUS_COLORS[s.name] || "#94a3b8" }} />
-                      <span className="text-[10px] font-semibold text-muted-foreground truncate">{s.name.replace("বিনিয়োগ নেওয়া ", "")}</span>
-                    </div>
-                    <span className="text-[11px] font-bold num shrink-0">{s.value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </StickyNoteCard>
-
-          {/* Card 3 — Recent Opportunities */}
-          <StickyNoteCard label="নতুন সুযোগসমূহ" delay={0.31} prefersReduced={prefersReduced}>
-            <div className="space-y-3">
-              {recentOpps.map((opp, i) => {
-                const catIcon = getCategoryIcon(opp.category);
-                return (
+                <div
+                  className="h-1.5 w-full overflow-hidden rounded-full bg-border/60"
+                  role="progressbar"
+                  aria-valuenow={bar.value}
+                  aria-valuemin={0}
+                  aria-valuemax={bar.max}
+                  aria-label={`${bar.label} progress`}
+                >
                   <motion.div
-                    key={opp.id}
-                    className="flex items-center gap-2.5 rounded-xl border border-border bg-card p-2 shadow-note"
-                    initial={prefersReduced ? { opacity: 1 } : { opacity: 0, y: 14, scale: 0.95 }}
-                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                    viewport={{ once: true, amount: 0.4 }}
-                    transition={{ duration: 0.55, delay: 0.3 + i * 0.08, ease: NOTE_EASE }}
-                    whileHover={prefersReduced ? {} : { y: -4, scale: 1.04 }}
-                  >
-                    <span className={`flex size-8 items-center justify-center rounded-lg ${catIcon.bg}`}>
-                      {catIcon.icon}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[11px] font-semibold text-foreground truncate leading-tight">{opp.name}</p>
-                      <p className="text-[10px] text-muted-foreground num">{opp.investment_amount}</p>
-                    </div>
-                  </motion.div>
-                );
-              })}
+                    className="h-full rounded-full"
+                    style={{ backgroundColor: bar.color }}
+                    initial={{ width: "0%" }}
+                    whileInView={{ width: `${Math.min((bar.value / bar.max) * 100, 100)}%` }}
+                    viewport={{ once: true, amount: 0.6 }}
+                    transition={{ duration: 1.2, delay: 0.3 + i * 0.15, ease: NOTE_EASE }}
+                  />
+                </div>
+              </li>
+            ))}
+          </ul>
+        </StickyNoteCard>
+
+        {/* Card 2 — Status Distribution */}
+        <StickyNoteCard label="স্ট্যাটাস ডিস্ট্রিবিউশন" delay={0.18} prefersReduced={prefersReduced}>
+          <div className="flex flex-col items-center">
+            <div className="relative size-28">
+              <StatusDonutChart data={statusData} total={opportunities.length} />
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-lg font-bold text-foreground num">{opportunities.length}</span>
+                <span className="text-[9px] text-muted-foreground">মোট</span>
+              </div>
             </div>
-          </StickyNoteCard>
-        </div>
+            <div className="mt-3 w-full space-y-1.5">
+              {statusData.map((s, i) => (
+                <div key={i} className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <div className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: HERO_STATUS_COLORS[s.name] || "#94a3b8" }} />
+                    <span className="text-[10px] font-semibold text-muted-foreground truncate">{s.name.replace("বিনিয়োগ নেওয়া ", "")}</span>
+                  </div>
+                  <span className="text-[11px] font-bold num shrink-0">{s.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </StickyNoteCard>
+
+        {/* Card 3 — Recent Opportunities */}
+        <StickyNoteCard label="নতুন সুযোগসমূহ" delay={0.31} prefersReduced={prefersReduced}>
+          <div className="space-y-3">
+            {recentOpps.map((opp, i) => {
+              const catIcon = getCategoryIcon(opp.category);
+              return (
+                <motion.div
+                  key={opp.id}
+                  className="flex items-center gap-2.5 rounded-xl border border-border bg-card p-2 shadow-note"
+                  initial={prefersReduced ? { opacity: 1 } : { opacity: 0, y: 14, scale: 0.95 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  viewport={{ once: true, amount: 0.4 }}
+                  transition={{ duration: 0.55, delay: 0.3 + i * 0.08, ease: NOTE_EASE }}
+                  whileHover={prefersReduced ? {} : { y: -4, scale: 1.04 }}
+                >
+                  <span className={`flex size-8 items-center justify-center rounded-lg ${catIcon.bg}`}>
+                    {catIcon.icon}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] font-semibold text-foreground truncate leading-tight">{opp.name}</p>
+                    <p className="text-[10px] text-muted-foreground num">{opp.investment_amount}</p>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </StickyNoteCard>
       </div>
     </section>
   );
