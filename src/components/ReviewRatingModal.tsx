@@ -3,9 +3,11 @@
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Loader2, CheckCircle2, Lock, LogIn } from "lucide-react";
+import { X, Info, Loader2, CheckCircle2, ArrowRight, Lock, LogIn } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Link } from "@tanstack/react-router";
+
+export type RatingState = "bad" | "neutral" | "good";
 
 export interface ReviewRatingModalSubmitData {
   rating: number;
@@ -23,50 +25,42 @@ export interface ReviewRatingModalProps {
   targetId?: string;
 }
 
-/**
- * Converts a 6-digit hex string to RGB tuple
- */
-function hexToRgb(hex: string): [number, number, number] {
-  const cleanHex = hex.replace("#", "");
-  const bigint = parseInt(cleanHex, 16);
-  const r = (bigint >> 16) & 255;
-  const g = (bigint >> 8) & 255;
-  const b = bigint & 255;
-  return [r, g, b];
-}
-
-/**
- * Linearly interpolates between two hex colors by factor t (0.0 to 1.0)
- */
-function lerpColor(c1: string, c2: string, t: number): string {
-  const clampedT = Math.max(0, Math.min(1, t));
-  const [r1, g1, b1] = hexToRgb(c1);
-  const [r2, g2, b2] = hexToRgb(c2);
-  const r = Math.round(r1 + (r2 - r1) * clampedT);
-  const g = Math.round(g1 + (g2 - g1) * clampedT);
-  const b = Math.round(b1 + (b2 - b1) * clampedT);
-  return `rgb(${r}, ${g}, ${b})`;
-}
-
-/**
- * Background interpolation based on slider value (0.0 to 1.0):
- * - Not Good (0.0): #F5C518 (bold yellow)
- * - Good: interpolate #F5C518 -> #7BC043
- * - Excellent (1.0): #7BC043 (bold green)
- */
-export function getRatingBackgroundColor(value: number): string {
-  const clamped = Math.max(0, Math.min(1, value));
-  return lerpColor("#F5C518", "#7BC043", clamped);
-}
-
-/**
- * Returns textual status indicator for the rating value
- */
-export function getRatingStatus(value: number): "Not Good" | "Good" | "Excellent" {
-  if (value < 0.33) return "Not Good";
-  if (value <= 0.66) return "Good";
-  return "Excellent";
-}
+const STATE_CONFIG: Record<
+  RatingState,
+  {
+    rating: number;
+    bg: string;
+    actionBg: string;
+    sliderPct: number;
+    mouthD: string;
+    isCapsuleEye: boolean;
+  }
+> = {
+  bad: {
+    rating: 0.0,
+    bg: "#FE643F",
+    actionBg: "rgba(255, 255, 255, 0.22)",
+    sliderPct: 0,
+    mouthD: "M 8 28 Q 28 8 48 28",
+    isCapsuleEye: false,
+  },
+  neutral: {
+    rating: 0.5,
+    bg: "#CEB166",
+    actionBg: "rgba(255, 255, 255, 0.22)",
+    sliderPct: 50,
+    mouthD: "M 8 16 Q 28 22 48 16",
+    isCapsuleEye: true,
+  },
+  good: {
+    rating: 1.0,
+    bg: "#A1CB34",
+    actionBg: "rgba(255, 255, 255, 0.25)",
+    sliderPct: 100,
+    mouthD: "M 8 10 Q 28 34 48 10",
+    isCapsuleEye: false,
+  },
+};
 
 export function ReviewRatingModal({
   isOpen,
@@ -76,34 +70,40 @@ export function ReviewRatingModal({
   targetId,
 }: ReviewRatingModalProps) {
   const { user, profile, loading: authLoading } = useAuth();
-  const [sliderValue, setSliderValue] = React.useState<number>(0.5);
+
+  const [ratingState, setRatingState] = React.useState<RatingState>("good");
   const [note, setNote] = React.useState<string>("");
-  const [hasInvested, setHasInvested] = React.useState<boolean | null>(null);
+  const [hasInvested, setHasInvested] = React.useState<boolean>(true);
   const [userIdentity, setUserIdentity] = React.useState<string>("");
-  const [errors, setErrors] = React.useState<{ hasInvested?: string; userIdentity?: string; note?: string }>({});
+  const [showNoteDrawer, setShowNoteDrawer] = React.useState<boolean>(false);
+  const [showInfoOverlay, setShowInfoOverlay] = React.useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
   const [isSuccess, setIsSuccess] = React.useState<boolean>(false);
-  const noteInputRef = React.useRef<HTMLTextAreaElement | null>(null);
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
+
+  const sliderTrackRef = React.useRef<HTMLDivElement | null>(null);
+  const isDraggingRef = React.useRef<boolean>(false);
   const autoCloseTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Reset internal states when opened
+  // Reset states on open
   React.useEffect(() => {
     if (isOpen) {
-      setSliderValue(0.5);
+      setRatingState("good");
       setNote("");
-      setHasInvested(null);
-      setUserIdentity("");
-      setErrors({});
+      setHasInvested(true);
+      setUserIdentity(profile?.occupation || "বিনিয়োগকারী");
+      setShowNoteDrawer(false);
+      setShowInfoOverlay(false);
       setIsSubmitting(false);
       setIsSuccess(false);
+      setErrorMessage(null);
     } else {
       if (autoCloseTimerRef.current) {
         clearTimeout(autoCloseTimerRef.current);
       }
     }
-  }, [isOpen]);
+  }, [isOpen, profile]);
 
-  // Clean up timer on unmount
   React.useEffect(() => {
     return () => {
       if (autoCloseTimerRef.current) {
@@ -112,512 +112,587 @@ export function ReviewRatingModal({
     };
   }, []);
 
-  const activeSliderValue = isSuccess ? 1.0 : sliderValue;
-  const backgroundColor = getRatingBackgroundColor(activeSliderValue);
-  const statusText = getRatingStatus(sliderValue);
+  const currentConfig = STATE_CONFIG[ratingState];
 
-  // Watermark logic:
-  // sliderValue 0.0-0.33: left="NOT GOOD", right="GOOD"
-  // sliderValue 0.33-0.66: left="GOOD", right="EXCELLENT"
-  // sliderValue 0.66-1.0: left="GOOD", right="EXCELLENT"
-  const leftWatermark = sliderValue < 0.33 ? "NOT GOOD" : "GOOD";
-  const rightWatermark = sliderValue < 0.33 ? "GOOD" : "EXCELLENT";
+  // Drag / Click slider logic
+  const handleSliderPosition = React.useCallback((clientX: number) => {
+    if (!sliderTrackRef.current) return;
+    const rect = sliderTrackRef.current.getBoundingClientRect();
+    const relativeX = Math.max(0, Math.min(clientX - rect.left, rect.width));
+    const ratio = relativeX / rect.width;
 
-  // Mouth Bezier Curve control point:
-  // M 10 30 Q 60 [controlY] 110 30
-  // controlY = 10 + (sliderValue * 40)
-  const mouthControlY = 10 + activeSliderValue * 40;
-
-  const validateForm = (): boolean => {
-    const newErrors: { hasInvested?: string; userIdentity?: string; note?: string } = {};
-
-    if (hasInvested === null) {
-      newErrors.hasInvested = "অনুগ্রহ করে নির্বাচন করুন";
+    if (ratio < 0.28) {
+      setRatingState("bad");
+    } else if (ratio > 0.72) {
+      setRatingState("good");
+    } else {
+      setRatingState("neutral");
     }
+  }, []);
 
-    if (!userIdentity.trim()) {
-      newErrors.userIdentity = "আপনার পেশা বা পরিচয় লিখুন";
-    }
-
-    if (!note.trim()) {
-      newErrors.note = "অনুগ্রহ করে আপনার মতামত লিখুন";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const handlePointerDown = (e: React.PointerEvent) => {
+    isDraggingRef.current = true;
+    handleSliderPosition(e.clientX);
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDraggingRef.current) return;
+    handleSliderPosition(e.clientX);
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    isDraggingRef.current = false;
+    try {
+      (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleRatingSubmit = async () => {
     if (isSubmitting || isSuccess) return;
 
-    if (!validateForm()) {
+    if (!user) {
+      setShowInfoOverlay(true);
       return;
     }
 
+    const defaultNotes: Record<RatingState, string> = {
+      good: "খুব ভালো অভিজ্ঞতা, প্ল্যাটফর্মের স্বচ্ছতা ও সেবা প্রশংসনীয়।",
+      neutral: "মোটামুটি অভিজ্ঞতা, কিছু ক্ষেত্রে আরও উন্নয়নের সুযোগ রয়েছে।",
+      bad: "অভিজ্ঞতা আশানুরূপ ছিল না, সেবা ও প্রক্রিয়ায় উন্নতি প্রয়োজন।",
+    };
+
+    const finalNote = note.trim() || defaultNotes[ratingState];
+    const finalIdentity =
+      userIdentity.trim() || profile?.occupation || "সম্মানিত বিনিয়োগকারী";
+
     try {
       setIsSubmitting(true);
-      await onSubmit({
-        rating: sliderValue,
-        note: note.trim(),
-        has_invested: Boolean(hasInvested),
-        user_identity: userIdentity.trim(),
-      });
-      setIsSuccess(true);
+      setErrorMessage(null);
 
-      // Auto close after 2 seconds
+      await onSubmit({
+        rating: currentConfig.rating,
+        note: finalNote,
+        has_invested: hasInvested,
+        user_identity: finalIdentity,
+      });
+
+      setIsSuccess(true);
+      setShowNoteDrawer(false);
+
       autoCloseTimerRef.current = setTimeout(() => {
         onClose();
         setIsSuccess(false);
-      }, 2000);
-    } catch (error) {
-      console.error("Failed to submit rating:", error);
+      }, 1800);
+    } catch (err: any) {
+      console.error("Review submission error:", err);
+      setErrorMessage(err?.message || "মতামত জমা দিতে সমস্যা হয়েছে।");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const reviewerDisplayName = profile?.full_name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "সম্মানিত বিনিয়োগকারী";
-
   return (
-    <DialogPrimitive.Root open={isOpen} onOpenChange={(open) => !open && !isSubmitting && onClose()}>
+    <DialogPrimitive.Root
+      open={isOpen}
+      onOpenChange={(open) => !open && !isSubmitting && onClose()}
+    >
       <DialogPrimitive.Portal>
-        {/* Backdrop overlay */}
+        {/* Backdrop Overlay */}
         <DialogPrimitive.Overlay asChild>
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs transition-opacity"
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4"
           />
         </DialogPrimitive.Overlay>
 
-        {/* Modal container */}
+        {/* Dialog Content */}
         <DialogPrimitive.Content asChild>
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 pointer-events-none">
             <motion.div
-              initial={{ opacity: 0, scale: 0.96, y: 12 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96, y: 12 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              style={{ backgroundColor: !user ? "#FFFFFF" : backgroundColor }}
-              className="relative w-full max-w-md rounded-2xl p-6 sm:p-7 shadow-2xl transition-colors duration-200 border border-black/5 text-[#111827] overflow-hidden"
+              initial={{ opacity: 0, scale: 0.92, y: 16 }}
+              animate={{
+                opacity: 1,
+                scale: 1,
+                y: 0,
+                backgroundColor: currentConfig.bg,
+              }}
+              exit={{ opacity: 0, scale: 0.92, y: 16 }}
+              transition={{
+                backgroundColor: { duration: 0.32, ease: "easeInOut" },
+                scale: { duration: 0.22, ease: "easeOut" },
+                opacity: { duration: 0.2 },
+              }}
+              className="pointer-events-auto relative w-full max-w-[325px] sm:max-w-[340px] h-[580px] sm:h-[600px] rounded-[36px] overflow-hidden select-none shadow-2xl flex flex-col justify-between"
             >
               {/* Accessibility Description */}
               <DialogPrimitive.Description className="sr-only">
-                বিনিয়োগ বৃদ্ধি প্ল্যাটফর্মে আপনার অভিজ্ঞতার রেটিং এবং মতামত জমা দিন।
+                How was your shopping experience rating interface with Bad, Not Bad, and Good states.
               </DialogPrimitive.Description>
 
-              {/* Top Row: Close Button + Title */}
-              <div className="relative flex items-center justify-between pb-3">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  disabled={isSubmitting}
-                  aria-label="বন্ধ করুন"
-                  className="p-1.5 rounded-md text-[#111827]/70 hover:text-[#111827] hover:bg-black/5 transition-colors disabled:opacity-40 cursor-pointer"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+              {/* ────────────────── TOP ZONE: Header Controls (5–16%) & Heading (18–27%) ────────────────── */}
+              <div className="pt-6 px-6 relative z-10">
+                {/* Header buttons: Close (left), Info (right) */}
+                <div className="flex items-center justify-between mb-5">
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    disabled={isSubmitting}
+                    aria-label="Close review modal"
+                    className="w-9 h-9 rounded-full bg-black/10 hover:bg-black/18 active:scale-95 transition-all flex items-center justify-center text-black cursor-pointer"
+                  >
+                    <X className="w-4 h-4 stroke-[2.4]" />
+                  </button>
 
-                <DialogPrimitive.Title className="text-base sm:text-lg font-semibold text-[#111827] text-center flex-1 pr-7">
-                  {!user ? "মতামত প্রদান" : "আপনার অভিজ্ঞতা কেমন ছিল?"}
-                </DialogPrimitive.Title>
+                  <button
+                    type="button"
+                    onClick={() => setShowInfoOverlay((prev) => !prev)}
+                    aria-label="Info about reviews"
+                    className="w-9 h-9 rounded-full bg-black/10 hover:bg-black/18 active:scale-95 transition-all flex items-center justify-center text-black cursor-pointer"
+                  >
+                    <Info className="w-4 h-4 stroke-[2.4]" />
+                  </button>
+                </div>
+
+                {/* Heading: Two lines, center aligned, compact line-height, medium/semibold weight */}
+                <div className="text-center">
+                  <DialogPrimitive.Title className="text-[19px] sm:text-[20px] font-semibold text-black leading-[1.22] tracking-tight font-sans">
+                    How was your shopping
+                    <br />
+                    experience
+                  </DialogPrimitive.Title>
+                </div>
               </div>
 
-              {/* ─── Case 1: Visitor is Logged Out ─── */}
-              {authLoading ? (
-                <div className="py-12 text-center text-[#6B7280]">
-                  <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-[#111827]" />
-                  <span className="text-xs font-medium">যাচাই করা হচ্ছে...</span>
-                </div>
-              ) : !user ? (
-                <div className="py-6 px-2 text-center space-y-4">
-                  <div className="mx-auto w-12 h-12 rounded-xl bg-gray-100 text-[#111827] flex items-center justify-center border border-gray-200">
-                    <Lock className="w-5 h-5" />
+              {/* ────────────────── CENTER ZONE: Face Expression (34–52%) & State Label (60–72%) ────────────────── */}
+              <div className="relative flex-1 flex flex-col items-center justify-center my-auto -mt-2">
+                {/* Face: Eyes + Mouth */}
+                <div className="flex flex-col items-center justify-center">
+                  {/* Eyes */}
+                  <div className="flex items-center justify-center gap-11 mb-4 h-4">
+                    {/* Left Eye */}
+                    <motion.div
+                      animate={{
+                        width: currentConfig.isCapsuleEye ? 28 : 13,
+                        height: currentConfig.isCapsuleEye ? 9 : 13,
+                        borderRadius: 9999,
+                      }}
+                      transition={{ type: "spring", stiffness: 400, damping: 28 }}
+                      className="bg-black shrink-0"
+                    />
+                    {/* Right Eye */}
+                    <motion.div
+                      animate={{
+                        width: currentConfig.isCapsuleEye ? 28 : 13,
+                        height: currentConfig.isCapsuleEye ? 9 : 13,
+                        borderRadius: 9999,
+                      }}
+                      transition={{ type: "spring", stiffness: 400, damping: 28 }}
+                      className="bg-black shrink-0"
+                    />
                   </div>
 
-                  <div className="space-y-1.5 max-w-sm mx-auto">
-                    <h3 className="text-base font-semibold text-[#111827]">
-                      মতামত দিতে লগইন করুন
-                    </h3>
-                    <p className="text-xs text-[#6B7280] leading-relaxed">
-                      প্ল্যাটফর্মের স্বচ্ছতা ও নির্ভরযোগ্যতা বজায় রাখতে শুধুমাত্র নিবন্ধিত বিনিয়োগকারীগণ রিভিউ দিতে পারেন।
-                    </p>
-                  </div>
-
-                  <div className="pt-2 flex flex-col gap-2 max-w-xs mx-auto">
-                    <Link
-                      to="/login"
-                      onClick={onClose}
-                      className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-[6px] bg-[#111827] text-white font-medium text-xs shadow-xs hover:opacity-85 transition-opacity cursor-pointer"
-                    >
-                      <LogIn className="w-3.5 h-3.5" />
-                      <span>লগইন করুন</span>
-                    </Link>
-
-                    <Link
-                      to="/register"
-                      onClick={onClose}
-                      className="w-full inline-flex items-center justify-center gap-2 py-2 px-4 rounded-[6px] bg-transparent text-[#374151] font-medium text-xs border border-[#E5E7EB] hover:bg-gray-50 transition-colors cursor-pointer"
-                    >
-                      <span>নতুন অ্যাকাউন্ট তৈরি করুন</span>
-                    </Link>
-
-                    <button
-                      type="button"
-                      onClick={onClose}
-                      className="text-[11px] text-[#6B7280] hover:text-[#111827] font-medium pt-1 cursor-pointer transition-colors"
-                    >
-                      পরে করব
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                /* ─── Case 2: User is Authenticated ─── */
-                <form onSubmit={handleSubmit}>
-                  {/* Reviewer Header Badge */}
-                  <div className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-lg bg-white/30 border border-white/40 text-xs text-[#111827] mb-3 backdrop-blur-xs">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="w-5 h-5 rounded-full bg-[#111827] text-white font-semibold text-[10px] flex items-center justify-center shrink-0">
-                        {reviewerDisplayName.charAt(0).toUpperCase()}
-                      </div>
-                      <span className="font-medium text-[#111827] truncate text-xs">{reviewerDisplayName}</span>
-                    </div>
-                    <span className="text-[10px] font-semibold text-emerald-950 bg-emerald-100/80 px-2 py-0.5 rounded border border-emerald-400/50 shrink-0">
-                      ✓ যাচাইকৃত
-                    </span>
-                  </div>
-
-                  {/* ─── Face Section (NO circle, NO container, NO border around face) ─── */}
-                  <div className="flex flex-col items-center justify-center gap-2 pt-2 pb-1 select-none">
-                    {/* Eyes: Two black (#111827) rounded rectangles (50x28px, rx 14px, 24px gap, centered) */}
-                    <div className="flex items-center justify-center gap-[24px]">
-                      <div className="w-[50px] h-[28px] rounded-[14px] bg-[#111827]" />
-                      <div className="w-[50px] h-[28px] rounded-[14px] bg-[#111827]" />
-                    </div>
-
-                    {/* Mouth: Single SVG 120x50px, quadratic bezier M 10 30 Q 60 controlY 110 30 */}
+                  {/* Mouth: SVG Smooth stroke */}
+                  <div className="h-10 flex items-center justify-center">
                     <svg
-                      width="120"
-                      height="50"
-                      viewBox="0 0 120 50"
+                      width="56"
+                      height="38"
+                      viewBox="0 0 56 38"
                       className="overflow-visible"
                       aria-hidden="true"
                     >
                       <motion.path
-                        d={`M 10 30 Q 60 ${mouthControlY.toFixed(2)} 110 30`}
+                        animate={{ d: currentConfig.mouthD }}
+                        transition={{ type: "spring", stiffness: 350, damping: 26 }}
                         fill="none"
-                        stroke="#111827"
-                        strokeWidth={3}
+                        stroke="#000000"
+                        strokeWidth="3.6"
                         strokeLinecap="round"
-                        transition={{ type: "spring", stiffness: 80, damping: 18 }}
                       />
                     </svg>
                   </div>
+                </div>
 
-                  {/* ─── Status Text (below face: 36px, 900, opacity 0.9, animated) ─── */}
-                  <div className="h-10 flex items-center justify-center select-none overflow-hidden my-1">
-                    <AnimatePresence mode="wait">
-                      <motion.span
-                        key={statusText}
-                        initial={{ opacity: 0, y: 4 }}
-                        animate={{ opacity: 0.9, y: 0 }}
-                        exit={{ opacity: 0, y: -4 }}
-                        transition={{ duration: 0.15 }}
-                        className="text-[36px] font-black tracking-tight uppercase text-[#111827] leading-none"
-                      >
-                        {statusText.toUpperCase()}
-                      </motion.span>
-                    </AnimatePresence>
+                {/* State Label Watermark Track (60–72%) */}
+                {/* Fixed height, overflow-hidden: BAD centered in bad state, GOOD centered in good state, BAD clipped left & GOOD clipped right in neutral state */}
+                <div className="relative w-full h-[62px] overflow-hidden flex items-center justify-center mt-3 pointer-events-none">
+                  {/* "BAD" Label */}
+                  <motion.span
+                    animate={{
+                      x: ratingState === "bad" ? 0 : ratingState === "neutral" ? -110 : -250,
+                      opacity: ratingState === "good" ? 0 : 0.16,
+                    }}
+                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                    className="absolute text-[52px] sm:text-[56px] font-black uppercase text-black tracking-tight leading-none whitespace-nowrap"
+                  >
+                    BAD
+                  </motion.span>
+
+                  {/* "GOOD" Label */}
+                  <motion.span
+                    animate={{
+                      x: ratingState === "good" ? 0 : ratingState === "neutral" ? 110 : 250,
+                      opacity: ratingState === "bad" ? 0 : 0.16,
+                    }}
+                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                    className="absolute text-[52px] sm:text-[56px] font-black uppercase text-black tracking-tight leading-none whitespace-nowrap"
+                  >
+                    GOOD
+                  </motion.span>
+                </div>
+              </div>
+
+              {/* ────────────────── BOTTOM ZONE: Rating Slider (75–88%) & Action Area (91–98%) ────────────────── */}
+              <div className="pb-6 px-6 relative z-10">
+                {/* Rating Slider */}
+                <div className="w-[88%] mx-auto mb-6">
+                  {/* Slider Line & Thumb Track */}
+                  <div
+                    ref={sliderTrackRef}
+                    onPointerDown={handlePointerDown}
+                    onPointerMove={handlePointerMove}
+                    onPointerUp={handlePointerUp}
+                    className="relative h-7 flex items-center cursor-pointer touch-none"
+                  >
+                    {/* Thin Horizontal Black Line */}
+                    <div className="w-full h-[2px] bg-black rounded-full" />
+
+                    {/* 3 Fixed Small Black Circular Markers */}
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setRatingState("bad");
+                      }}
+                      className="absolute left-0 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-black cursor-pointer"
+                    />
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setRatingState("neutral");
+                      }}
+                      className="absolute left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-black cursor-pointer"
+                    />
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setRatingState("good");
+                      }}
+                      className="absolute right-0 translate-x-1/2 w-1.5 h-1.5 rounded-full bg-black cursor-pointer"
+                    />
+
+                    {/* Active Marker Thumb with visible white indicator detail */}
+                    <motion.div
+                      animate={{
+                        left: `${currentConfig.sliderPct}%`,
+                      }}
+                      transition={{ type: "spring", stiffness: 450, damping: 32 }}
+                      className="absolute -translate-x-1/2 w-[22px] h-[22px] rounded-full bg-black shadow-md flex items-center justify-center cursor-grab active:cursor-grabbing z-20"
+                    >
+                      {/* White indicator dot inside active thumb */}
+                      <div className="w-[6px] h-[6px] rounded-full bg-white" />
+                    </motion.div>
                   </div>
 
-                  {/* Success State */}
-                  <AnimatePresence>
-                    {isSuccess && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        className="flex flex-col items-center justify-center py-4 text-center"
-                      >
-                        <CheckCircle2 className="w-9 h-9 text-emerald-950 mb-1.5" />
-                        <p className="text-sm font-semibold text-[#111827]">ধন্যবাদ!</p>
-                        <p className="text-xs text-[#111827]/75 mt-0.5">
-                          আপনার মতামত সফলভাবে জমা হয়েছে।
-                        </p>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  {/* Slider Labels directly beneath corresponding markers */}
+                  <div className="relative flex justify-between items-center text-[12px] font-medium text-black pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setRatingState("bad")}
+                      className={`cursor-pointer transition-opacity ${
+                        ratingState === "bad" ? "font-bold opacity-100" : "opacity-80 hover:opacity-100"
+                      }`}
+                    >
+                      Bad
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRatingState("neutral")}
+                      className={`cursor-pointer transition-opacity ${
+                        ratingState === "neutral" ? "font-bold opacity-100" : "opacity-80 hover:opacity-100"
+                      }`}
+                    >
+                      Not Bad
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRatingState("good")}
+                      className={`cursor-pointer transition-opacity ${
+                        ratingState === "good" ? "font-bold opacity-100" : "opacity-80 hover:opacity-100"
+                      }`}
+                    >
+                      Good
+                    </button>
+                  </div>
+                </div>
 
-                  {/* ─── Slider Section (position: relative, overflow: hidden) ─── */}
-                  {!isSuccess && (
-                    <div className="relative overflow-hidden py-4 my-1 select-none">
-                      {/* Left Watermark: absolute, left -16px, top 50%, translateY(-50%), z-0 */}
-                      <span
-                        className="absolute -left-[16px] top-1/2 -translate-y-1/2 text-[56px] font-black tracking-normal uppercase text-[#111827] opacity-[0.12] select-none leading-none whitespace-nowrap pointer-events-none z-0"
-                      >
-                        {leftWatermark}
-                      </span>
+                {/* Bottom Action Area (Visible in GOOD state, translated below crop in BAD & NEUTRAL) */}
+                <div className="h-[54px] relative overflow-hidden flex items-center justify-center">
+                  <motion.div
+                    animate={{
+                      y: ratingState === "good" ? 0 : 80,
+                      opacity: ratingState === "good" ? 1 : 0,
+                    }}
+                    transition={{ type: "spring", stiffness: 350, damping: 28 }}
+                    style={{ backgroundColor: currentConfig.actionBg }}
+                    className="w-full h-full rounded-full flex items-center justify-between pl-5 pr-1.5 shadow-xs"
+                  >
+                    {/* Left text: Add Note */}
+                    <button
+                      type="button"
+                      onClick={() => setShowNoteDrawer(true)}
+                      className="text-black font-semibold text-[13px] hover:opacity-75 transition-opacity cursor-pointer text-left"
+                    >
+                      {note.trim() ? "Edit Note" : "Add Note"}
+                    </button>
 
-                      {/* Right Watermark: absolute, right -16px, top 50%, translateY(-50%), z-0 */}
-                      <span
-                        className="absolute -right-[16px] top-1/2 -translate-y-1/2 text-[56px] font-black tracking-normal uppercase text-[#111827] opacity-[0.12] select-none leading-none whitespace-nowrap pointer-events-none z-0"
-                      >
-                        {rightWatermark}
-                      </span>
+                    {/* Right rounded light button: Submit  → */}
+                    <button
+                      type="button"
+                      onClick={handleRatingSubmit}
+                      disabled={isSubmitting || isSuccess}
+                      className="bg-white hover:bg-white/90 active:scale-95 text-black font-bold text-[13px] px-4 py-2.5 rounded-full shadow-xs flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <span>Submitting...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Submit</span>
+                          <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
+                        </>
+                      )}
+                    </button>
+                  </motion.div>
+                </div>
+              </div>
 
-                      {/* Actual Slider: z-index: 1, position: relative */}
-                      <div className="relative z-[1] space-y-2.5">
-                        {/* Track height 3px, bg rgba(0,0,0,0.2), active #111827, Thumb 22px circle #111827 */}
-                        <div className="relative px-0.5 flex items-center">
+              {/* ────────────────── SUCCESS STATE OVERLAY ────────────────── */}
+              <AnimatePresence>
+                {isSuccess && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute inset-0 z-30 bg-black/75 backdrop-blur-xs flex flex-col items-center justify-center p-6 text-center text-white"
+                  >
+                    <CheckCircle2 className="w-12 h-12 text-[#A1CB34] mb-3" />
+                    <h3 className="text-xl font-bold mb-1">ধন্যবাদ!</h3>
+                    <p className="text-sm text-white/80 max-w-xs">
+                      আপনার মূল্যবান মতামত সফলভাবে জমা হয়েছে।
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* ────────────────── NOTE DRAWER OVERLAY (Opened via "Add Note") ────────────────── */}
+              <AnimatePresence>
+                {showNoteDrawer && (
+                  <motion.div
+                    initial={{ y: "100%" }}
+                    animate={{ y: 0 }}
+                    exit={{ y: "100%" }}
+                    transition={{ type: "spring", damping: 28, stiffness: 320 }}
+                    className="absolute inset-0 z-40 bg-white text-[#111827] flex flex-col justify-between p-6 rounded-[36px]"
+                  >
+                    <div>
+                      {/* Drawer Header */}
+                      <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                        <h3 className="text-base font-bold text-gray-900">
+                          মতামত ও বিস্তারিত
+                        </h3>
+                        <button
+                          type="button"
+                          onClick={() => setShowNoteDrawer(false)}
+                          className="p-1 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      {/* Drawer Form Fields */}
+                      <div className="space-y-3 pt-3">
+                        {/* Has Invested Toggle */}
+                        <div>
+                          <label className="block text-[11px] font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                            আপনি কি বিনিয়োগ করেছেন?
+                          </label>
+                          <div className="grid grid-cols-2 gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setHasInvested(true)}
+                              className={`py-1.5 px-3 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                                hasInvested
+                                  ? "bg-black text-white border-black"
+                                  : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
+                              }`}
+                            >
+                              হ্যাঁ
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setHasInvested(false)}
+                              className={`py-1.5 px-3 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                                !hasInvested
+                                  ? "bg-black text-white border-black"
+                                  : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
+                              }`}
+                            >
+                              না
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Identity Field */}
+                        <div>
+                          <label className="block text-[11px] font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                            আপনার পেশা / পরিচয়
+                          </label>
                           <input
-                            type="range"
-                            min="0"
-                            max="1"
-                            step="0.01"
-                            value={sliderValue}
-                            onChange={(e) => setSliderValue(parseFloat(e.target.value))}
-                            disabled={isSubmitting || isSuccess}
-                            aria-label="রেটিং নির্বাচন করুন"
-                            className="corporate-rating-slider w-full h-[3px] appearance-none cursor-pointer focus:outline-none"
-                            style={{
-                              background: `linear-gradient(to right, #111827 0%, #111827 ${sliderValue * 100}%, rgba(0, 0, 0, 0.2) ${sliderValue * 100}%, rgba(0, 0, 0, 0.2) 100%)`,
-                            }}
+                            type="text"
+                            value={userIdentity}
+                            onChange={(e) => setUserIdentity(e.target.value)}
+                            placeholder="যেমন: ব্যবসায়ী, ব্যাংকার"
+                            className="w-full text-xs rounded-lg border border-gray-200 px-3 py-2 bg-gray-50 focus:bg-white focus:border-black focus:outline-none transition-colors"
                           />
                         </div>
 
-                        {/* 3 Tick Dots at 0%, 50%, 100% positions (6px circle, active opacity 1.0, inactive 0.4) */}
-                        <div className="flex justify-between items-center px-1 select-none">
-                          {[0.0, 0.5, 1.0].map((tick) => {
-                            const isActive = sliderValue >= tick - 0.05;
-                            return (
-                              <button
-                                key={tick}
-                                type="button"
-                                onClick={() => setSliderValue(tick)}
-                                className={`w-[6px] h-[6px] rounded-full bg-[#111827] transition-opacity duration-150 cursor-pointer ${
-                                  isActive ? "opacity-100 scale-110" : "opacity-40 hover:opacity-75"
-                                }`}
-                                aria-label={`রেটিং ${tick * 100}%`}
-                              />
-                            );
-                          })}
+                        {/* Note Textarea */}
+                        <div>
+                          <label className="block text-[11px] font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                            আপনার মন্তব্য
+                          </label>
+                          <textarea
+                            value={note}
+                            onChange={(e) => setNote(e.target.value)}
+                            placeholder="প্ল্যাটফর্মে আপনার অভিজ্ঞতা ও পরামর্শ লিখুন..."
+                            rows={3}
+                            className="w-full text-xs rounded-lg border border-gray-200 p-2.5 bg-gray-50 focus:bg-white focus:border-black focus:outline-none resize-none transition-colors"
+                          />
                         </div>
 
-                        {/* Labels below dots: 11px, color #111827, opacity 0.7 */}
-                        <div className="flex justify-between items-center text-[11px] text-[#111827] opacity-70 px-0.5 select-none font-medium">
-                          <button
-                            type="button"
-                            onClick={() => setSliderValue(0.0)}
-                            className={`cursor-pointer transition-all ${
-                              statusText === "Not Good" ? "font-bold opacity-100 text-[#111827]" : "hover:opacity-100"
-                            }`}
-                          >
-                            Not Good
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setSliderValue(0.5)}
-                            className={`cursor-pointer transition-all ${
-                              statusText === "Good" ? "font-bold opacity-100 text-[#111827]" : "hover:opacity-100"
-                            }`}
-                          >
-                            Good
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setSliderValue(1.0)}
-                            className={`cursor-pointer transition-all ${
-                              statusText === "Excellent" ? "font-bold opacity-100 text-[#111827]" : "hover:opacity-100"
-                            }`}
-                          >
-                            Excellent
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* ─── Form Fields (below slider: bg rgba(255,255,255,0.25), border 1px solid rgba(255,255,255,0.4), rounded 8px) ─── */}
-                  {!isSuccess && (
-                    <div className="space-y-3 pt-1">
-                      {/* Field 1: আপনি কি বিনিয়োগ করেছেন? (radio হ্যাঁ/না) — required */}
-                      <div>
-                        <label className="block text-[12px] font-medium text-[#111827] mb-1.5">
-                          আপনি কি বিনিয়োগ করেছেন? <span className="text-rose-600">*</span>
-                        </label>
-                        <div className="grid grid-cols-2 gap-2">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setHasInvested(true);
-                              if (errors.hasInvested) {
-                                setErrors((prev) => ({ ...prev, hasInvested: undefined }));
-                              }
-                            }}
-                            className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-[8px] text-xs font-medium transition-all cursor-pointer border ${
-                              hasInvested === true
-                                ? "bg-[#111827] text-white border-[#111827] shadow-xs"
-                                : "bg-white/25 text-[#111827] border-white/40 hover:bg-white/35"
-                            }`}
-                          >
-                            <span>হ্যাঁ</span>
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setHasInvested(false);
-                              if (errors.hasInvested) {
-                                setErrors((prev) => ({ ...prev, hasInvested: undefined }));
-                              }
-                            }}
-                            className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-[8px] text-xs font-medium transition-all cursor-pointer border ${
-                              hasInvested === false
-                                ? "bg-[#111827] text-white border-[#111827] shadow-xs"
-                                : "bg-white/25 text-[#111827] border-white/40 hover:bg-white/35"
-                            }`}
-                          >
-                            <span>না</span>
-                          </button>
-                        </div>
-                        {errors.hasInvested && (
-                          <p className="text-[11px] text-rose-600 mt-1 pl-0.5">
-                            {errors.hasInvested}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Field 2: আপনার পরিচয় — required */}
-                      <div>
-                        <label className="block text-[12px] font-medium text-[#111827] mb-1">
-                          আপনার পরিচয় <span className="text-rose-600">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          value={userIdentity}
-                          onChange={(e) => {
-                            setUserIdentity(e.target.value);
-                            if (errors.userIdentity && e.target.value.trim()) {
-                              setErrors((prev) => ({ ...prev, userIdentity: undefined }));
-                            }
-                          }}
-                          placeholder="পেশা (যেমন: ব্যবসায়ী, চাকরিজীবী)"
-                          disabled={isSubmitting || isSuccess}
-                          className="w-full rounded-[8px] border border-white/40 bg-white/25 px-3 py-2 text-[14px] text-[#111827] placeholder:text-black/45 focus:border-[#111827] focus:outline-none transition-colors"
-                        />
-                        {errors.userIdentity && (
-                          <p className="text-[11px] text-rose-600 mt-1 pl-0.5">
-                            {errors.userIdentity}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Field 3: মতামত — single textarea, required */}
-                      <div>
-                        <label className="block text-[12px] font-medium text-[#111827] mb-1">
-                          মতামত <span className="text-rose-600">*</span>
-                        </label>
-                        <textarea
-                          ref={noteInputRef}
-                          value={note}
-                          onChange={(e) => {
-                            setNote(e.target.value);
-                            if (errors.note && e.target.value.trim()) {
-                              setErrors((prev) => ({ ...prev, note: undefined }));
-                            }
-                          }}
-                          placeholder="আপনার মতামত ও বিনিয়োগের অভিজ্ঞতা লিখুন..."
-                          rows={3}
-                          disabled={isSubmitting || isSuccess}
-                          className="w-full rounded-[8px] border border-white/40 bg-white/25 p-2.5 text-[14px] text-[#111827] placeholder:text-black/45 focus:border-[#111827] focus:outline-none resize-none transition-colors"
-                        />
-                        {errors.note && (
-                          <p className="text-[11px] text-rose-600 mt-1 pl-0.5">
-                            {errors.note}
+                        {errorMessage && (
+                          <p className="text-[11px] text-rose-600">
+                            {errorMessage}
                           </p>
                         )}
                       </div>
                     </div>
-                  )}
 
-                  {/* ─── Bottom Buttons: space-between ─── */}
-                  {!isSuccess && (
-                    <div className="pt-4 flex items-center justify-between gap-3">
-                      {/* Left: "নোট যোগ করুন" (ghost button, border: 1px solid rgba(0,0,0,0.25), bg: transparent, rounded: 8px) */}
+                    {/* Drawer Footer Actions */}
+                    <div className="pt-3 flex gap-2">
                       <button
                         type="button"
-                        onClick={() => noteInputRef.current?.focus()}
-                        className="py-2.5 px-4 rounded-[8px] border border-black/25 bg-transparent text-[#111827] text-xs font-medium hover:bg-black/5 transition-colors cursor-pointer"
+                        onClick={() => setShowNoteDrawer(false)}
+                        className="flex-1 py-2.5 rounded-full border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
                       >
-                        নোট যোগ করুন
+                        সংরক্ষণ করুন
                       </button>
-
-                      {/* Right: "জমা দিন →" (bg: #111827, color: white, rounded: 24px pill, padding: 12px 28px) */}
                       <button
-                        type="submit"
-                        disabled={isSubmitting || isSuccess}
-                        className="inline-flex items-center justify-center gap-1.5 py-3 px-7 rounded-[24px] bg-[#111827] text-white font-medium text-xs hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-sm"
+                        type="button"
+                        onClick={handleRatingSubmit}
+                        disabled={isSubmitting}
+                        className="flex-1 py-2.5 rounded-full bg-black text-white text-xs font-semibold hover:bg-gray-800 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                       >
                         {isSubmitting ? (
-                          <>
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            <span>পাঠানো হচ্ছে...</span>
-                          </>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
                         ) : (
-                          <span>জমা দিন →</span>
+                          <>
+                            <span>জমা দিন</span>
+                            <ArrowRight className="w-3 h-3" />
+                          </>
                         )}
                       </button>
                     </div>
-                  )}
-                </form>
-              )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-              {/* Slider Styling (3px track, 22px black thumb) */}
-              <style>{`
-                .corporate-rating-slider::-webkit-slider-runnable-track {
-                  height: 3px;
-                  border-radius: 9999px;
-                  background: transparent;
-                }
-                .corporate-rating-slider::-moz-range-track {
-                  height: 3px;
-                  border-radius: 9999px;
-                  background: transparent;
-                }
-                .corporate-rating-slider::-webkit-slider-thumb {
-                  -webkit-appearance: none;
-                  appearance: none;
-                  width: 22px;
-                  height: 22px;
-                  border-radius: 50%;
-                  background: #111827;
-                  cursor: pointer;
-                  margin-top: -9.5px;
-                  box-shadow: none;
-                  border: none;
-                  transition: opacity 0.15s ease, transform 0.15s ease;
-                }
-                .corporate-rating-slider::-moz-range-thumb {
-                  width: 22px;
-                  height: 22px;
-                  border-radius: 50%;
-                  background: #111827;
-                  cursor: pointer;
-                  box-shadow: none;
-                  border: none;
-                  transition: opacity 0.15s ease, transform 0.15s ease;
-                }
-                .corporate-rating-slider:hover::-webkit-slider-thumb {
-                  opacity: 0.9;
-                  transform: scale(1.05);
-                }
-                .corporate-rating-slider:hover::-moz-range-thumb {
-                  opacity: 0.9;
-                  transform: scale(1.05);
-                }
-              `}</style>
+              {/* ────────────────── INFO / AUTH OVERLAY (Opened via info ⓘ) ────────────────── */}
+              <AnimatePresence>
+                {showInfoOverlay && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="absolute inset-0 z-40 bg-white/95 backdrop-blur-md text-[#111827] flex flex-col justify-between p-6 rounded-[36px]"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                        <h3 className="text-sm font-bold text-gray-900 flex items-center gap-1.5">
+                          <Info className="w-4 h-4 text-[#A1CB34]" />
+                          রিভিউ ও রেটিং নির্দেশিকা
+                        </h3>
+                        <button
+                          type="button"
+                          onClick={() => setShowInfoOverlay(false)}
+                          className="p-1 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      <div className="py-4 space-y-3 text-xs text-gray-600 leading-relaxed">
+                        <p>
+                          বিনিয়োগ প্ল্যাটফর্মের স্বচ্ছতা এবং গুণমান বৃদ্ধির লক্ষ্যে আপনার অভিজ্ঞতা রেটিং সরাসরি পর্যবেক্ষণ করা হয়।
+                        </p>
+                        <ul className="list-disc pl-4 space-y-1 text-gray-700">
+                          <li>স্লাইডারটি বামে টেনে <strong>Bad</strong> নির্বাচন করুন</li>
+                          <li>মাঝখানে রেখে <strong>Not Bad</strong> নির্বাচন করুন</li>
+                          <li>ডানে টেনে <strong>Good</strong> নির্বাচন করুন</li>
+                        </ul>
+
+                        {!user && (
+                          <div className="mt-3 p-3 bg-amber-50 rounded-xl border border-amber-200/60 text-amber-900">
+                            <div className="flex items-center gap-1.5 font-semibold text-xs mb-1">
+                              <Lock className="w-3.5 h-3.5" />
+                              লগইন প্রয়োজন
+                            </div>
+                            <p className="text-[11px] text-amber-800">
+                              রিভিউ জমা দিতে অনুগ্রহ করে আপনার অ্যাকাউন্টে লগইন করুন।
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      {!user ? (
+                        <div className="space-y-2">
+                          <Link
+                            to="/login"
+                            onClick={onClose}
+                            className="w-full py-2.5 rounded-full bg-black text-white text-xs font-semibold flex items-center justify-center gap-1.5 hover:bg-gray-800 transition-colors"
+                          >
+                            <LogIn className="w-3.5 h-3.5" />
+                            <span>লগইন করুন</span>
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => setShowInfoOverlay(false)}
+                            className="w-full py-2 text-center text-xs text-gray-500 font-medium hover:text-gray-800"
+                          >
+                            পরে করব
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setShowInfoOverlay(false)}
+                          className="w-full py-2.5 rounded-full bg-black text-white text-xs font-semibold hover:bg-gray-800 transition-colors cursor-pointer"
+                        >
+                          বুঝেছি
+                        </button>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           </div>
         </DialogPrimitive.Content>
