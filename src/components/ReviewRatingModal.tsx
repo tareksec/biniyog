@@ -3,7 +3,7 @@
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Loader2, CheckCircle2, Lock, LogIn, MessageSquarePlus } from "lucide-react";
+import { X, Loader2, CheckCircle2, Lock, LogIn } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Link } from "@tanstack/react-router";
 
@@ -83,25 +83,22 @@ export function ReviewRatingModal({
 }: ReviewRatingModalProps) {
   const { user, profile, loading: authLoading } = useAuth();
   const [sliderValue, setSliderValue] = React.useState<number>(0.5);
-  const [showNoteField, setShowNoteField] = React.useState<boolean>(false);
   const [note, setNote] = React.useState<string>("");
   const [hasInvested, setHasInvested] = React.useState<boolean | null>(null);
   const [userIdentity, setUserIdentity] = React.useState<string>("");
-  const [investmentDetails, setInvestmentDetails] = React.useState<string>("");
   const [errors, setErrors] = React.useState<{ hasInvested?: string; userIdentity?: string; note?: string }>({});
   const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
   const [isSuccess, setIsSuccess] = React.useState<boolean>(false);
+  const noteInputRef = React.useRef<HTMLTextAreaElement | null>(null);
   const autoCloseTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Reset internal states when opened
   React.useEffect(() => {
     if (isOpen) {
       setSliderValue(0.5);
-      setShowNoteField(false);
       setNote("");
       setHasInvested(null);
       setUserIdentity("");
-      setInvestmentDetails("");
       setErrors({});
       setIsSubmitting(false);
       setIsSuccess(false);
@@ -125,50 +122,28 @@ export function ReviewRatingModal({
   const backgroundColor = getRatingBackgroundColor(activeSliderValue);
   const statusText = getRatingStatus(sliderValue);
 
-  // ─── Corporate Minimalist Face Calculations ───
-
-  // Eyebrows (Two thin lines, strokeWidth 2, color #1F2937)
-  let leftY1: number, leftY2: number;
-  let rightY1: number, rightY2: number;
-
-  if (activeSliderValue <= 0.5) {
-    const t = activeSliderValue / 0.5;
-    // Not Good (<0.33): angled down toward center
-    // Good (0.5): flat neutral
-    leftY1 = 49 + (51 - 49) * t;
-    leftY2 = 53 + (51 - 53) * t;
-    rightY1 = 53 + (51 - 53) * t;
-    rightY2 = 49 + (51 - 49) * t;
-  } else {
-    const t = (activeSliderValue - 0.5) / 0.5;
-    // Good (0.5): flat neutral
-    // Excellent (1.0): very slight arch upward
-    leftY1 = 51 + (50 - 51) * t;
-    leftY2 = 51 + (48 - 51) * t;
-    rightY1 = 51 + (48 - 51) * t;
-    rightY2 = 51 + (50 - 51) * t;
-  }
-
-  // Mouth (Single bezier curve, strokeWidth 2.5, stroke #1F2937, no fill)
+  // ─── Face Calculations (200x200 coordinate space) ───
+  // Mouth: single SVG bezier stroke only (strokeWidth 3, stroke #111827, no fill)
+  // Frown at 0.0, Straight at 0.5, Smile at 1.0
   let mouthStartY: number, mouthCtrlY: number, mouthEndY: number;
 
   if (activeSliderValue <= 0.5) {
     const t = activeSliderValue / 0.5;
-    // Not Good: subtle frown -> starts at 102, curves to 96
-    // Good: flat straight line at 99
-    mouthStartY = 102 + (99 - 102) * t;
-    mouthCtrlY = 96 + (99 - 96) * t;
-    mouthEndY = 102 + (99 - 102) * t;
+    // 0.0 (Frown): M 65 144 Q 100 120 135 144 (arches up)
+    // 0.5 (Straight): M 65 134 Q 100 134 135 134 (flat)
+    mouthStartY = 144 + (134 - 144) * t;
+    mouthCtrlY = 120 + (134 - 120) * t;
+    mouthEndY = 144 + (134 - 144) * t;
   } else {
     const t = (activeSliderValue - 0.5) / 0.5;
-    // Good: flat straight line at 99
-    // Excellent: clean arc smile -> starts at 97, curves to 107
-    mouthStartY = 99 + (97 - 99) * t;
-    mouthCtrlY = 99 + (107 - 99) * t;
-    mouthEndY = 99 + (97 - 99) * t;
+    // 0.5 (Straight): M 65 134 Q 100 134 135 134 (flat)
+    // 1.0 (Smile): M 65 124 Q 100 150 135 124 (arches down)
+    mouthStartY = 134 + (124 - 134) * t;
+    mouthCtrlY = 134 + (150 - 134) * t;
+    mouthEndY = 134 + (124 - 134) * t;
   }
 
-  const mouthD = `M 60 ${mouthStartY.toFixed(2)} Q 80 ${mouthCtrlY.toFixed(2)} 100 ${mouthEndY.toFixed(2)}`;
+  const mouthD = `M 65 ${mouthStartY.toFixed(2)} Q 100 ${mouthCtrlY.toFixed(2)} 135 ${mouthEndY.toFixed(2)}`;
 
   const validateForm = (): boolean => {
     const newErrors: { hasInvested?: string; userIdentity?: string; note?: string } = {};
@@ -181,7 +156,7 @@ export function ReviewRatingModal({
       newErrors.userIdentity = "আপনার পেশা বা পরিচয় লিখুন";
     }
 
-    if (showNoteField && !note.trim()) {
+    if (!note.trim()) {
       newErrors.note = "অনুগ্রহ করে আপনার মতামত লিখুন";
     }
 
@@ -199,13 +174,11 @@ export function ReviewRatingModal({
 
     try {
       setIsSubmitting(true);
-      const submissionNote = note.trim() || statusText;
       await onSubmit({
         rating: sliderValue,
-        note: submissionNote,
+        note: note.trim(),
         has_invested: Boolean(hasInvested),
         user_identity: userIdentity.trim(),
-        investment_details: investmentDetails.trim() || undefined,
       });
       setIsSuccess(true);
 
@@ -245,7 +218,7 @@ export function ReviewRatingModal({
               exit={{ opacity: 0, scale: 0.96, y: 12 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
               style={{ backgroundColor: !user ? "#FFFFFF" : backgroundColor }}
-              className="relative w-full max-w-md rounded-2xl p-6 sm:p-7 shadow-xl transition-colors duration-200 border border-[#E5E7EB] text-[#111827]"
+              className="relative w-full max-w-md rounded-2xl p-6 sm:p-7 shadow-2xl transition-colors duration-200 border border-black/5 text-[#111827] overflow-hidden"
             >
               {/* Accessibility Description */}
               <DialogPrimitive.Description className="sr-only">
@@ -259,7 +232,7 @@ export function ReviewRatingModal({
                   onClick={onClose}
                   disabled={isSubmitting}
                   aria-label="বন্ধ করুন"
-                  className="p-1.5 rounded-md text-[#6B7280] hover:text-[#111827] hover:bg-black/5 transition-colors disabled:opacity-40 cursor-pointer"
+                  className="p-1.5 rounded-md text-[#111827]/70 hover:text-[#111827] hover:bg-black/5 transition-colors disabled:opacity-40 cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -319,139 +292,55 @@ export function ReviewRatingModal({
                 </div>
               ) : (
                 /* ─── Case 2: User is Authenticated ─── */
-                <>
+                <form onSubmit={handleSubmit}>
                   {/* Reviewer Header Badge */}
-                  <div className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-lg bg-white/80 border border-[#E5E7EB] text-xs text-[#374151] mb-3">
+                  <div className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-lg bg-white/40 border border-white/60 text-xs text-[#111827] mb-2 backdrop-blur-xs">
                     <div className="flex items-center gap-2 min-w-0">
                       <div className="w-5 h-5 rounded-full bg-[#111827] text-white font-semibold text-[10px] flex items-center justify-center shrink-0">
                         {reviewerDisplayName.charAt(0).toUpperCase()}
                       </div>
                       <span className="font-medium text-[#111827] truncate text-xs">{reviewerDisplayName}</span>
                     </div>
-                    <span className="text-[10px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 shrink-0">
+                    <span className="text-[10px] font-semibold text-emerald-900 bg-emerald-100/70 px-2 py-0.5 rounded border border-emerald-300/60 shrink-0">
                       ✓ যাচাইকৃত
                     </span>
                   </div>
 
-                  {/* Center: Corporate Minimalist Face (160x160) */}
-                  <div className="flex flex-col justify-center items-center py-2">
+                  {/* Center: Face Area (200x200px centered) + Large Status Text BEHIND/BELOW */}
+                  <div className="relative w-[200px] h-[200px] mx-auto flex items-center justify-center select-none my-1">
+                    {/* Status Text: Large, bold, font-size 48px, font-weight 900, tracking 0.08em, opacity 0.25, z-index 0 */}
                     <div
-                      className="relative w-[160px] h-[160px] rounded-full bg-white border border-[#E5E7EB] flex items-center justify-center select-none"
-                      style={{
-                        boxShadow: "0 4px 24px rgba(0, 0, 0, 0.08)",
-                      }}
+                      className="absolute inset-0 flex items-center justify-center pointer-events-none text-center"
+                      style={{ zIndex: 0 }}
                     >
-                      <svg
-                        viewBox="0 0 160 160"
-                        className="w-full h-full"
-                        aria-hidden="true"
+                      <span
+                        className="text-[44px] sm:text-[48px] font-black tracking-[0.08em] uppercase text-[#111827] opacity-25 select-none leading-none whitespace-nowrap"
                       >
-                        {/* Breathing Animation Group (scale 1.0 -> 1.015 -> 1.0, 3s) */}
-                        <motion.g
-                          animate={{ scale: [1.0, 1.015, 1.0] }}
-                          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                          style={{ transformOrigin: "80px 80px" }}
-                        >
-                          {/* Eyebrows: Two thin lines (strokeWidth 2, strokeLinecap round, color #1F2937) */}
-                          <motion.line
-                            x1={46}
-                            y1={leftY1}
-                            x2={66}
-                            y2={leftY2}
-                            stroke="#1F2937"
-                            strokeWidth={2}
-                            strokeLinecap="round"
-                            transition={{ type: "spring", stiffness: 80, damping: 20 }}
-                          />
-                          <motion.line
-                            x1={94}
-                            y1={rightY1}
-                            x2={114}
-                            y2={rightY2}
-                            stroke="#1F2937"
-                            strokeWidth={2}
-                            strokeLinecap="round"
-                            transition={{ type: "spring", stiffness: 80, damping: 20 }}
-                          />
-
-                          {/* Left Eye: 8x8px circle (#1F2937), 2x2px shine dot top-right, blink every 4s */}
-                          <motion.g
-                            animate={{
-                              scaleY: [1, 1, 0.05, 1],
-                            }}
-                            transition={{
-                              duration: 4,
-                              repeat: Infinity,
-                              times: [0, 0.96, 0.985, 1],
-                              ease: "easeInOut",
-                            }}
-                            style={{
-                              transformOrigin: "56px 64px",
-                            }}
-                          >
-                            <circle cx={56} cy={64} r={4} fill="#1F2937" />
-                            <circle cx={57.5} cy={62.5} r={1} fill="#FFFFFF" />
-                          </motion.g>
-
-                          {/* Right Eye: 8x8px circle (#1F2937), 2x2px shine dot top-right, blink every 4s */}
-                          <motion.g
-                            animate={{
-                              scaleY: [1, 1, 0.05, 1],
-                            }}
-                            transition={{
-                              duration: 4,
-                              repeat: Infinity,
-                              times: [0, 0.96, 0.985, 1],
-                              ease: "easeInOut",
-                            }}
-                            style={{
-                              transformOrigin: "104px 64px",
-                            }}
-                          >
-                            <circle cx={104} cy={64} r={4} fill="#1F2937" />
-                            <circle cx={105.5} cy={62.5} r={1} fill="#FFFFFF" />
-                          </motion.g>
-
-                          {/* Tear: Single small circle (3x3px, #60A5FA), translateY 0->12px, opacity 1->0, duration 1.2s */}
-                          <AnimatePresence>
-                            {activeSliderValue < 0.33 && (
-                              <motion.circle
-                                key="tear-dot"
-                                cx={56}
-                                cy={70}
-                                r={1.5}
-                                fill="#60A5FA"
-                                initial={{ translateY: 0, opacity: 0 }}
-                                animate={{ translateY: [0, 12], opacity: [1, 0] }}
-                                exit={{ opacity: 0, transition: { duration: 0.15 } }}
-                                transition={{
-                                  duration: 1.2,
-                                  repeat: Infinity,
-                                  ease: "easeIn",
-                                }}
-                              />
-                            )}
-                          </AnimatePresence>
-
-                          {/* Mouth: Single bezier curve, strokeWidth 2.5, stroke #1F2937, no fill */}
-                          <motion.path
-                            d={mouthD}
-                            fill="none"
-                            stroke="#1F2937"
-                            strokeWidth={2.5}
-                            strokeLinecap="round"
-                            transition={{ type: "spring", stiffness: 80, damping: 20 }}
-                          />
-                        </motion.g>
-                      </svg>
-                    </div>
-
-                    {/* Status Text: 13px, tracking 0.15em, font-weight 500, uppercase, single color #111827 */}
-                    <div className="h-6 flex items-center justify-center mt-3">
-                      <span className="text-[13px] tracking-[0.15em] font-medium uppercase text-[#111827] select-none">
-                        {statusText}
+                        {statusText.toUpperCase()}
                       </span>
                     </div>
+
+                    {/* Face SVG on top: No circle border/container, 200x200 */}
+                    <svg
+                      viewBox="0 0 200 200"
+                      className="w-[200px] h-[200px] relative"
+                      style={{ zIndex: 1 }}
+                      aria-hidden="true"
+                    >
+                      {/* Eyes: two large rounded rectangles (width 45px, height 30px, rx 12px, fill #111827, 20px gap, centered) */}
+                      <rect x={45} y={58} width={45} height={30} rx={12} fill="#111827" />
+                      <rect x={110} y={58} width={45} height={30} rx={12} fill="#111827" />
+
+                      {/* Mouth: single SVG bezier stroke only (strokeWidth 3, stroke #111827, no fill) */}
+                      <motion.path
+                        d={mouthD}
+                        fill="none"
+                        stroke="#111827"
+                        strokeWidth={3}
+                        strokeLinecap="round"
+                        transition={{ type: "spring", stiffness: 80, damping: 20 }}
+                      />
+                    </svg>
                   </div>
 
                   {/* Success State */}
@@ -461,11 +350,11 @@ export function ReviewRatingModal({
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        className="flex flex-col items-center justify-center py-3 text-center"
+                        className="flex flex-col items-center justify-center py-4 text-center"
                       >
-                        <CheckCircle2 className="w-8 h-8 text-emerald-700 mb-1" />
+                        <CheckCircle2 className="w-9 h-9 text-emerald-800 mb-1.5" />
                         <p className="text-sm font-semibold text-[#111827]">ধন্যবাদ!</p>
-                        <p className="text-xs text-[#6B7280] mt-0.5">
+                        <p className="text-xs text-[#111827]/70 mt-0.5">
                           আপনার মতামত সফলভাবে জমা হয়েছে।
                         </p>
                       </motion.div>
@@ -474,8 +363,9 @@ export function ReviewRatingModal({
 
                   {/* Rating Slider & Stepper */}
                   {!isSuccess && (
-                    <div className="space-y-2 pt-2 pb-2">
-                      <div className="relative px-1 flex items-center">
+                    <div className="space-y-2 pt-1 pb-3">
+                      {/* Full width, thin track 2px, Thumb 20px black circle #111827 */}
+                      <div className="relative px-0.5 flex items-center">
                         <input
                           type="range"
                           min="0"
@@ -485,24 +375,24 @@ export function ReviewRatingModal({
                           onChange={(e) => setSliderValue(parseFloat(e.target.value))}
                           disabled={isSubmitting || isSuccess}
                           aria-label="রেটিং নির্বাচন করুন"
-                          className="corporate-rating-slider w-full h-[3px] appearance-none cursor-pointer focus:outline-none"
+                          className="corporate-rating-slider w-full h-[2px] appearance-none cursor-pointer focus:outline-none"
                           style={{
-                            background: `linear-gradient(to right, #111827 0%, #111827 ${sliderValue * 100}%, #E5E7EB ${sliderValue * 100}%, #E5E7EB 100%)`,
+                            background: `linear-gradient(to right, #111827 0%, #111827 ${sliderValue * 100}%, rgba(17, 24, 39, 0.2) ${sliderValue * 100}%, rgba(17, 24, 39, 0.2) 100%)`,
                           }}
                         />
                       </div>
 
-                      {/* 5 Tick Points (5px, color #D1D5DB, active dot #111827) */}
-                      <div className="flex justify-between items-center px-2 select-none">
-                        {[0.0, 0.25, 0.5, 0.75, 1.0].map((tick) => {
-                          const isClose = Math.abs(sliderValue - tick) < 0.12;
+                      {/* Tick dots: 3 only (Bad, Not Bad, Good positions: 0.0, 0.5, 1.0) */}
+                      <div className="flex justify-between items-center px-1 select-none">
+                        {[0.0, 0.5, 1.0].map((tick) => {
+                          const isClose = Math.abs(sliderValue - tick) < 0.15;
                           return (
                             <button
                               key={tick}
                               type="button"
                               onClick={() => setSliderValue(tick)}
-                              className={`w-[5px] h-[5px] rounded-full transition-colors duration-150 cursor-pointer ${
-                                isClose ? "bg-[#111827]" : "bg-[#D1D5DB] hover:bg-gray-400"
+                              className={`w-[6px] h-[6px] rounded-full transition-all duration-150 cursor-pointer ${
+                                isClose ? "bg-[#111827] scale-125" : "bg-[#111827]/30 hover:bg-[#111827]/60"
                               }`}
                               aria-label={`রেটিং ${tick * 100}%`}
                             />
@@ -510,13 +400,13 @@ export function ReviewRatingModal({
                         })}
                       </div>
 
-                      {/* Labels: 11px, #6B7280 */}
-                      <div className="flex justify-between items-center text-[11px] text-[#6B7280] px-0.5 pt-0.5 select-none">
+                      {/* Labels below: "Not Good", "Good", "Excellent" (font-size 11px, color #111827, opacity 0.6) */}
+                      <div className="flex justify-between items-center text-[11px] text-[#111827] opacity-60 px-0.5 pt-0.5 select-none font-medium">
                         <button
                           type="button"
                           onClick={() => setSliderValue(0.0)}
-                          className={`cursor-pointer transition-colors ${
-                            statusText === "Not Good" ? "text-[#111827] font-semibold" : "hover:text-[#111827]"
+                          className={`cursor-pointer transition-all ${
+                            statusText === "Not Good" ? "font-bold opacity-100 text-[#111827]" : "hover:opacity-100"
                           }`}
                         >
                           Not Good
@@ -524,8 +414,8 @@ export function ReviewRatingModal({
                         <button
                           type="button"
                           onClick={() => setSliderValue(0.5)}
-                          className={`cursor-pointer transition-colors ${
-                            statusText === "Good" ? "text-[#111827] font-semibold" : "hover:text-[#111827]"
+                          className={`cursor-pointer transition-all ${
+                            statusText === "Good" ? "font-bold opacity-100 text-[#111827]" : "hover:opacity-100"
                           }`}
                         >
                           Good
@@ -533,8 +423,8 @@ export function ReviewRatingModal({
                         <button
                           type="button"
                           onClick={() => setSliderValue(1.0)}
-                          className={`cursor-pointer transition-colors ${
-                            statusText === "Excellent" ? "text-[#111827] font-semibold" : "hover:text-[#111827]"
+                          className={`cursor-pointer transition-all ${
+                            statusText === "Excellent" ? "font-bold opacity-100 text-[#111827]" : "hover:opacity-100"
                           }`}
                         >
                           Excellent
@@ -543,12 +433,12 @@ export function ReviewRatingModal({
                     </div>
                   )}
 
-                  {/* ─── Form Fields ─── */}
+                  {/* ─── Form Fields (Always visible, Glass styling on colored background) ─── */}
                   {!isSuccess && (
-                    <div className="space-y-3 pt-2">
-                      {/* Field 1: আপনি কি বিনিয়োগ করেছেন? */}
+                    <div className="space-y-3 pt-1">
+                      {/* Field 1: আপনি কি বিনিয়োগ করেছেন? (radio হ্যাঁ/না) — required */}
                       <div>
-                        <label className="block text-[11px] font-medium text-[#6B7280] mb-1.5">
+                        <label className="block text-[12px] font-medium text-[#111827] mb-1.5">
                           আপনি কি বিনিয়োগ করেছেন? <span className="text-rose-600">*</span>
                         </label>
                         <div className="grid grid-cols-2 gap-2">
@@ -560,10 +450,10 @@ export function ReviewRatingModal({
                                 setErrors((prev) => ({ ...prev, hasInvested: undefined }));
                               }
                             }}
-                            className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-[6px] text-xs font-medium transition-colors cursor-pointer border ${
+                            className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-[8px] text-xs font-medium transition-all cursor-pointer border ${
                               hasInvested === true
-                                ? "bg-[#111827] text-white border-[#111827]"
-                                : "bg-white text-[#374151] border-[#E5E7EB] hover:bg-gray-50"
+                                ? "bg-[#111827] text-white border-[#111827] shadow-xs"
+                                : "bg-white/30 text-[#111827] border-white/50 hover:bg-white/40"
                             }`}
                           >
                             <span>হ্যাঁ</span>
@@ -577,10 +467,10 @@ export function ReviewRatingModal({
                                 setErrors((prev) => ({ ...prev, hasInvested: undefined }));
                               }
                             }}
-                            className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-[6px] text-xs font-medium transition-colors cursor-pointer border ${
+                            className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-[8px] text-xs font-medium transition-all cursor-pointer border ${
                               hasInvested === false
-                                ? "bg-[#111827] text-white border-[#111827]"
-                                : "bg-white text-[#374151] border-[#E5E7EB] hover:bg-gray-50"
+                                ? "bg-[#111827] text-white border-[#111827] shadow-xs"
+                                : "bg-white/30 text-[#111827] border-white/50 hover:bg-white/40"
                             }`}
                           >
                             <span>না</span>
@@ -593,9 +483,9 @@ export function ReviewRatingModal({
                         )}
                       </div>
 
-                      {/* Field 2: আপনার পরিচয় */}
+                      {/* Field 2: আপনার পরিচয় — required */}
                       <div>
-                        <label className="block text-[11px] font-medium text-[#6B7280] mb-1">
+                        <label className="block text-[12px] font-medium text-[#111827] mb-1">
                           আপনার পরিচয় <span className="text-rose-600">*</span>
                         </label>
                         <input
@@ -609,7 +499,7 @@ export function ReviewRatingModal({
                           }}
                           placeholder="পেশা (যেমন: ব্যবসায়ী, চাকরিজীবী)"
                           disabled={isSubmitting || isSuccess}
-                          className="w-full rounded-[6px] border border-[#E5E7EB] bg-white px-3 py-2 text-[14px] text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#111827] focus:outline-none transition-colors"
+                          className="w-full rounded-[8px] border border-white/50 bg-white/30 px-3 py-2 text-[14px] text-[#111827] placeholder:text-black/40 focus:border-[#111827] focus:outline-none transition-colors"
                         />
                         {errors.userIdentity && (
                           <p className="text-[11px] text-rose-600 mt-1 pl-0.5">
@@ -618,93 +508,51 @@ export function ReviewRatingModal({
                         )}
                       </div>
 
-                      {/* Expandable Note Section */}
-                      <AnimatePresence>
-                        {showNoteField ? (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="space-y-3 pt-1 overflow-hidden"
-                          >
-                            {/* Note / Feedback */}
-                            <div>
-                              <div className="flex items-center justify-between mb-1">
-                                <label className="block text-[11px] font-medium text-[#6B7280]">
-                                  মতামত
-                                </label>
-                                <button
-                                  type="button"
-                                  onClick={() => setShowNoteField(false)}
-                                  className="text-[11px] text-[#6B7280] hover:text-[#111827] cursor-pointer"
-                                >
-                                  সংকোচন করুন
-                                </button>
-                              </div>
-                              <textarea
-                                value={note}
-                                onChange={(e) => {
-                                  setNote(e.target.value);
-                                  if (errors.note && e.target.value.trim()) {
-                                    setErrors((prev) => ({ ...prev, note: undefined }));
-                                  }
-                                }}
-                                placeholder="আপনার মতামত লিখুন..."
-                                rows={2}
-                                disabled={isSubmitting || isSuccess}
-                                className="w-full rounded-[6px] border border-[#E5E7EB] bg-white p-2.5 text-[14px] text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#111827] focus:outline-none resize-none transition-colors"
-                              />
-                              {errors.note && (
-                                <p className="text-[11px] text-rose-600 mt-1 pl-0.5">
-                                  {errors.note}
-                                </p>
-                              )}
-                            </div>
-
-                            {/* Investment Details (Optional) */}
-                            <div>
-                              <div className="flex items-center gap-1.5 mb-1">
-                                <label className="text-[11px] font-medium text-[#6B7280]">
-                                  বিনিয়োগের বিবরণ
-                                </label>
-                                <span className="text-[10px] text-[#9CA3AF]">(ঐচ্ছিক)</span>
-                              </div>
-                              <textarea
-                                value={investmentDetails}
-                                onChange={(e) => setInvestmentDetails(e.target.value)}
-                                placeholder="বিনিয়োগের পরিমাণ বা রিটার্নের বিবরণ..."
-                                rows={2}
-                                disabled={isSubmitting || isSuccess}
-                                className="w-full rounded-[6px] border border-[#E5E7EB] bg-white p-2.5 text-[14px] text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#111827] focus:outline-none resize-none transition-colors"
-                              />
-                            </div>
-                          </motion.div>
-                        ) : (
-                          /* Ghost Button: "নোট যোগ করুন" */
-                          <div className="pt-1">
-                            <button
-                              type="button"
-                              onClick={() => setShowNoteField(true)}
-                              className="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-[6px] border border-[#E5E7EB] bg-transparent text-[#374151] text-xs font-medium hover:bg-black/[0.02] hover:opacity-85 transition-opacity cursor-pointer"
-                            >
-                              <MessageSquarePlus className="w-3.5 h-3.5 text-[#6B7280]" />
-                              <span>নোট যোগ করুন</span>
-                            </button>
-                          </div>
+                      {/* Field 3: মতামত — single textarea, always open, no toggle, required */}
+                      <div>
+                        <label className="block text-[12px] font-medium text-[#111827] mb-1">
+                          মতামত <span className="text-rose-600">*</span>
+                        </label>
+                        <textarea
+                          ref={noteInputRef}
+                          value={note}
+                          onChange={(e) => {
+                            setNote(e.target.value);
+                            if (errors.note && e.target.value.trim()) {
+                              setErrors((prev) => ({ ...prev, note: undefined }));
+                            }
+                          }}
+                          placeholder="আপনার মতামত ও বিনিয়োগের অভিজ্ঞতা লিখুন..."
+                          rows={3}
+                          disabled={isSubmitting || isSuccess}
+                          className="w-full rounded-[8px] border border-white/50 bg-white/30 p-2.5 text-[14px] text-[#111827] placeholder:text-black/40 focus:border-[#111827] focus:outline-none resize-none transition-colors"
+                        />
+                        {errors.note && (
+                          <p className="text-[11px] text-rose-600 mt-1 pl-0.5">
+                            {errors.note}
+                          </p>
                         )}
-                      </AnimatePresence>
+                      </div>
                     </div>
                   )}
 
-                  {/* Submit Button: "জমা দিন" (bg #111827, text white, border-radius 6px, hover opacity 0.85, full width) */}
+                  {/* ─── Buttons (bottom row) ─── */}
                   {!isSuccess && (
-                    <div className="pt-3">
+                    <div className="pt-4 flex items-center justify-between gap-3">
+                      {/* Left: "নোট যোগ করুন" (ghost, left aligned, border 1px solid rgba(0,0,0,0.2), bg transparent) */}
                       <button
                         type="button"
-                        onClick={handleSubmit}
+                        onClick={() => noteInputRef.current?.focus()}
+                        className="py-2.5 px-4 rounded-[8px] border border-black/20 bg-transparent text-[#111827] text-xs font-medium hover:bg-black/5 transition-colors cursor-pointer"
+                      >
+                        নোট যোগ করুন
+                      </button>
+
+                      {/* Right: "জমা দিন →" (pill shape, bg #111827, text white, right aligned) */}
+                      <button
+                        type="submit"
                         disabled={isSubmitting || isSuccess}
-                        className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-[6px] bg-[#111827] text-white font-medium text-xs hover:opacity-85 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                        className="inline-flex items-center justify-center gap-1.5 py-2.5 px-6 rounded-full bg-[#111827] text-white font-medium text-xs hover:opacity-85 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-sm"
                       >
                         {isSubmitting ? (
                           <>
@@ -712,54 +560,56 @@ export function ReviewRatingModal({
                             <span>পাঠানো হচ্ছে...</span>
                           </>
                         ) : (
-                          <span>জমা দিন</span>
+                          <span>জমা দিন →</span>
                         )}
                       </button>
                     </div>
                   )}
-                </>
+                </form>
               )}
 
-              {/* Minimalist Range Slider Styling */}
+              {/* Slider Styling (2px track, 20px black thumb) */}
               <style>{`
                 .corporate-rating-slider::-webkit-slider-runnable-track {
-                  height: 3px;
+                  height: 2px;
                   border-radius: 9999px;
                   background: transparent;
                 }
                 .corporate-rating-slider::-moz-range-track {
-                  height: 3px;
+                  height: 2px;
                   border-radius: 9999px;
                   background: transparent;
                 }
                 .corporate-rating-slider::-webkit-slider-thumb {
                   -webkit-appearance: none;
                   appearance: none;
-                  width: 18px;
-                  height: 18px;
+                  width: 20px;
+                  height: 20px;
                   border-radius: 50%;
                   background: #111827;
                   cursor: pointer;
-                  margin-top: -7.5px;
+                  margin-top: -9px;
                   box-shadow: none;
                   border: none;
-                  transition: opacity 0.15s ease;
+                  transition: opacity 0.15s ease, transform 0.15s ease;
                 }
                 .corporate-rating-slider::-moz-range-thumb {
-                  width: 18px;
-                  height: 18px;
+                  width: 20px;
+                  height: 20px;
                   border-radius: 50%;
                   background: #111827;
                   cursor: pointer;
                   box-shadow: none;
                   border: none;
-                  transition: opacity 0.15s ease;
+                  transition: opacity 0.15s ease, transform 0.15s ease;
                 }
                 .corporate-rating-slider:hover::-webkit-slider-thumb {
-                  opacity: 0.85;
+                  opacity: 0.9;
+                  transform: scale(1.05);
                 }
                 .corporate-rating-slider:hover::-moz-range-thumb {
-                  opacity: 0.85;
+                  opacity: 0.9;
+                  transform: scale(1.05);
                 }
               `}</style>
             </motion.div>
