@@ -847,9 +847,9 @@ function GrowthStatsSection({
                 <div key={i} className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5 min-w-0">
                     <div className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: HERO_STATUS_COLORS[s.name] || "#94a3b8" }} />
-                    <span className="text-[10px] font-semibold text-muted-foreground truncate">{s.name.replace("বিনিয়োগ নেওয়া ", "")}</span>
+                    <span className="text-xs font-medium text-muted-foreground truncate">{s.name.replace("বিনিয়োগ নেওয়া ", "")}</span>
                   </div>
-                  <span className="text-[11px] font-bold num shrink-0">{s.value}</span>
+                  <span className="text-xs font-bold num shrink-0">{s.value}</span>
                 </div>
               ))}
             </div>
@@ -875,8 +875,8 @@ function GrowthStatsSection({
                     {catIcon.icon}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-semibold text-foreground truncate leading-tight">{opp.name}</p>
-                    <p className="text-[10px] text-muted-foreground num">{opp.investment_amount}</p>
+                    <p className="text-xs font-semibold text-foreground truncate leading-tight">{opp.name}</p>
+                    <p className="text-xs text-muted-foreground num">{opp.investment_amount}</p>
                   </div>
                 </motion.div>
               );
@@ -1144,7 +1144,7 @@ function LatestBlogSection() {
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     <div className="absolute top-3.5 left-3.5">
-                      <span className="pill bg-white/95 dark:bg-zinc-900/90 backdrop-blur-md text-primary font-bold shadow-sm border-none text-[11px] px-3 py-1">
+                      <span className="pill bg-white/95 dark:bg-zinc-900/90 backdrop-blur-md text-primary font-bold shadow-sm border-none text-xs px-3 py-1">
                         {post.tag}
                       </span>
                     </div>
@@ -1165,7 +1165,7 @@ function LatestBlogSection() {
                       {post.excerpt}
                     </p>
 
-                    <div className="mt-auto pt-4 flex items-center justify-between border-t border-border/50 text-[13.5px] font-semibold text-primary">
+                    <div className="mt-auto pt-4 flex items-center justify-between border-t border-border/50 text-sm font-semibold text-primary">
                       <span>বিস্তারিত পড়ুন</span>
                       <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                     </div>
@@ -1241,12 +1241,12 @@ function SectionHeader({
   return (
     <div className={`${cls} max-w-2xl`}>
       {eyebrow && (
-        <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+        <span className="inline-flex items-center gap-2 text-xs font-bold text-primary">
           <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
           {eyebrow}
         </span>
       )}
-      <h2 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl md:text-[2.5rem]">
+      <h2 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl">
         {title}
       </h2>
     </div>

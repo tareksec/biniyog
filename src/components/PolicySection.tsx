@@ -117,32 +117,32 @@ function StickyScrollCard({
         top: `calc(15vh + ${index * 20}px)`,
         zIndex: index + 10,
       }}
-      className={`sticky w-full max-w-4xl mx-auto ${index !== totalCards - 1 ? 'mb-[50vh]' : 'mb-0'}`}
+      className={`sticky w-full max-w-4xl mx-auto ${index !== totalCards - 1 ? 'mb-12 sm:mb-16' : 'mb-0'}`}
     >
-      <div className="relative overflow-hidden rounded-[2.5rem] border border-border bg-card p-8 sm:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] will-change-transform">
+      <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-8 sm:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] will-change-transform">
         
         {/* Depth overlay removed per user request to keep cards white */}
         <div className="relative z-20 flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:gap-10">
           <div className="flex-shrink-0">
-            <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-3xl bg-primary/10 flex items-center justify-center border border-primary/20">
+            <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
               <Icon className="w-8 h-8 sm:w-12 sm:h-12 text-primary" />
             </div>
           </div>
           <div className="flex-1">
-            <span className="inline-block px-3 py-1 mb-4 text-[11px] font-bold tracking-widest text-primary bg-primary/10 rounded-full uppercase">
+            <span className="inline-block px-3 py-1 mb-4 text-xs font-bold text-primary bg-primary/10 rounded-full">
               নীতিমালা ০{policy.id}
             </span>
             <h3 className="text-2xl sm:text-3xl md:text-4xl font-display font-extrabold text-foreground mb-4">
               {policy.title}
             </h3>
-            <p className="text-[15px] sm:text-[17px] text-muted-foreground leading-relaxed font-medium mb-6">
+            <p className="text-base text-muted-foreground leading-relaxed font-medium mb-6">
               {policy.description}
             </p>
             <ul className="space-y-3">
               {policy.points.map((point, idx) => (
                 <li key={idx} className="flex items-start gap-3">
                   <div className="mt-2 shrink-0 h-1.5 w-1.5 rounded-full bg-primary/60" />
-                  <span className="text-[14px] sm:text-[15px] text-muted-foreground/90 leading-relaxed">
+                  <span className="text-sm sm:text-base text-muted-foreground/90 leading-relaxed">
                     {point}
                   </span>
                 </li>
@@ -166,17 +166,17 @@ export function PolicySection() {
     <section 
       id="policy" 
       // Important: Removed 'overflow-hidden' because it breaks 'position: sticky'
-      className="border-t border-border bg-surface/75 backdrop-blur-[2px] relative overflow-x-clip py-20 sm:py-28"
+      className="border-t border-border bg-surface/75 backdrop-blur-[2px] relative overflow-x-clip py-16 sm:py-24"
     >
       <div ref={containerRef} className="px-5 sm:px-8 max-w-7xl mx-auto">
         
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-20 sm:mb-32">
-          <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+        <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
+          <span className="inline-flex items-center gap-2 text-xs font-bold text-primary">
             <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
             আমাদের নীতিমালা
           </span>
-          <h2 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl md:text-[2.5rem]">
+          <h2 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl">
             চুম্বক অংশ
           </h2>
           <p className="mt-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
@@ -185,7 +185,7 @@ export function PolicySection() {
         </div>
 
         {/* Stacking Cards Container */}
-        <div className="relative pb-[15vh]">
+        <div className="relative pb-10">
           {BROAD_POLICIES.map((policy, i) => (
             <StickyScrollCard 
               key={policy.id} 

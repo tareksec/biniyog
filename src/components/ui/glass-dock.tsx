@@ -420,6 +420,8 @@ export const GlassDock = React.forwardRef<HTMLDivElement, GlassDockProps>(
                                     onClick={handleClick}
                                     className="relative h-8 w-8 sm:h-10 sm:w-auto flex items-center justify-center cursor-pointer shrink-0"
                                     role="button"
+                                    aria-label={el.title}
+                                    title={el.title}
                                     tabIndex={0}
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter' || e.key === ' ') {
@@ -441,7 +443,7 @@ export const GlassDock = React.forwardRef<HTMLDivElement, GlassDockProps>(
                                         style={{ background: "var(--gradient-primary)" }}
                                     >
                                         <Icon className="h-4 w-4 sm:h-[18px] sm:w-[18px] shrink-0 text-primary-foreground" />
-                                        <span className="hidden sm:inline text-[12px] sm:text-[13.5px] font-bold whitespace-nowrap tracking-wide text-primary-foreground">
+                                        <span className="hidden sm:inline text-xs sm:text-sm font-bold whitespace-nowrap tracking-wide text-primary-foreground">
                                             {el.title}
                                         </span>
                                     </motion.div>
@@ -456,6 +458,8 @@ export const GlassDock = React.forwardRef<HTMLDivElement, GlassDockProps>(
                                 onClick={handleClick}
                                 className="relative w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center cursor-pointer shrink-0"
                                 role="button"
+                                aria-label={el.title}
+                                title={el.title}
                                 tabIndex={0}
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter' || e.key === ' ') {

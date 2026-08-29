@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Heart } from "lucide-react";
+import { Heart, ArrowRight } from "lucide-react";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import { ReviewRatingModal } from "@/components/ReviewRatingModal";
 import { submitUserReview } from "@/lib/user_reviews";
@@ -247,11 +247,11 @@ export function OpportunityCard({
                 {catIcon.icon}
               </span>
               <div className="min-w-0">
-                <h3 className="font-display text-[17px] sm:text-lg font-bold leading-snug text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+                <h3 className="font-display text-base sm:text-lg font-bold leading-snug text-foreground line-clamp-2 min-h-[2.75rem] group-hover:text-primary transition-colors">
                   {project.name || "—"}
                 </h3>
                 {project.owner_name && (
-                  <p className="mt-0.5 text-[13px] text-muted-foreground font-medium line-clamp-1">
+                  <p className="mt-0.5 text-xs text-muted-foreground font-medium line-clamp-1">
                     {project.owner_name}
                   </p>
                 )}
@@ -262,13 +262,13 @@ export function OpportunityCard({
           {/* Primary Metric */}
           <div className="mt-5 flex items-center justify-between gap-4">
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">নুন্যতম বিনিয়োগ</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">নুন্যতম বিনিয়োগ</p>
               <p className="mt-1.5 num text-2xl sm:text-[28px] font-extrabold text-foreground leading-none tracking-tight">
                 {project.investment_amount || "—"}
               </p>
               <div className="mt-3 flex items-baseline gap-1.5">
                 <span className="num text-lg font-bold text-primary leading-none">{profitData.percentage}</span>
-                <span className="text-[11px] font-medium text-muted-foreground">{profitData.freq} মুনাফা</span>
+                <span className="text-xs font-medium text-muted-foreground">{profitData.freq} মুনাফা</span>
               </div>
             </div>
           </div>
@@ -276,40 +276,41 @@ export function OpportunityCard({
           {/* Info Chips */}
           <div className="mt-5 flex flex-wrap gap-2">
             {/* Category chip */}
-            <span className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold ${catIcon.bg} ${catIcon.fg}`}>
+            <span className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold ${catIcon.bg} ${catIcon.fg}`}>
               {catIcon.icon}
               {project.category || "ব্যবসা"}
             </span>
 
             {/* Risk chip */}
-            <span className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold ${riskChipStyle(risk.level).bg} ${riskChipStyle(risk.level).text}`}>
+            <span className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold ${riskChipStyle(risk.level).bg} ${riskChipStyle(risk.level).text}`}>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2L2 22h20L12 2zM12 16v-5M12 20h.01"/></svg>
               {risk.label}
             </span>
 
             {/* Investment type chip */}
             {project.investment_type && (
-              <span className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+              <span className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                 {project.investment_type}
               </span>
             )}
             {/* Duration chip */}
-            <span className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold bg-muted/50 text-muted-foreground dark:bg-muted/30">
+            <span className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold bg-muted/50 text-muted-foreground dark:bg-muted/30">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
               {project.profit_period || "চুক্তি অনুযায়ী"}
             </span>
           </div>
 
           {/* Actions */}
-          <div className="mt-6 flex flex-col gap-2">
+          <div className="mt-auto pt-6 flex flex-col gap-2">
             <Link
               to="/opportunities/$id"
               params={{ id: project.id }}
               onClick={(e) => e.stopPropagation()}
-              className="inline-flex w-full min-h-[44px] items-center justify-center gap-2 rounded-xl bg-primary/10 px-4 py-3 text-sm font-bold text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
+              className="inline-flex w-full min-h-[44px] items-center justify-center gap-2 rounded-xl bg-primary/10 px-4 py-3 text-sm font-bold text-primary transition-colors hover:bg-primary hover:text-primary-foreground group"
             >
-              বিস্তারিত দেখুন
+              <span>বিস্তারিত দেখুন</span>
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
             <button
               type="button"
@@ -317,7 +318,7 @@ export function OpportunityCard({
                 e.stopPropagation();
                 setReviewModalOpen(true);
               }}
-              className="inline-flex w-full min-h-[44px] items-center justify-center gap-1.5 rounded-xl border border-border/40 bg-transparent px-4 py-3 text-[11px] font-medium text-muted-foreground transition-colors hover:border-primary/30 hover:text-primary cursor-pointer"
+              className="inline-flex w-full min-h-[44px] items-center justify-center gap-1.5 rounded-xl border border-border/40 bg-transparent px-4 py-3 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/30 hover:text-primary cursor-pointer"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />

@@ -85,9 +85,9 @@ export function Footer() {
             <h3 className="text-lg font-semibold text-white mb-6 font-display">সাপোর্ট ও লিগ্যাল</h3>
             <ul className="space-y-4">
               <li>
-                <a href="/#faq" className="text-white/70 hover:text-white transition-colors inline-flex items-center gap-2">
+                <a href="/#faq" className="text-white/70 hover:text-white transition-colors inline-flex items-center gap-2 text-sm">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#8EB69B]"></span>
-                  সাধারণ জিজ্ঞাসা (FAQ)
+                  সাধারণ জিজ্ঞাসা (<abbr title="Frequently Asked Questions" className="no-underline">FAQ</abbr>)
                 </a>
               </li>
 

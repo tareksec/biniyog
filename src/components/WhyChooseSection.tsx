@@ -460,7 +460,7 @@ export function WhyChooseSection() {
                       prefersReduced || isActive ? {} : { scale: 0.98 }
                     }
                     className={
-                      "group relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[13px] leading-snug font-medium transition-colors duration-200 " +
+                      "group relative flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm leading-snug font-semibold transition-colors duration-200 my-0.5 " +
                       (isActive
                         ? "text-[#143d33]"
                         : "text-muted-foreground hover:bg-[#daf1de]/40 hover:text-foreground")
@@ -470,7 +470,7 @@ export function WhyChooseSection() {
                     {isActive && (
                       <motion.span
                         layoutId="why-active-pill"
-                        className="absolute inset-1 rounded-[10px] bg-[#daf1de] shadow-sm"
+                        className="absolute inset-1 rounded-xl bg-[#daf1de] shadow-sm"
                         transition={{
                           type: "tween",
                           duration: 0.55,
@@ -491,7 +491,7 @@ export function WhyChooseSection() {
 
                     {/* Hover chevron */}
                     <ChevronRight
-                      size={13}
+                      size={14}
                       strokeWidth={2}
                       className={
                         "relative z-10 shrink-0 transition-all duration-200 " +
@@ -546,7 +546,7 @@ export function WhyChooseSection() {
                     : { opacity: 0, y: -12, scale: 0.98, filter: "blur(4px)" }
                 }
                 transition={panelTransition}
-                className="w-full overflow-hidden rounded-[26px] p-6 sm:p-10"
+                className="w-full max-h-[520px] overflow-y-auto rounded-2xl p-6 sm:p-10"
                 style={{
                   background: WHY_DATA[selectedIndex].gradient,
                   boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
@@ -559,7 +559,7 @@ export function WhyChooseSection() {
 
                 <div className="mt-5 flex items-baseline gap-3 sm:mt-6">
                   <span
-                    className="text-[48px] font-bold leading-none sm:text-[56px]"
+                    className="text-4xl font-bold leading-none sm:text-5xl"
                     style={{
                       color: WHY_DATA[selectedIndex].isLight
                         ? "#143d33"
@@ -582,7 +582,7 @@ export function WhyChooseSection() {
                 </div>
 
                 <p
-                  className="mt-4 max-w-[65ch] text-[14.5px] leading-[1.85] sm:text-[15px]"
+                  className="mt-4 max-w-[65ch] text-sm leading-[1.8] sm:text-base"
                   style={{
                     color: WHY_DATA[selectedIndex].isLight
                       ? "rgba(20,61,51,0.85)"
@@ -593,12 +593,12 @@ export function WhyChooseSection() {
                 </p>
                 <Link
                   to={"/insights/keno-somriddhite-biniyog#" + WHY_DATA[selectedIndex].articleHash}
-                  className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold hover:underline underline-offset-4 transition-colors"
+                  className="mt-6 inline-flex min-h-[40px] items-center gap-2 text-sm font-bold hover:underline underline-offset-4 transition-colors"
                   style={{
                     color: WHY_DATA[selectedIndex].isLight ? "#143d33" : "#8EB69B",
                   }}
                 >
-                  বিস্তারিত পড়ুন 
+                  <span>বিস্তারিত পড়ুন</span>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <path d="M5 12h14M13 5l7 7-7 7" />
                   </svg>

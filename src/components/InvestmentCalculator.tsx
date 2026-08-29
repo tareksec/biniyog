@@ -71,6 +71,11 @@ export function InvestmentCalculator() {
                   max="1000000"
                   step="10000"
                   value={amount}
+                  aria-label="বিনিয়োগের পরিমাণ"
+                  aria-valuemin={100000}
+                  aria-valuemax={1000000}
+                  aria-valuenow={amount}
+                  aria-valuetext={`৳ ${amount.toLocaleString("en-IN")}`}
                   onChange={(e) => setAmount(Number(e.target.value))}
                   className="custom-slider mt-4 w-full"
                   style={{
@@ -99,6 +104,11 @@ export function InvestmentCalculator() {
                   max="35"
                   step="1"
                   value={roi}
+                  aria-label="প্রত্যাশিত বার্ষিক লাভ"
+                  aria-valuemin={10}
+                  aria-valuemax={35}
+                  aria-valuenow={roi}
+                  aria-valuetext={`${roi} শতাংশ`}
                   onChange={(e) => setRoi(Number(e.target.value))}
                   className="custom-slider mt-4 w-full"
                   style={{
@@ -112,15 +122,19 @@ export function InvestmentCalculator() {
               </div>
 
               <div>
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-3">
-                    <label htmlFor="invest-duration" className="text-sm font-semibold text-foreground">
-                      বিনিয়োগের মেয়াদ
-                    </label>
-                    <div className="inline-flex rounded-md border border-border bg-card p-0.5 shadow-sm">
+                <div className="flex items-center justify-between gap-2">
+                  <label htmlFor="invest-duration" className="text-sm font-semibold text-foreground">
+                    বিনিয়োগের মেয়াদ
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <span className="num rounded-lg bg-background px-3 py-1 font-bold text-primary shadow-sm border border-border text-sm">
+                      {durationUnit === "year" ? `${years} বছর` : `${months} মাস`}
+                    </span>
+                    <div className="inline-flex rounded-lg border border-border bg-card p-0.5 shadow-sm">
                       <button
+                        type="button"
                         onClick={() => setDurationUnit("year")}
-                        className={`rounded-md px-3 py-1 text-xs font-bold transition-all ${
+                        className={`min-h-[32px] min-w-[44px] rounded-md px-2.5 py-1 text-xs font-bold transition-all ${
                           durationUnit === "year"
                             ? "bg-primary text-primary-foreground shadow-sm"
                             : "text-muted-foreground hover:text-foreground"
@@ -129,8 +143,9 @@ export function InvestmentCalculator() {
                         বছর
                       </button>
                       <button
+                        type="button"
                         onClick={() => setDurationUnit("month")}
-                        className={`rounded-md px-3 py-1 text-xs font-bold transition-all ${
+                        className={`min-h-[32px] min-w-[44px] rounded-md px-2.5 py-1 text-xs font-bold transition-all ${
                           durationUnit === "month"
                             ? "bg-primary text-primary-foreground shadow-sm"
                             : "text-muted-foreground hover:text-foreground"
@@ -140,9 +155,6 @@ export function InvestmentCalculator() {
                       </button>
                     </div>
                   </div>
-                  <span className="num rounded-lg bg-background px-3 py-1 font-bold text-primary shadow-sm border border-border">
-                    {durationUnit === "year" ? `${years} বছর` : `${months} মাস`}
-                  </span>
                 </div>
                 {durationUnit === "year" ? (
                   <>
@@ -153,6 +165,11 @@ export function InvestmentCalculator() {
                       max="40"
                       step="1"
                       value={years}
+                      aria-label="বিনিয়োগের মেয়াদ বছরে"
+                      aria-valuemin={1}
+                      aria-valuemax={40}
+                      aria-valuenow={years}
+                      aria-valuetext={`${years} বছর`}
                       onChange={(e) => setYears(Number(e.target.value))}
                       className="custom-slider mt-4 w-full"
                       style={{
@@ -173,6 +190,11 @@ export function InvestmentCalculator() {
                       max="480"
                       step="1"
                       value={months}
+                      aria-label="বিনিয়োগের মেয়াদ মাসে"
+                      aria-valuemin={1}
+                      aria-valuemax={480}
+                      aria-valuenow={months}
+                      aria-valuetext={`${months} মাস`}
                       onChange={(e) => setMonths(Number(e.target.value))}
                       className="custom-slider mt-4 w-full"
                       style={{
@@ -190,13 +212,13 @@ export function InvestmentCalculator() {
           </div>
 
           {/* Result Section */}
-          <div className="flex flex-col justify-center bg-gradient-to-br from-[#051F20] to-[#235347] p-8 text-primary-foreground sm:p-10 relative overflow-hidden">
+          <div className="flex flex-col justify-between bg-primary p-8 text-primary-foreground sm:p-10 relative overflow-hidden">
             <div className="absolute -bottom-24 -right-24 h-64 w-64 rounded-full bg-white/10 blur-3xl mix-blend-overlay" />
             <div className="absolute -top-24 -left-24 h-64 w-64 rounded-full bg-white/10 blur-3xl mix-blend-overlay" />
             
             <div className="relative z-10">
-              <h4 className="text-sm font-medium uppercase tracking-widest text-white/80">
-                সম্ভাব্য ফলাফল
+              <h4 className="font-display text-xl font-bold text-white">
+                আনুমানিক রিটার্ন সামারি
               </h4>
               
               <div className="mt-8 space-y-6">
@@ -255,19 +277,19 @@ export function InvestmentCalculator() {
           <div className="flex items-center justify-between gap-3 sm:gap-6">
             {/* Yearly */}
             <div className="flex flex-col items-center min-w-0">
-              <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">বার্ষিক</span>
+              <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">বার্ষিক</span>
               <span className="num text-sm font-bold text-foreground sm:text-base">৳{yearlyReturn.toLocaleString("en-IN")}</span>
             </div>
             <div className="h-8 w-px bg-border/60 shrink-0" />
             {/* Monthly */}
             <div className="flex flex-col items-center min-w-0">
-              <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">মাসিক</span>
+              <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">মাসিক</span>
               <span className="num text-sm font-bold text-foreground sm:text-base">৳{monthlyReturn.toLocaleString("en-IN")}</span>
             </div>
             <div className="h-8 w-px bg-border/60 shrink-0" />
             {/* Total */}
             <div className="flex flex-col items-center min-w-0">
-              <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+              <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 মোট ({durationUnit === "year" ? `${years}ব.` : `${months}মা.`})
               </span>
               <span className="num text-sm font-bold text-primary sm:text-base">৳{totalReturn.toLocaleString("en-IN")}</span>
@@ -275,9 +297,9 @@ export function InvestmentCalculator() {
             {/* CTA */}
             <a
               href="#opportunities"
-              className="shrink-0 rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-sm transition-all duration-200 hover:scale-[1.03] hover:shadow-md sm:px-5 sm:py-2.5 sm:text-sm"
+              className="shrink-0 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-xs font-bold text-primary transition-all duration-200 hover:bg-primary hover:text-primary-foreground sm:px-5 sm:py-2.5 sm:text-sm"
             >
-              বিনিয়োগ করুন
+              সুযোগগুলো দেখুন →
             </a>
           </div>
         </div>

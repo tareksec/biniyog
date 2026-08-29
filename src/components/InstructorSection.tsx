@@ -56,7 +56,7 @@ export function InstructorSection() {
                 />
               </motion.div>
               <h3 className="mt-6 text-2xl font-bold leading-tight text-foreground">
-                মোহাইমিন পাটোয়ারী, CFA
+                মোহাইমিন পাটোয়ারী, <abbr title="Chartered Financial Analyst" className="no-underline">CFA</abbr>
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                 লেখক · ফাইন্যান্স বিশেষজ্ঞ · কনসালট্যান্ট — বিশ্ব অর্থব্যবস্থার
@@ -81,11 +81,11 @@ export function InstructorSection() {
           </div>
 
           <div className="flex flex-col justify-center">
-            <h2 className="text-3xl font-bold leading-tight text-foreground sm:text-4xl md:text-[2.5rem]">
+            <h2 className="text-3xl font-bold leading-tight text-foreground sm:text-4xl">
               আর্থিকভাবে ক্ষমতায়িত করার{" "}
               <span className="gradient-text">এক দশকের পথচলা</span>
             </h2>
-            <p className="mt-6 text-[15px] leading-[1.9] text-foreground/85">
+            <p className="mt-6 text-base leading-[1.8] text-foreground/85">
               মোহাইমিন পাটোয়ারী একজন লেখক এবং ফাইন্যান্স বিশেষজ্ঞ। পড়াশোনা ঢাকা বিশ্ববিদ্যালয়ের IBA, জার্মানির Mannheim বিশ্ববিদ্যালয় এবং নরওয়ের Norwegian School of Economics থেকে। তাছাড়া আমেরিকার CFA পরীক্ষার সকল ধাপ উত্তীর্ণ হয়ে বর্তমানে চার্টার হোল্ডার।
               <br />
               ফাইন্যান্স জগতে কাজের অভিজ্ঞতা দীর্ঘ দিনের।
