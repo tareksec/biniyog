@@ -7,7 +7,7 @@ import { X, Info, Loader2, CheckCircle2, ArrowRight, Lock, LogIn } from "lucide-
 import { useAuth } from "@/hooks/useAuth";
 import { Link } from "@tanstack/react-router";
 
-export type RatingState = "bad" | "neutral" | "good";
+export type RatingState = "not_good" | "good" | "excellent";
 
 export interface ReviewRatingModalSubmitData {
   rating: number;
@@ -29,6 +29,7 @@ const STATE_CONFIG: Record<
   RatingState,
   {
     rating: number;
+    label: string;
     bg: string;
     actionBg: string;
     sliderPct: number;
@@ -36,24 +37,27 @@ const STATE_CONFIG: Record<
     isCapsuleEye: boolean;
   }
 > = {
-  bad: {
+  not_good: {
     rating: 0.0,
+    label: "Not Good",
     bg: "#FE643F",
     actionBg: "rgba(255, 255, 255, 0.22)",
     sliderPct: 0,
     mouthD: "M 8 28 Q 28 8 48 28",
     isCapsuleEye: false,
   },
-  neutral: {
+  good: {
     rating: 0.5,
+    label: "Good",
     bg: "#CEB166",
     actionBg: "rgba(255, 255, 255, 0.22)",
     sliderPct: 50,
     mouthD: "M 8 16 Q 28 22 48 16",
     isCapsuleEye: true,
   },
-  good: {
+  excellent: {
     rating: 1.0,
+    label: "Excellent",
     bg: "#A1CB34",
     actionBg: "rgba(255, 255, 255, 0.25)",
     sliderPct: 100,
@@ -71,7 +75,7 @@ export function ReviewRatingModal({
 }: ReviewRatingModalProps) {
   const { user, profile, loading: authLoading } = useAuth();
 
-  const [ratingState, setRatingState] = React.useState<RatingState>("good");
+  const [ratingState, setRatingState] = React.useState<RatingState>("excellent");
   const [note, setNote] = React.useState<string>("");
   const [hasInvested, setHasInvested] = React.useState<boolean | null>(true);
   const [userIdentity, setUserIdentity] = React.useState<string>("");
@@ -93,7 +97,7 @@ export function ReviewRatingModal({
   // Reset states on open
   React.useEffect(() => {
     if (isOpen) {
-      setRatingState("good");
+      setRatingState("excellent");
       setNote("");
       setHasInvested(true);
       setUserIdentity(profile?.occupation || "");
@@ -127,11 +131,11 @@ export function ReviewRatingModal({
     const ratio = relativeX / rect.width;
 
     if (ratio < 0.28) {
-      setRatingState("bad");
+      setRatingState("not_good");
     } else if (ratio > 0.72) {
-      setRatingState("good");
+      setRatingState("excellent");
     } else {
-      setRatingState("neutral");
+      setRatingState("good");
     }
   }, []);
 
@@ -253,7 +257,7 @@ export function ReviewRatingModal({
             >
               {/* Accessibility Description */}
               <DialogPrimitive.Description className="sr-only">
-                Shopping experience rating with dynamic face expression, status tracking, and inline review form fields.
+                Shopping experience rating interface with Not Good, Good, and Excellent states.
               </DialogPrimitive.Description>
 
               {/* ────────────────── TOP ZONE: Header Controls & Heading ────────────────── */}
@@ -340,34 +344,74 @@ export function ReviewRatingModal({
                 </div>
 
                 {/* State Label Watermark Track */}
-                <div className="relative w-full h-[52px] overflow-hidden flex items-center justify-center mt-1 pointer-events-none">
-                  {/* "BAD" Label */}
+                <div className="relative w-full h-[56px] overflow-hidden flex items-center justify-center my-1 pointer-events-none select-none">
+                  {/* "NOT GOOD" Label */}
                   <motion.span
                     animate={{
-                      x: ratingState === "bad" ? 0 : ratingState === "neutral" ? -110 : -250,
-                      opacity: ratingState === "good" ? 0 : 0.16,
+                      x:
+                        ratingState === "not_good"
+                          ? 0
+                          : ratingState === "good"
+                          ? -150
+                          : -420,
+                      opacity:
+                        ratingState === "not_good"
+                          ? 0.18
+                          : ratingState === "good"
+                          ? 0.11
+                          : 0,
+                      scale: ratingState === "not_good" ? 1 : 0.92,
                     }}
                     transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                    className="absolute text-[48px] sm:text-[52px] font-black uppercase text-black tracking-tight leading-none whitespace-nowrap"
+                    className="absolute text-[44px] sm:text-[48px] font-black uppercase text-black tracking-tight leading-none whitespace-nowrap"
                   >
-                    BAD
+                    NOT GOOD
                   </motion.span>
 
                   {/* "GOOD" Label */}
                   <motion.span
                     animate={{
-                      x: ratingState === "good" ? 0 : ratingState === "neutral" ? 110 : 250,
-                      opacity: ratingState === "bad" ? 0 : 0.16,
+                      x:
+                        ratingState === "good"
+                          ? 0
+                          : ratingState === "not_good"
+                          ? 230
+                          : -230,
+                      opacity: ratingState === "good" ? 0.18 : 0,
+                      scale: ratingState === "good" ? 1 : 0.9,
                     }}
                     transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                    className="absolute text-[48px] sm:text-[52px] font-black uppercase text-black tracking-tight leading-none whitespace-nowrap"
+                    className="absolute text-[44px] sm:text-[48px] font-black uppercase text-black tracking-tight leading-none whitespace-nowrap"
                   >
                     GOOD
+                  </motion.span>
+
+                  {/* "EXCELLENT" Label */}
+                  <motion.span
+                    animate={{
+                      x:
+                        ratingState === "excellent"
+                          ? 0
+                          : ratingState === "good"
+                          ? 150
+                          : 420,
+                      opacity:
+                        ratingState === "excellent"
+                          ? 0.18
+                          : ratingState === "good"
+                          ? 0.11
+                          : 0,
+                      scale: ratingState === "excellent" ? 1 : 0.92,
+                    }}
+                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                    className="absolute text-[44px] sm:text-[48px] font-black uppercase text-black tracking-tight leading-none whitespace-nowrap"
+                  >
+                    EXCELLENT
                   </motion.span>
                 </div>
               </div>
 
-              {/* ────────────────── SLIDER ZONE ────────────────── */}
+              {/* ────────────────── SLIDER ZONE: Not Good, Good, Excellent ────────────────── */}
               <div className="w-[92%] mx-auto mb-4 relative z-10">
                 {/* Slider Line & Thumb Track */}
                 <div
@@ -384,21 +428,21 @@ export function ReviewRatingModal({
                   <div
                     onClick={(e) => {
                       e.stopPropagation();
-                      setRatingState("bad");
+                      setRatingState("not_good");
                     }}
                     className="absolute left-0 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-black cursor-pointer"
                   />
                   <div
                     onClick={(e) => {
                       e.stopPropagation();
-                      setRatingState("neutral");
+                      setRatingState("good");
                     }}
                     className="absolute left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-black cursor-pointer"
                   />
                   <div
                     onClick={(e) => {
                       e.stopPropagation();
-                      setRatingState("good");
+                      setRatingState("excellent");
                     }}
                     className="absolute right-0 translate-x-1/2 w-1.5 h-1.5 rounded-full bg-black cursor-pointer"
                   />
@@ -416,24 +460,15 @@ export function ReviewRatingModal({
                 </div>
 
                 {/* Slider Labels beneath markers */}
-                <div className="relative flex justify-between items-center text-[12px] font-medium text-black pt-0.5">
+                <div className="relative flex justify-between items-center text-[11px] sm:text-[12px] font-medium text-black pt-0.5">
                   <button
                     type="button"
-                    onClick={() => setRatingState("bad")}
+                    onClick={() => setRatingState("not_good")}
                     className={`cursor-pointer transition-opacity ${
-                      ratingState === "bad" ? "font-bold opacity-100" : "opacity-80 hover:opacity-100"
+                      ratingState === "not_good" ? "font-bold opacity-100" : "opacity-80 hover:opacity-100"
                     }`}
                   >
-                    Bad
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRatingState("neutral")}
-                    className={`cursor-pointer transition-opacity ${
-                      ratingState === "neutral" ? "font-bold opacity-100" : "opacity-80 hover:opacity-100"
-                    }`}
-                  >
-                    Not Bad
+                    Not Good
                   </button>
                   <button
                     type="button"
@@ -443,6 +478,15 @@ export function ReviewRatingModal({
                     }`}
                   >
                     Good
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRatingState("excellent")}
+                    className={`cursor-pointer transition-opacity ${
+                      ratingState === "excellent" ? "font-bold opacity-100" : "opacity-80 hover:opacity-100"
+                    }`}
+                  >
+                    Excellent
                   </button>
                 </div>
               </div>
@@ -634,9 +678,9 @@ export function ReviewRatingModal({
                           বিনিয়োগ প্ল্যাটফর্মের স্বচ্ছতা এবং গুণমান বৃদ্ধির লক্ষ্যে আপনার অভিজ্ঞতা রেটিং সরাসরি পর্যবেক্ষণ করা হয়।
                         </p>
                         <ul className="list-disc pl-4 space-y-1 text-gray-700">
-                          <li>স্লাইডারটি বামে টেনে <strong>Bad</strong> নির্বাচন করুন</li>
-                          <li>মাঝখানে রেখে <strong>Not Bad</strong> নির্বাচন করুন</li>
-                          <li>ডানে টেনে <strong>Good</strong> নির্বাচন করুন</li>
+                          <li>স্লাইডারটি বামে টেনে <strong>Not Good</strong> নির্বাচন করুন</li>
+                          <li>মাঝখানে রেখে <strong>Good</strong> নির্বাচন করুন</li>
+                          <li>ডানে টেনে <strong>Excellent</strong> নির্বাচন করুন</li>
                         </ul>
 
                         {!user && (

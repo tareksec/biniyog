@@ -18,7 +18,7 @@ export interface UserReviewCardProps {
 function getRatingSentiment(rating: number) {
   if (rating < 0.33) {
     return {
-      label: "খারাপ",
+      label: "Not Good",
       color: "text-rose-600 dark:text-rose-400",
       bg: "bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-900/50",
       barBg: "bg-rose-500",
@@ -28,7 +28,7 @@ function getRatingSentiment(rating: number) {
   }
   if (rating <= 0.66) {
     return {
-      label: "মোটামুটি",
+      label: "Good",
       color: "text-amber-600 dark:text-amber-400",
       bg: "bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-900/50",
       barBg: "bg-amber-500",
@@ -37,7 +37,7 @@ function getRatingSentiment(rating: number) {
     };
   }
   return {
-    label: "চমৎকার",
+    label: "Excellent",
     color: "text-emerald-700 dark:text-emerald-400",
     bg: "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-900/50",
     barBg: "bg-emerald-600",
