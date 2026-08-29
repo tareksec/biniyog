@@ -49,19 +49,20 @@ function lerpColor(c1: string, c2: string, t: number): string {
 }
 
 /**
- * Desaturated corporate background interpolation based on slider value (0.0 to 1.0)
- * - Not Good: #FEE2E2
- * - Good: #EFF6FF
- * - Excellent: #DCFCE7
+ * Bold & vibrant background interpolation based on slider value (0.0 to 1.0)
+ * - Not Good (0.0-0.33): #F5C518 (bold yellow)
+ * - Good (0.33-0.66): #F5C518 → #A8D840 interpolate
+ * - Excellent (0.66-1.0): #A8D840 (bold green)
  */
 export function getRatingBackgroundColor(value: number): string {
   const clamped = Math.max(0, Math.min(1, value));
-  if (clamped <= 0.5) {
-    const t = clamped / 0.5;
-    return lerpColor("#FEE2E2", "#EFF6FF", t);
+  if (clamped <= 0.33) {
+    return "#F5C518";
+  } else if (clamped <= 0.66) {
+    const t = (clamped - 0.33) / (0.66 - 0.33);
+    return lerpColor("#F5C518", "#A8D840", t);
   } else {
-    const t = (clamped - 0.5) / 0.5;
-    return lerpColor("#EFF6FF", "#DCFCE7", t);
+    return "#A8D840";
   }
 }
 
@@ -121,6 +122,10 @@ export function ReviewRatingModal({
   const activeSliderValue = isSuccess ? 1.0 : sliderValue;
   const backgroundColor = getRatingBackgroundColor(activeSliderValue);
   const statusText = getRatingStatus(sliderValue);
+
+  // Watermark text logic for slider row level
+  const leftWatermark = sliderValue < 0.5 ? "NOT GOOD" : "GOOD";
+  const rightWatermark = sliderValue < 0.5 ? "GOOD" : "EXCELLENT";
 
   // ─── Face Calculations (200x200 coordinate space) ───
   // Mouth: single SVG bezier stroke only (strokeWidth 3, stroke #111827, no fill)
@@ -306,25 +311,11 @@ export function ReviewRatingModal({
                     </span>
                   </div>
 
-                  {/* Center: Face Area (200x200px centered) + Large Status Text BEHIND/BELOW */}
+                  {/* Center: Face Area (200x200px centered) */}
                   <div className="relative w-[200px] h-[200px] mx-auto flex items-center justify-center select-none my-1">
-                    {/* Status Text: Large, bold, font-size 48px, font-weight 900, tracking 0.08em, opacity 0.25, z-index 0 */}
-                    <div
-                      className="absolute inset-0 flex items-center justify-center pointer-events-none text-center"
-                      style={{ zIndex: 0 }}
-                    >
-                      <span
-                        className="text-[44px] sm:text-[48px] font-black tracking-[0.08em] uppercase text-[#111827] opacity-25 select-none leading-none whitespace-nowrap"
-                      >
-                        {statusText.toUpperCase()}
-                      </span>
-                    </div>
-
-                    {/* Face SVG on top: No circle border/container, 200x200 */}
                     <svg
                       viewBox="0 0 200 200"
-                      className="w-[200px] h-[200px] relative"
-                      style={{ zIndex: 1 }}
+                      className="w-[200px] h-[200px]"
                       aria-hidden="true"
                     >
                       {/* Eyes: two large rounded rectangles (width 45px, height 30px, rx 12px, fill #111827, 20px gap, centered) */}
@@ -361,74 +352,94 @@ export function ReviewRatingModal({
                     )}
                   </AnimatePresence>
 
-                  {/* Rating Slider & Stepper */}
+                  {/* Rating Slider with Two Watermarks at Track Level */}
                   {!isSuccess && (
-                    <div className="space-y-2 pt-1 pb-3">
-                      {/* Full width, thin track 2px, Thumb 20px black circle #111827 */}
-                      <div className="relative px-0.5 flex items-center">
-                        <input
-                          type="range"
-                          min="0"
-                          max="1"
-                          step="0.01"
-                          value={sliderValue}
-                          onChange={(e) => setSliderValue(parseFloat(e.target.value))}
-                          disabled={isSubmitting || isSuccess}
-                          aria-label="রেটিং নির্বাচন করুন"
-                          className="corporate-rating-slider w-full h-[2px] appearance-none cursor-pointer focus:outline-none"
-                          style={{
-                            background: `linear-gradient(to right, #111827 0%, #111827 ${sliderValue * 100}%, rgba(17, 24, 39, 0.2) ${sliderValue * 100}%, rgba(17, 24, 39, 0.2) 100%)`,
-                          }}
-                        />
+                    <div className="relative py-2 my-1 select-none overflow-visible">
+                      {/* Two fixed watermark words on slider row level (partially cut off at edges) */}
+                      <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-between pointer-events-none -mx-8 z-0">
+                        {/* Left watermark: current state label */}
+                        <span
+                          className="text-[52px] font-black tracking-[0.05em] uppercase text-[#111827] opacity-15 select-none leading-none whitespace-nowrap -translate-x-3 transition-all duration-200"
+                        >
+                          {leftWatermark}
+                        </span>
+
+                        {/* Right watermark: next state label */}
+                        <span
+                          className="text-[52px] font-black tracking-[0.05em] uppercase text-[#111827] opacity-15 select-none leading-none whitespace-nowrap translate-x-3 transition-all duration-200"
+                        >
+                          {rightWatermark}
+                        </span>
                       </div>
 
-                      {/* Tick dots: 3 only (Bad, Not Bad, Good positions: 0.0, 0.5, 1.0) */}
-                      <div className="flex justify-between items-center px-1 select-none">
-                        {[0.0, 0.5, 1.0].map((tick) => {
-                          const isClose = Math.abs(sliderValue - tick) < 0.15;
-                          return (
-                            <button
-                              key={tick}
-                              type="button"
-                              onClick={() => setSliderValue(tick)}
-                              className={`w-[6px] h-[6px] rounded-full transition-all duration-150 cursor-pointer ${
-                                isClose ? "bg-[#111827] scale-125" : "bg-[#111827]/30 hover:bg-[#111827]/60"
-                              }`}
-                              aria-label={`রেটিং ${tick * 100}%`}
-                            />
-                          );
-                        })}
-                      </div>
+                      {/* Slider components layered on top of watermarks */}
+                      <div className="relative z-10 space-y-2">
+                        {/* Full width, thin track 2px, Thumb 20px black circle #111827 */}
+                        <div className="relative px-0.5 flex items-center">
+                          <input
+                            type="range"
+                            min="0"
+                            max="1"
+                            step="0.01"
+                            value={sliderValue}
+                            onChange={(e) => setSliderValue(parseFloat(e.target.value))}
+                            disabled={isSubmitting || isSuccess}
+                            aria-label="রেটিং নির্বাচন করুন"
+                            className="corporate-rating-slider w-full h-[2px] appearance-none cursor-pointer focus:outline-none"
+                            style={{
+                              background: `linear-gradient(to right, #111827 0%, #111827 ${sliderValue * 100}%, rgba(17, 24, 39, 0.2) ${sliderValue * 100}%, rgba(17, 24, 39, 0.2) 100%)`,
+                            }}
+                          />
+                        </div>
 
-                      {/* Labels below: "Not Good", "Good", "Excellent" (font-size 11px, color #111827, opacity 0.6) */}
-                      <div className="flex justify-between items-center text-[11px] text-[#111827] opacity-60 px-0.5 pt-0.5 select-none font-medium">
-                        <button
-                          type="button"
-                          onClick={() => setSliderValue(0.0)}
-                          className={`cursor-pointer transition-all ${
-                            statusText === "Not Good" ? "font-bold opacity-100 text-[#111827]" : "hover:opacity-100"
-                          }`}
-                        >
-                          Not Good
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setSliderValue(0.5)}
-                          className={`cursor-pointer transition-all ${
-                            statusText === "Good" ? "font-bold opacity-100 text-[#111827]" : "hover:opacity-100"
-                          }`}
-                        >
-                          Good
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setSliderValue(1.0)}
-                          className={`cursor-pointer transition-all ${
-                            statusText === "Excellent" ? "font-bold opacity-100 text-[#111827]" : "hover:opacity-100"
-                          }`}
-                        >
-                          Excellent
-                        </button>
+                        {/* Tick dots: 3 only (Bad, Not Bad, Good positions: 0.0, 0.5, 1.0) */}
+                        <div className="flex justify-between items-center px-1 select-none">
+                          {[0.0, 0.5, 1.0].map((tick) => {
+                            const isClose = Math.abs(sliderValue - tick) < 0.15;
+                            return (
+                              <button
+                                key={tick}
+                                type="button"
+                                onClick={() => setSliderValue(tick)}
+                                className={`w-[6px] h-[6px] rounded-full transition-all duration-150 cursor-pointer ${
+                                  isClose ? "bg-[#111827] scale-125" : "bg-[#111827]/30 hover:bg-[#111827]/60"
+                                }`}
+                                aria-label={`রেটিং ${tick * 100}%`}
+                              />
+                            );
+                          })}
+                        </div>
+
+                        {/* Labels below: "Not Good", "Good", "Excellent" (font-size 11px, color #111827, opacity 0.6) */}
+                        <div className="flex justify-between items-center text-[11px] text-[#111827] opacity-60 px-0.5 pt-0.5 select-none font-medium">
+                          <button
+                            type="button"
+                            onClick={() => setSliderValue(0.0)}
+                            className={`cursor-pointer transition-all ${
+                              statusText === "Not Good" ? "font-bold opacity-100 text-[#111827]" : "hover:opacity-100"
+                            }`}
+                          >
+                            Not Good
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setSliderValue(0.5)}
+                            className={`cursor-pointer transition-all ${
+                              statusText === "Good" ? "font-bold opacity-100 text-[#111827]" : "hover:opacity-100"
+                            }`}
+                          >
+                            Good
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setSliderValue(1.0)}
+                            className={`cursor-pointer transition-all ${
+                              statusText === "Excellent" ? "font-bold opacity-100 text-[#111827]" : "hover:opacity-100"
+                            }`}
+                          >
+                            Excellent
+                          </button>
+                        </div>
                       </div>
                     </div>
                   )}
