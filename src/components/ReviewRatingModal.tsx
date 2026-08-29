@@ -3,7 +3,7 @@
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Loader2, CheckCircle2, Lock, LogIn, UserCheck } from "lucide-react";
+import { X, Loader2, CheckCircle2, Lock, LogIn } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Link } from "@tanstack/react-router";
 
@@ -39,61 +39,64 @@ function hexToRgb(hex: string): [number, number, number] {
  * Linearly interpolates between two hex colors by factor t (0.0 to 1.0)
  */
 function lerpColor(c1: string, c2: string, t: number): string {
+  const clampedT = Math.max(0, Math.min(1, t));
   const [r1, g1, b1] = hexToRgb(c1);
   const [r2, g2, b2] = hexToRgb(c2);
-  const r = Math.round(r1 + (r2 - r1) * t);
-  const g = Math.round(g1 + (g2 - g1) * t);
-  const b = Math.round(b1 + (b2 - b1) * t);
+  const r = Math.round(r1 + (r2 - r1) * clampedT);
+  const g = Math.round(g1 + (g2 - g1) * clampedT);
+  const b = Math.round(b1 + (b2 - b1) * clampedT);
   return `rgb(${r}, ${g}, ${b})`;
 }
 
 /**
  * Interpolates rating background color based on slider value (0.0 to 1.0)
- * - 0.0 -> 0.33: soft red (#FFCDD2 to #FFF9C4)
- * - 0.33 -> 0.66: yellow/orange (#FFF9C4 to #DCEDC8)
- * - 0.66 -> 1.0: soft green (#DCEDC8 to #C8E6C9)
+ * - 0.0 -> 0.33: Soft Red (#FFCDD2)
+ * - 0.33 -> 0.66: Soft Blue (#BBDEFB)
+ * - 0.66 -> 1.0: Soft Green (#C8E6C9)
  */
 export function getRatingBackgroundColor(value: number): string {
   const clamped = Math.max(0, Math.min(1, value));
-  if (clamped <= 0.33) {
-    const t = clamped / 0.33;
-    return lerpColor("#FFCDD2", "#FFF9C4", t);
-  } else if (clamped <= 0.66) {
-    const t = (clamped - 0.33) / (0.66 - 0.33);
-    return lerpColor("#FFF9C4", "#DCEDC8", t);
+  if (clamped <= 0.5) {
+    const t = clamped / 0.5;
+    return lerpColor("#FFCDD2", "#BBDEFB", t);
   } else {
-    const t = (clamped - 0.66) / (1.0 - 0.66);
-    return lerpColor("#DCEDC8", "#C8E6C9", t);
+    const t = (clamped - 0.5) / 0.5;
+    return lerpColor("#BBDEFB", "#C8E6C9", t);
   }
 }
 
 /**
  * Interpolates rating theme border color based on slider value (0.0 to 1.0)
- * - 0.0 -> 0.33: red (#E53935 to #FBC02D)
- * - 0.33 -> 0.66: yellow/amber (#FBC02D to #689F38)
- * - 0.66 -> 1.0: green (#689F38 to #163832)
+ * - 0.0 -> 0.33: Red (#E53935)
+ * - 0.33 -> 0.66: Blue (#1976D2)
+ * - 0.66 -> 1.0: Green (#163832)
  */
 export function getRatingThemeColor(value: number): string {
   const clamped = Math.max(0, Math.min(1, value));
-  if (clamped <= 0.33) {
-    const t = clamped / 0.33;
-    return lerpColor("#E53935", "#FBC02D", t);
-  } else if (clamped <= 0.66) {
-    const t = (clamped - 0.33) / (0.66 - 0.33);
-    return lerpColor("#FBC02D", "#689F38", t);
+  if (clamped <= 0.5) {
+    const t = clamped / 0.5;
+    return lerpColor("#E53935", "#1976D2", t);
   } else {
-    const t = (clamped - 0.66) / (1.0 - 0.66);
-    return lerpColor("#689F38", "#163832", t);
+    const t = (clamped - 0.5) / 0.5;
+    return lerpColor("#1976D2", "#163832", t);
   }
 }
 
 /**
  * Returns textual status indicator for the rating value
  */
-function getRatingStatus(value: number): "BAD" | "NOT BAD" | "GOOD" {
-  if (value < 0.33) return "BAD";
-  if (value <= 0.66) return "NOT BAD";
-  return "GOOD";
+export function getRatingStatus(value: number): "Not Good" | "Good" | "Excellent" {
+  if (value < 0.33) return "Not Good";
+  if (value <= 0.66) return "Good";
+  return "Excellent";
+}
+
+/**
+ * Generates an SVG 4-point sparkle star path centered at (cx, cy)
+ */
+function getSparklePath(cx: number, cy: number, r: number): string {
+  const inner = r * 0.22;
+  return `M ${cx} ${cy - r} Q ${cx} ${cy - inner} ${cx + r} ${cy} Q ${cx + inner} ${cy} ${cx} ${cy + r} Q ${cx} ${cy + inner} ${cx - r} ${cy} Q ${cx - inner} ${cy} ${cx} ${cy - r} Z`;
 }
 
 export function ReviewRatingModal({
@@ -143,16 +146,94 @@ export function ReviewRatingModal({
 
   const activeSliderValue = isSuccess ? 1.0 : sliderValue;
   const backgroundColor = getRatingBackgroundColor(activeSliderValue);
-  const themeColor = getRatingThemeColor(activeSliderValue);
   const statusText = getRatingStatus(sliderValue);
 
-  // Face SVG calculation:
-  // - At sliderValue 0.0: control point Y = 110 (frown - curves up visually)
-  // - At sliderValue 0.5: control point Y = 90 (straight line)
-  // - At sliderValue 1.0: control point Y = 70 (smile - curves down)
-  // Formula: controlPointY = 110 - (sliderValue * 40)
-  const controlPointY = 110 - activeSliderValue * 40;
-  const mouthPathD = `M 55 95 Q 80 ${controlPointY} 105 95`;
+  // ─── Face Morphing Calculations (Continuous from 0.0 to 1.0) ───
+
+  // 1. Eyebrows
+  let leftY1: number, leftY2: number, leftCtrlY: number;
+  let rightY1: number, rightY2: number, rightCtrlY: number;
+
+  if (activeSliderValue <= 0.5) {
+    const t = activeSliderValue / 0.5; // 0 (Not Good) -> 1 (Good)
+    // Left: 0.0 -> (44, 46) to (64, 54); 0.5 -> (44, 48) to (64, 48)
+    leftY1 = 46 + (48 - 46) * t;
+    leftY2 = 54 + (48 - 54) * t;
+    leftCtrlY = (leftY1 + leftY2) / 2;
+
+    // Right: 0.0 -> (96, 54) to (116, 46); 0.5 -> (96, 48) to (116, 48)
+    rightY1 = 54 + (48 - 54) * t;
+    rightY2 = 46 + (48 - 46) * t;
+    rightCtrlY = (rightY1 + rightY2) / 2;
+  } else {
+    const t = (activeSliderValue - 0.5) / 0.5; // 0 (Good) -> 1 (Excellent)
+    // Left: 0.5 -> (44, 48) to (64, 48); 1.0 -> (44, 40) to (64, 42)
+    leftY1 = 48 + (40 - 48) * t;
+    leftY2 = 48 + (42 - 48) * t;
+    leftCtrlY = (leftY1 + leftY2) / 2 - t * 4;
+
+    // Right: 0.5 -> (96, 48) to (116, 48); 1.0 -> (96, 42) to (116, 40)
+    rightY1 = 48 + (42 - 48) * t;
+    rightY2 = 48 + (40 - 48) * t;
+    rightCtrlY = (rightY1 + rightY2) / 2 - t * 4;
+  }
+
+  const leftEyebrowD = `M 44 ${leftY1.toFixed(2)} Q 54 ${leftCtrlY.toFixed(2)} 64 ${leftY2.toFixed(2)}`;
+  const rightEyebrowD = `M 96 ${rightY1.toFixed(2)} Q 106 ${rightCtrlY.toFixed(2)} 116 ${rightY2.toFixed(2)}`;
+
+  // 2. Eyes & Shine Dots
+  const eyeRy = activeSliderValue <= 0.5 ? 3.2 + (activeSliderValue / 0.5) * 3.0 : 6.2;
+  const arcEyeOpacity = Math.max(0, Math.min(1, (activeSliderValue - 0.66) / 0.18));
+  const circleEyeOpacity = Math.max(0, 1 - arcEyeOpacity);
+
+  // Shine dot inside top-right of eye (Good: 0.33 to 0.66)
+  const shineOpacity =
+    activeSliderValue <= 0.33
+      ? 0
+      : activeSliderValue <= 0.66
+      ? Math.min(1, (activeSliderValue - 0.33) / 0.15)
+      : Math.max(0, 1 - (activeSliderValue - 0.66) / 0.15);
+
+  // Arc eyes happy squint (Excellent: 0.66 to 1.0)
+  const arcSquintDepth = Math.max(0, Math.min(1, (activeSliderValue - 0.66) / 0.34)) * 9;
+  const leftHappyEyeD = `M 47 64 Q 55 ${(64 - arcSquintDepth).toFixed(2)} 63 64`;
+  const rightHappyEyeD = `M 97 64 Q 105 ${(64 - arcSquintDepth).toFixed(2)} 113 64`;
+
+  // 3. Mouth & Teeth
+  let mouthStartX: number, mouthStartY: number;
+  let mouthEndX: number, mouthEndY: number;
+  let mouthCtrlY: number;
+
+  if (activeSliderValue <= 0.5) {
+    const t = activeSliderValue / 0.5;
+    mouthStartX = 52 + (54 - 52) * t;
+    mouthStartY = 108 + (96 - 108) * t;
+    mouthEndX = 108 + (106 - 108) * t;
+    mouthEndY = 108 + (96 - 108) * t;
+    mouthCtrlY = 82 + (110 - 82) * t;
+  } else {
+    const t = (activeSliderValue - 0.5) / 0.5;
+    mouthStartX = 54 + (50 - 54) * t;
+    mouthStartY = 96 + (92 - 96) * t;
+    mouthEndX = 106 + (110 - 106) * t;
+    mouthEndY = 96 + (92 - 96) * t;
+    mouthCtrlY = 110 + (96 - 110) * t;
+  }
+
+  const mouthStrokeD = `M ${mouthStartX.toFixed(2)} ${mouthStartY.toFixed(2)} Q 80 ${mouthCtrlY.toFixed(2)} ${mouthEndX.toFixed(2)} ${mouthEndY.toFixed(2)}`;
+
+  // Big open smile cavity for Excellent (>0.66)
+  const openSmileT = Math.max(0, Math.min(1, (activeSliderValue - 0.66) / 0.34));
+  const mouthBottomCtrlY = 96 + openSmileT * 30; // deepens mouth cavity down to 126
+  const openMouthD = `M ${mouthStartX.toFixed(2)} ${mouthStartY.toFixed(2)} Q 80 ${mouthCtrlY.toFixed(2)} ${mouthEndX.toFixed(2)} ${mouthEndY.toFixed(2)} Q 80 ${mouthBottomCtrlY.toFixed(2)} ${mouthStartX.toFixed(2)} ${mouthStartY.toFixed(2)} Z`;
+
+  // 4. Sparkles for Excellent
+  const sparkles = [
+    { cx: 138, cy: 34, r: 8.5, delay: 0 },
+    { cx: 22, cy: 38, r: 7.5, delay: 0.25 },
+    { cx: 142, cy: 114, r: 7, delay: 0.5 },
+    { cx: 18, cy: 110, r: 6.5, delay: 0.75 },
+  ];
 
   const validateForm = (): boolean => {
     const newErrors: { hasInvested?: string; userIdentity?: string; note?: string } = {};
@@ -236,7 +317,7 @@ export function ReviewRatingModal({
               </DialogPrimitive.Description>
 
               {/* Top Row: Close IconButton (top-left) + Title (centered) */}
-              <div className="relative flex items-center justify-between pb-3">
+              <div className="relative flex items-center justify-between pb-2">
                 <button
                   type="button"
                   onClick={onClose}
@@ -304,7 +385,7 @@ export function ReviewRatingModal({
                 /* ─── Case 2: User is Authenticated ─── */
                 <>
                   {/* Verified Reviewer Header Badge */}
-                  <div className="flex items-center justify-between gap-2 px-3.5 py-2 rounded-2xl bg-white/60 backdrop-blur-xs border border-black/5 text-xs text-[#163832] mb-3">
+                  <div className="flex items-center justify-between gap-2 px-3.5 py-2 rounded-2xl bg-white/60 backdrop-blur-xs border border-black/5 text-xs text-[#163832] mb-2">
                     <div className="flex items-center gap-2 min-w-0">
                       <div className="w-6 h-6 rounded-full bg-[#163832]/15 text-[#163832] font-bold text-xs flex items-center justify-center shrink-0">
                         {reviewerDisplayName.charAt(0).toUpperCase()}
@@ -323,38 +404,254 @@ export function ReviewRatingModal({
                     </span>
                   </div>
 
-                  {/* Center: Animated SVG Face (Fixed 160x160 container) */}
-                  <div className="flex justify-center items-center py-2">
-                    <div className="relative w-[160px] h-[160px] flex items-center justify-center">
+                  {/* Center: Dynamic Animated SVG Face (Fixed 160x160 container) */}
+                  <div className="flex flex-col justify-center items-center py-1">
+                    <div className="relative w-[150px] h-[150px] flex items-center justify-center">
                       <svg
                         viewBox="0 0 160 160"
-                        className="w-full h-full drop-shadow-xs select-none"
+                        className="w-full h-full drop-shadow-xs select-none overflow-visible"
                         aria-hidden="true"
                       >
+                        {/* Sparkles around face (Excellent >= 0.66) */}
+                        <AnimatePresence>
+                          {activeSliderValue >= 0.66 && (
+                            <motion.g
+                              key="sparkles-group"
+                              initial={{ opacity: 0, scale: 0.5 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.15 } }}
+                            >
+                              {sparkles.map((sp, idx) => (
+                                <motion.path
+                                  key={idx}
+                                  d={getSparklePath(sp.cx, sp.cy, sp.r)}
+                                  fill="#F59E0B"
+                                  stroke="#D97706"
+                                  strokeWidth="0.75"
+                                  initial={{ scale: 0.75, rotate: 0 }}
+                                  animate={{
+                                    scale: [0.75, 1.25, 0.75],
+                                    rotate: [0, 45, 90],
+                                    opacity: [0.75, 1, 0.75],
+                                  }}
+                                  transition={{
+                                    duration: 1.5,
+                                    repeat: Infinity,
+                                    delay: sp.delay,
+                                    ease: "easeInOut",
+                                  }}
+                                  style={{
+                                    transformOrigin: `${sp.cx}px ${sp.cy}px`,
+                                  }}
+                                />
+                              ))}
+                            </motion.g>
+                          )}
+                        </AnimatePresence>
+
                         {/* Face boundary background */}
                         <circle
                           cx="80"
                           cy="80"
-                          r="70"
+                          r="68"
                           fill="#FFFFFF"
-                          fillOpacity="0.45"
+                          fillOpacity="0.55"
                           stroke="#163832"
                           strokeWidth="3.5"
                         />
 
-                        {/* Two static circle eyes */}
-                        <circle cx="55" cy="62" r="6" fill="#163832" />
-                        <circle cx="105" cy="62" r="6" fill="#163832" />
+                        {/* Eyebrows (Dynamic Angle & Height) */}
+                        <motion.path
+                          d={leftEyebrowD}
+                          stroke="#163832"
+                          strokeWidth="3.5"
+                          strokeLinecap="round"
+                          fill="none"
+                          transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                        />
+                        <motion.path
+                          d={rightEyebrowD}
+                          stroke="#163832"
+                          strokeWidth="3.5"
+                          strokeLinecap="round"
+                          fill="none"
+                          transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                        />
 
-                        {/* Dynamic mouth using quadratic bezier curve Q cx cy ex ey */}
-                        <path
-                          d={mouthPathD}
+                        {/* Normal / Squinted Ellipse Eyes (0.0 to 0.66) */}
+                        <motion.ellipse
+                          cx={55}
+                          cy={62}
+                          rx={6.2}
+                          ry={eyeRy}
+                          fill="#163832"
+                          opacity={circleEyeOpacity}
+                          transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                        />
+                        <motion.ellipse
+                          cx={105}
+                          cy={62}
+                          rx={6.2}
+                          ry={eyeRy}
+                          fill="#163832"
+                          opacity={circleEyeOpacity}
+                          transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                        />
+
+                        {/* Eye Shine Dots (Good: 0.33 to 0.66) */}
+                        <motion.circle
+                          cx={57.2}
+                          cy={59.5}
+                          r={1.8}
+                          fill="#FFFFFF"
+                          opacity={shineOpacity}
+                          transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                        />
+                        <motion.circle
+                          cx={107.2}
+                          cy={59.5}
+                          r={1.8}
+                          fill="#FFFFFF"
+                          opacity={shineOpacity}
+                          transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                        />
+
+                        {/* Happy Squint Arc Eyes (Excellent: 0.66 to 1.0) */}
+                        <motion.path
+                          d={leftHappyEyeD}
+                          stroke="#163832"
+                          strokeWidth="3.5"
+                          strokeLinecap="round"
+                          fill="none"
+                          opacity={arcEyeOpacity}
+                          transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                        />
+                        <motion.path
+                          d={rightHappyEyeD}
+                          stroke="#163832"
+                          strokeWidth="3.5"
+                          strokeLinecap="round"
+                          fill="none"
+                          opacity={arcEyeOpacity}
+                          transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                        />
+
+                        {/* Animated Looping Tear Drop on Left Eye (Not Good: 0.0 to 0.33) */}
+                        <AnimatePresence>
+                          {activeSliderValue <= 0.33 && (
+                            <motion.g
+                              key="teardrop-anim"
+                              initial={{ opacity: 0, y: 0, scale: 0.7 }}
+                              animate={{
+                                opacity: [0, 1, 1, 0],
+                                y: [0, 5, 12, 18],
+                                scale: [0.7, 1, 1, 0.75],
+                              }}
+                              exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.15 } }}
+                              transition={{
+                                duration: 1.6,
+                                repeat: Infinity,
+                                ease: "easeInOut",
+                              }}
+                            >
+                              <path
+                                d="M 55 67 C 52 71 50 74 50 77 C 50 79.8 52.2 82 55 82 C 57.8 82 60 79.8 60 77 C 60 74 58 71 55 67 Z"
+                                fill="#60A5FA"
+                                stroke="#2563EB"
+                                strokeWidth="0.8"
+                              />
+                              <circle cx="53.5" cy="76" r="1.2" fill="#FFFFFF" opacity="0.8" />
+                            </motion.g>
+                          )}
+                        </AnimatePresence>
+
+                        {/* Closed Mouth Stroke (Smooth morph from Frown to Smile) */}
+                        <motion.path
+                          d={mouthStrokeD}
                           fill="none"
                           stroke="#163832"
                           strokeWidth="4"
                           strokeLinecap="round"
+                          opacity={activeSliderValue <= 0.66 ? 1 : Math.max(0, 1 - (activeSliderValue - 0.66) / 0.12)}
+                          transition={{ type: "spring", stiffness: 350, damping: 25 }}
                         />
+
+                        {/* Big Open Smile with Teeth (Excellent: 0.66 to 1.0) */}
+                        {activeSliderValue > 0.66 && (
+                          <g opacity={openSmileT}>
+                            <defs>
+                              <clipPath id="open-mouth-clip">
+                                <path d={openMouthD} />
+                              </clipPath>
+                            </defs>
+
+                            {/* Open Mouth Cavity */}
+                            <motion.path
+                              d={openMouthD}
+                              fill="#163832"
+                              stroke="#163832"
+                              strokeWidth="3.5"
+                              strokeLinejoin="round"
+                              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                            />
+
+                            {/* Teeth & Tongue inside Mouth Cavity */}
+                            <g clipPath="url(#open-mouth-clip)">
+                              {/* White Teeth Rectangle */}
+                              <rect
+                                x="68"
+                                y={mouthStartY - 1}
+                                width="24"
+                                height={7 * openSmileT}
+                                rx="2"
+                                fill="#FFFFFF"
+                              />
+                              {/* Tongue */}
+                              <path
+                                d={`M 70 ${114 + openSmileT * 4} Q 80 ${106 + openSmileT * 4} 90 ${114 + openSmileT * 4} Q 80 ${126 + openSmileT * 4} 70 ${114 + openSmileT * 4} Z`}
+                                fill="#F87171"
+                                opacity={0.9}
+                              />
+                            </g>
+                          </g>
+                        )}
                       </svg>
+                    </div>
+
+                    {/* Dynamic Status Text Badge with AnimatePresence */}
+                    <div className="h-6 flex items-center justify-center mt-1">
+                      <AnimatePresence mode="wait">
+                        <motion.div
+                          key={statusText}
+                          initial={{ opacity: 0, y: -4, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 4, scale: 0.95 }}
+                          transition={{ duration: 0.18, ease: "easeOut" }}
+                          className="px-3 py-0.5 rounded-full text-xs font-black tracking-wider uppercase shadow-2xs border select-none"
+                          style={{
+                            backgroundColor:
+                              statusText === "Not Good"
+                                ? "rgba(239, 68, 68, 0.18)"
+                                : statusText === "Good"
+                                ? "rgba(37, 99, 235, 0.16)"
+                                : "rgba(22, 101, 52, 0.18)",
+                            color:
+                              statusText === "Not Good"
+                                ? "#B91C1C"
+                                : statusText === "Good"
+                                ? "#1D4ED8"
+                                : "#166534",
+                            borderColor:
+                              statusText === "Not Good"
+                                ? "rgba(239, 68, 68, 0.3)"
+                                : statusText === "Good"
+                                ? "rgba(37, 99, 235, 0.3)"
+                                : "rgba(22, 101, 52, 0.3)",
+                          }}
+                        >
+                          {statusText}
+                        </motion.div>
+                      </AnimatePresence>
                     </div>
                   </div>
 
@@ -378,7 +675,7 @@ export function ReviewRatingModal({
 
                   {/* Rating Slider & Stepper */}
                   {!isSuccess && (
-                    <div className="space-y-2.5 pt-1 pb-2">
+                    <div className="space-y-2 pt-1 pb-2">
                       <div className="relative px-2">
                         <input
                           type="range"
@@ -413,39 +710,42 @@ export function ReviewRatingModal({
                         })}
                       </div>
 
-                      {/* Row with "Bad", "Not Bad", "Good" labels */}
+                      {/* Row with "Not Good", "Good", "Excellent" labels */}
                       <div className="flex justify-between items-center text-xs sm:text-sm font-bold text-[#163832]/80 px-1 pt-0.5 select-none">
-                        <span
+                        <button
+                          type="button"
                           onClick={() => setSliderValue(0.0)}
-                          className={`cursor-pointer transition-colors ${
-                            statusText === "BAD" ? "text-[#163832] font-black scale-105" : "hover:text-[#163832]"
+                          className={`cursor-pointer transition-all duration-150 ${
+                            statusText === "Not Good" ? "text-[#B91C1C] font-black scale-105" : "hover:text-[#163832]"
                           }`}
                         >
-                          Bad
-                        </span>
-                        <span
+                          Not Good
+                        </button>
+                        <button
+                          type="button"
                           onClick={() => setSliderValue(0.5)}
-                          className={`cursor-pointer transition-colors ${
-                            statusText === "NOT BAD" ? "text-[#163832] font-black scale-105" : "hover:text-[#163832]"
-                          }`}
-                        >
-                          Not Bad
-                        </span>
-                        <span
-                          onClick={() => setSliderValue(1.0)}
-                          className={`cursor-pointer transition-colors ${
-                            statusText === "GOOD" ? "text-[#163832] font-black scale-105" : "hover:text-[#163832]"
+                          className={`cursor-pointer transition-all duration-150 ${
+                            statusText === "Good" ? "text-[#1D4ED8] font-black scale-105" : "hover:text-[#163832]"
                           }`}
                         >
                           Good
-                        </span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSliderValue(1.0)}
+                          className={`cursor-pointer transition-all duration-150 ${
+                            statusText === "Excellent" ? "text-[#166534] font-black scale-105" : "hover:text-[#163832]"
+                          }`}
+                        >
+                          Excellent
+                        </button>
                       </div>
                     </div>
                   )}
 
                   {/* ─── Form Fields (Investment status, Identity, Mandatory Note, Details) ─── */}
                   {!isSuccess && (
-                    <div className="space-y-3.5 pt-1 pb-1">
+                    <div className="space-y-3 pt-1 pb-1">
                       {/* Field 1: আপনি কি বিনিয়োগ করেছেন? */}
                       <div>
                         <label className="block text-xs sm:text-sm font-bold text-[#163832] mb-1.5">
@@ -573,7 +873,7 @@ export function ReviewRatingModal({
 
                   {/* Submit Button */}
                   {!isSuccess && (
-                    <div className="pt-3">
+                    <div className="pt-2">
                       <button
                         type="button"
                         onClick={handleSubmit}
