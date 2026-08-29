@@ -7,8 +7,6 @@ import { X, Loader2, CheckCircle2, Lock, LogIn } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Link } from "@tanstack/react-router";
 
-export type RatingTab = "Not Good" | "Good" | "Excellent";
-
 export interface ReviewRatingModalSubmitData {
   rating: number;
   note: string;
@@ -52,9 +50,9 @@ function lerpColor(c1: string, c2: string, t: number): string {
 
 /**
  * Background interpolation based on slider value (0.0 to 1.0):
- * - Not Good (0.0): #F5C518 (bold golden yellow)
- * - Interpolates smoothly between #F5C518 and #7BC043 (bold green)
- * - Excellent (1.0): #7BC043 (bold vibrant green)
+ * - Not Good (0.0): #F5C518 (bold yellow)
+ * - Good: interpolate #F5C518 -> #7BC043
+ * - Excellent (1.0): #7BC043 (bold green)
  */
 export function getRatingBackgroundColor(value: number): string {
   const clamped = Math.max(0, Math.min(1, value));
@@ -62,12 +60,9 @@ export function getRatingBackgroundColor(value: number): string {
 }
 
 /**
- * Returns textual status indicator for the rating value across 3 tabs:
- * 1. "Not Good" (< 0.33)
- * 2. "Good" (0.33 to 0.66)
- * 3. "Excellent" (> 0.66)
+ * Returns textual status indicator for the rating value
  */
-export function getRatingStatus(value: number): RatingTab {
+export function getRatingStatus(value: number): "Not Good" | "Good" | "Excellent" {
   if (value < 0.33) return "Not Good";
   if (value <= 0.66) return "Good";
   return "Excellent";
@@ -85,11 +80,7 @@ export function ReviewRatingModal({
   const [note, setNote] = React.useState<string>("");
   const [hasInvested, setHasInvested] = React.useState<boolean | null>(null);
   const [userIdentity, setUserIdentity] = React.useState<string>("");
-  const [errors, setErrors] = React.useState<{
-    hasInvested?: string;
-    userIdentity?: string;
-    note?: string;
-  }>({});
+  const [errors, setErrors] = React.useState<{ hasInvested?: string; userIdentity?: string; note?: string }>({});
   const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
   const [isSuccess, setIsSuccess] = React.useState<boolean>(false);
   const noteInputRef = React.useRef<HTMLTextAreaElement | null>(null);
@@ -101,7 +92,7 @@ export function ReviewRatingModal({
       setSliderValue(0.5);
       setNote("");
       setHasInvested(null);
-      setUserIdentity(profile?.occupation || "");
+      setUserIdentity("");
       setErrors({});
       setIsSubmitting(false);
       setIsSuccess(false);
@@ -110,7 +101,7 @@ export function ReviewRatingModal({
         clearTimeout(autoCloseTimerRef.current);
       }
     }
-  }, [isOpen, profile]);
+  }, [isOpen]);
 
   // Clean up timer on unmount
   React.useEffect(() => {
@@ -125,22 +116,20 @@ export function ReviewRatingModal({
   const backgroundColor = getRatingBackgroundColor(activeSliderValue);
   const statusText = getRatingStatus(sliderValue);
 
-  // Watermark text logic for smooth sliding effect
+  // Watermark logic:
+  // sliderValue 0.0-0.33: left="NOT GOOD", right="GOOD"
+  // sliderValue 0.33-0.66: left="GOOD", right="EXCELLENT"
+  // sliderValue 0.66-1.0: left="GOOD", right="EXCELLENT"
   const leftWatermark = sliderValue < 0.33 ? "NOT GOOD" : "GOOD";
-  const rightWatermark = sliderValue < 0.66 ? "GOOD" : "EXCELLENT";
+  const rightWatermark = sliderValue < 0.33 ? "GOOD" : "EXCELLENT";
 
-  // Mouth Bezier Curve control point: M 10 30 Q 60 controlY 110 30
-  // sliderValue 0.0 -> controlY = 10 (frown)
-  // sliderValue 0.5 -> controlY = 30 (neutral/gentle)
-  // sliderValue 1.0 -> controlY = 50 (wide smile)
+  // Mouth Bezier Curve control point:
+  // M 10 30 Q 60 [controlY] 110 30
+  // controlY = 10 + (sliderValue * 40)
   const mouthControlY = 10 + activeSliderValue * 40;
 
   const validateForm = (): boolean => {
-    const newErrors: {
-      hasInvested?: string;
-      userIdentity?: string;
-      note?: string;
-    } = {};
+    const newErrors: { hasInvested?: string; userIdentity?: string; note?: string } = {};
 
     if (hasInvested === null) {
       newErrors.hasInvested = "অনুগ্রহ করে নির্বাচন করুন";
@@ -188,17 +177,10 @@ export function ReviewRatingModal({
     }
   };
 
-  const reviewerDisplayName =
-    profile?.full_name ||
-    user?.user_metadata?.full_name ||
-    user?.email?.split("@")[0] ||
-    "সম্মানিত বিনিয়োগকারী";
+  const reviewerDisplayName = profile?.full_name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "সম্মানিত বিনিয়োগকারী";
 
   return (
-    <DialogPrimitive.Root
-      open={isOpen}
-      onOpenChange={(open) => !open && !isSubmitting && onClose()}
-    >
+    <DialogPrimitive.Root open={isOpen} onOpenChange={(open) => !open && !isSubmitting && onClose()}>
       <DialogPrimitive.Portal>
         {/* Backdrop overlay */}
         <DialogPrimitive.Overlay asChild>
@@ -206,24 +188,24 @@ export function ReviewRatingModal({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs transition-opacity"
+            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs transition-opacity"
           />
         </DialogPrimitive.Overlay>
 
         {/* Modal container */}
         <DialogPrimitive.Content asChild>
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 14 }}
+              initial={{ opacity: 0, scale: 0.96, y: 12 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 14 }}
-              transition={{ duration: 0.22, ease: "easeOut" }}
+              exit={{ opacity: 0, scale: 0.96, y: 12 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
               style={{ backgroundColor: !user ? "#FFFFFF" : backgroundColor }}
-              className="relative w-full max-w-md rounded-2xl p-5 sm:p-7 shadow-2xl transition-colors duration-200 border border-black/5 text-[#111827] overflow-hidden"
+              className="relative w-full max-w-md rounded-2xl p-6 sm:p-7 shadow-2xl transition-colors duration-200 border border-black/5 text-[#111827] overflow-hidden"
             >
               {/* Accessibility Description */}
               <DialogPrimitive.Description className="sr-only">
-                বিনিয়োগ প্ল্যাটফর্মে আপনার অভিজ্ঞতার ৩টি রেটিং ট্যাব (Not Good, Good, Excellent) এবং মতামত ফর্ম।
+                বিনিয়োগ বৃদ্ধি প্ল্যাটফর্মে আপনার অভিজ্ঞতার রেটিং এবং মতামত জমা দিন।
               </DialogPrimitive.Description>
 
               {/* Top Row: Close Button + Title */}
@@ -295,67 +277,47 @@ export function ReviewRatingModal({
                 /* ─── Case 2: User is Authenticated ─── */
                 <form onSubmit={handleSubmit}>
                   {/* Reviewer Header Badge */}
-                  <div className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-lg bg-white/30 border border-white/40 text-xs text-[#111827] mb-2 backdrop-blur-xs">
+                  <div className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-lg bg-white/30 border border-white/40 text-xs text-[#111827] mb-3 backdrop-blur-xs">
                     <div className="flex items-center gap-2 min-w-0">
                       <div className="w-5 h-5 rounded-full bg-[#111827] text-white font-semibold text-[10px] flex items-center justify-center shrink-0">
                         {reviewerDisplayName.charAt(0).toUpperCase()}
                       </div>
-                      <span className="font-medium text-[#111827] truncate text-xs">
-                        {reviewerDisplayName}
-                      </span>
+                      <span className="font-medium text-[#111827] truncate text-xs">{reviewerDisplayName}</span>
                     </div>
                     <span className="text-[10px] font-semibold text-emerald-950 bg-emerald-100/80 px-2 py-0.5 rounded border border-emerald-400/50 shrink-0">
                       ✓ যাচাইকৃত
                     </span>
                   </div>
 
-                  {/* ─── Face Section ─── */}
-                  <div className="flex flex-col items-center justify-center gap-1.5 pt-1 pb-1 select-none">
-                    {/* Eyes: Dynamic width depending on rating */}
+                  {/* ─── Face Section (NO circle, NO container, NO border around face) ─── */}
+                  <div className="flex flex-col items-center justify-center gap-2 pt-2 pb-1 select-none">
+                    {/* Eyes: Two black (#111827) rounded rectangles (50x28px, rx 14px, 24px gap, centered) */}
                     <div className="flex items-center justify-center gap-[24px]">
-                      <motion.div
-                        animate={{
-                          width: statusText === "Good" ? 44 : 38,
-                          height: statusText === "Good" ? 22 : 26,
-                          borderRadius: 14,
-                        }}
-                        transition={{ type: "spring", stiffness: 350, damping: 25 }}
-                        className="bg-[#111827]"
-                      />
-                      <motion.div
-                        animate={{
-                          width: statusText === "Good" ? 44 : 38,
-                          height: statusText === "Good" ? 22 : 26,
-                          borderRadius: 14,
-                        }}
-                        transition={{ type: "spring", stiffness: 350, damping: 25 }}
-                        className="bg-[#111827]"
-                      />
+                      <div className="w-[50px] h-[28px] rounded-[14px] bg-[#111827]" />
+                      <div className="w-[50px] h-[28px] rounded-[14px] bg-[#111827]" />
                     </div>
 
-                    {/* Mouth: Quadratic Bezier Curve */}
+                    {/* Mouth: Single SVG 120x50px, quadratic bezier M 10 30 Q 60 controlY 110 30 */}
                     <svg
                       width="120"
-                      height="46"
-                      viewBox="0 0 120 46"
+                      height="50"
+                      viewBox="0 0 120 50"
                       className="overflow-visible"
                       aria-hidden="true"
                     >
                       <motion.path
-                        animate={{
-                          d: `M 10 26 Q 60 ${mouthControlY.toFixed(2)} 110 26`,
-                        }}
-                        transition={{ type: "spring", stiffness: 220, damping: 20 }}
+                        d={`M 10 30 Q 60 ${mouthControlY.toFixed(2)} 110 30`}
                         fill="none"
                         stroke="#111827"
-                        strokeWidth={3.5}
+                        strokeWidth={3}
                         strokeLinecap="round"
+                        transition={{ type: "spring", stiffness: 80, damping: 18 }}
                       />
                     </svg>
                   </div>
 
-                  {/* ─── Status Text (3 Tabs: NOT GOOD, GOOD, EXCELLENT) ─── */}
-                  <div className="h-9 flex items-center justify-center select-none overflow-hidden my-0.5">
+                  {/* ─── Status Text (below face: 36px, 900, opacity 0.9, animated) ─── */}
+                  <div className="h-10 flex items-center justify-center select-none overflow-hidden my-1">
                     <AnimatePresence mode="wait">
                       <motion.span
                         key={statusText}
@@ -363,7 +325,7 @@ export function ReviewRatingModal({
                         animate={{ opacity: 0.9, y: 0 }}
                         exit={{ opacity: 0, y: -4 }}
                         transition={{ duration: 0.15 }}
-                        className="text-[32px] sm:text-[36px] font-black tracking-tight uppercase text-[#111827] leading-none"
+                        className="text-[36px] font-black tracking-tight uppercase text-[#111827] leading-none"
                       >
                         {statusText.toUpperCase()}
                       </motion.span>
@@ -388,20 +350,26 @@ export function ReviewRatingModal({
                     )}
                   </AnimatePresence>
 
-                  {/* ─── 3 Review Tabs Slider Section ─── */}
+                  {/* ─── Slider Section (position: relative, overflow: hidden) ─── */}
                   {!isSuccess && (
-                    <div className="relative overflow-hidden py-3 my-0.5 select-none">
-                      {/* Watermarks */}
-                      <span className="absolute -left-[16px] top-1/2 -translate-y-1/2 text-[52px] font-black tracking-normal uppercase text-[#111827] opacity-[0.12] select-none leading-none whitespace-nowrap pointer-events-none z-0">
+                    <div className="relative overflow-hidden py-4 my-1 select-none">
+                      {/* Left Watermark: absolute, left -16px, top 50%, translateY(-50%), z-0 */}
+                      <span
+                        className="absolute -left-[16px] top-1/2 -translate-y-1/2 text-[56px] font-black tracking-normal uppercase text-[#111827] opacity-[0.12] select-none leading-none whitespace-nowrap pointer-events-none z-0"
+                      >
                         {leftWatermark}
                       </span>
-                      <span className="absolute -right-[16px] top-1/2 -translate-y-1/2 text-[52px] font-black tracking-normal uppercase text-[#111827] opacity-[0.12] select-none leading-none whitespace-nowrap pointer-events-none z-0">
+
+                      {/* Right Watermark: absolute, right -16px, top 50%, translateY(-50%), z-0 */}
+                      <span
+                        className="absolute -right-[16px] top-1/2 -translate-y-1/2 text-[56px] font-black tracking-normal uppercase text-[#111827] opacity-[0.12] select-none leading-none whitespace-nowrap pointer-events-none z-0"
+                      >
                         {rightWatermark}
                       </span>
 
-                      {/* Slider & 3 Tabs */}
-                      <div className="relative z-[1] space-y-2">
-                        {/* Range Track */}
+                      {/* Actual Slider: z-index: 1, position: relative */}
+                      <div className="relative z-[1] space-y-2.5">
+                        {/* Track height 3px, bg rgba(0,0,0,0.2), active #111827, Thumb 22px circle #111827 */}
                         <div className="relative px-0.5 flex items-center">
                           <input
                             type="range"
@@ -419,43 +387,31 @@ export function ReviewRatingModal({
                           />
                         </div>
 
-                        {/* 3 Tick Dots at 0% (Not Good), 50% (Good), 100% (Excellent) */}
+                        {/* 3 Tick Dots at 0%, 50%, 100% positions (6px circle, active opacity 1.0, inactive 0.4) */}
                         <div className="flex justify-between items-center px-1 select-none">
-                          {[
-                            { value: 0.0, label: "Not Good" },
-                            { value: 0.5, label: "Good" },
-                            { value: 1.0, label: "Excellent" },
-                          ].map((tab) => {
-                            const isTabActive =
-                              (tab.value === 0.0 && statusText === "Not Good") ||
-                              (tab.value === 0.5 && statusText === "Good") ||
-                              (tab.value === 1.0 && statusText === "Excellent");
-
+                          {[0.0, 0.5, 1.0].map((tick) => {
+                            const isActive = sliderValue >= tick - 0.05;
                             return (
                               <button
-                                key={tab.label}
+                                key={tick}
                                 type="button"
-                                onClick={() => setSliderValue(tab.value)}
-                                className={`w-[6px] h-[6px] rounded-full bg-[#111827] transition-all duration-150 cursor-pointer ${
-                                  isTabActive
-                                    ? "opacity-100 scale-125"
-                                    : "opacity-40 hover:opacity-75"
+                                onClick={() => setSliderValue(tick)}
+                                className={`w-[6px] h-[6px] rounded-full bg-[#111827] transition-opacity duration-150 cursor-pointer ${
+                                  isActive ? "opacity-100 scale-110" : "opacity-40 hover:opacity-75"
                                 }`}
-                                aria-label={`Select ${tab.label}`}
+                                aria-label={`রেটিং ${tick * 100}%`}
                               />
                             );
                           })}
                         </div>
 
-                        {/* 3 Tab Labels beneath markers */}
-                        <div className="flex justify-between items-center text-[11px] text-[#111827] px-0.5 select-none font-medium">
+                        {/* Labels below dots: 11px, color #111827, opacity 0.7 */}
+                        <div className="flex justify-between items-center text-[11px] text-[#111827] opacity-70 px-0.5 select-none font-medium">
                           <button
                             type="button"
                             onClick={() => setSliderValue(0.0)}
                             className={`cursor-pointer transition-all ${
-                              statusText === "Not Good"
-                                ? "font-bold opacity-100 text-[#111827]"
-                                : "opacity-70 hover:opacity-100"
+                              statusText === "Not Good" ? "font-bold opacity-100 text-[#111827]" : "hover:opacity-100"
                             }`}
                           >
                             Not Good
@@ -464,9 +420,7 @@ export function ReviewRatingModal({
                             type="button"
                             onClick={() => setSliderValue(0.5)}
                             className={`cursor-pointer transition-all ${
-                              statusText === "Good"
-                                ? "font-bold opacity-100 text-[#111827]"
-                                : "opacity-70 hover:opacity-100"
+                              statusText === "Good" ? "font-bold opacity-100 text-[#111827]" : "hover:opacity-100"
                             }`}
                           >
                             Good
@@ -475,9 +429,7 @@ export function ReviewRatingModal({
                             type="button"
                             onClick={() => setSliderValue(1.0)}
                             className={`cursor-pointer transition-all ${
-                              statusText === "Excellent"
-                                ? "font-bold opacity-100 text-[#111827]"
-                                : "opacity-70 hover:opacity-100"
+                              statusText === "Excellent" ? "font-bold opacity-100 text-[#111827]" : "hover:opacity-100"
                             }`}
                           >
                             Excellent
@@ -487,12 +439,12 @@ export function ReviewRatingModal({
                     </div>
                   )}
 
-                  {/* ─── Form Fields (below slider) ─── */}
+                  {/* ─── Form Fields (below slider: bg rgba(255,255,255,0.25), border 1px solid rgba(255,255,255,0.4), rounded 8px) ─── */}
                   {!isSuccess && (
-                    <div className="space-y-2.5 pt-1">
+                    <div className="space-y-3 pt-1">
                       {/* Field 1: আপনি কি বিনিয়োগ করেছেন? (radio হ্যাঁ/না) — required */}
                       <div>
-                        <label className="block text-[12px] font-medium text-[#111827] mb-1">
+                        <label className="block text-[12px] font-medium text-[#111827] mb-1.5">
                           আপনি কি বিনিয়োগ করেছেন? <span className="text-rose-600">*</span>
                         </label>
                         <div className="grid grid-cols-2 gap-2">
@@ -562,7 +514,7 @@ export function ReviewRatingModal({
                         )}
                       </div>
 
-                      {/* Field 3: মতামত — textarea, required */}
+                      {/* Field 3: মতামত — single textarea, required */}
                       <div>
                         <label className="block text-[12px] font-medium text-[#111827] mb-1">
                           মতামত <span className="text-rose-600">*</span>
@@ -592,7 +544,7 @@ export function ReviewRatingModal({
 
                   {/* ─── Bottom Buttons: space-between ─── */}
                   {!isSuccess && (
-                    <div className="pt-3.5 flex items-center justify-between gap-3">
+                    <div className="pt-4 flex items-center justify-between gap-3">
                       {/* Left: "নোট যোগ করুন" (ghost button, border: 1px solid rgba(0,0,0,0.25), bg: transparent, rounded: 8px) */}
                       <button
                         type="button"
@@ -622,7 +574,7 @@ export function ReviewRatingModal({
                 </form>
               )}
 
-              {/* Corporate Rating Slider CSS styling */}
+              {/* Slider Styling (3px track, 22px black thumb) */}
               <style>{`
                 .corporate-rating-slider::-webkit-slider-runnable-track {
                   height: 3px;
