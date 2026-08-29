@@ -260,10 +260,10 @@ export function ReviewRatingModal({
                 Shopping experience rating interface with Not Good, Good, and Excellent states.
               </DialogPrimitive.Description>
 
-              {/* ────────────────── TOP ZONE: Header Controls & Heading ────────────────── */}
+              {/* ────────────────── TOP ZONE: Header Controls ────────────────── */}
               <div className="relative z-10">
                 {/* Header buttons: Close (left), Info (right) */}
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-2">
                   <button
                     type="button"
                     onClick={onClose}
@@ -284,18 +284,14 @@ export function ReviewRatingModal({
                   </button>
                 </div>
 
-                {/* Heading */}
-                <div className="text-center">
-                  <DialogPrimitive.Title className="text-[19px] sm:text-[20px] font-semibold text-black leading-[1.22] tracking-tight font-sans">
-                    How was your shopping
-                    <br />
-                    experience
-                  </DialogPrimitive.Title>
-                </div>
+                {/* Accessible Title */}
+                <DialogPrimitive.Title className="sr-only">
+                  রেটিং ও রিভিউ
+                </DialogPrimitive.Title>
               </div>
 
               {/* ────────────────── CENTER ZONE: Face Expression & State Watermark ────────────────── */}
-              <div className="relative flex flex-col items-center justify-center my-3">
+              <div className="relative flex flex-col items-center justify-center my-2">
                 {/* Face: Eyes + Mouth */}
                 <div className="flex flex-col items-center justify-center">
                   {/* Eyes */}
@@ -343,71 +339,20 @@ export function ReviewRatingModal({
                   </div>
                 </div>
 
-                {/* State Label Watermark Track */}
-                <div className="relative w-full h-[56px] overflow-hidden flex items-center justify-center my-1 pointer-events-none select-none">
-                  {/* "NOT GOOD" Label */}
-                  <motion.span
-                    animate={{
-                      x:
-                        ratingState === "not_good"
-                          ? 0
-                          : ratingState === "good"
-                          ? -150
-                          : -420,
-                      opacity:
-                        ratingState === "not_good"
-                          ? 0.18
-                          : ratingState === "good"
-                          ? 0.11
-                          : 0,
-                      scale: ratingState === "not_good" ? 1 : 0.92,
-                    }}
-                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                    className="absolute text-[44px] sm:text-[48px] font-black uppercase text-black tracking-tight leading-none whitespace-nowrap"
-                  >
-                    NOT GOOD
-                  </motion.span>
-
-                  {/* "GOOD" Label */}
-                  <motion.span
-                    animate={{
-                      x:
-                        ratingState === "good"
-                          ? 0
-                          : ratingState === "not_good"
-                          ? 230
-                          : -230,
-                      opacity: ratingState === "good" ? 0.18 : 0,
-                      scale: ratingState === "good" ? 1 : 0.9,
-                    }}
-                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                    className="absolute text-[44px] sm:text-[48px] font-black uppercase text-black tracking-tight leading-none whitespace-nowrap"
-                  >
-                    GOOD
-                  </motion.span>
-
-                  {/* "EXCELLENT" Label */}
-                  <motion.span
-                    animate={{
-                      x:
-                        ratingState === "excellent"
-                          ? 0
-                          : ratingState === "good"
-                          ? 150
-                          : 420,
-                      opacity:
-                        ratingState === "excellent"
-                          ? 0.18
-                          : ratingState === "good"
-                          ? 0.11
-                          : 0,
-                      scale: ratingState === "excellent" ? 1 : 0.92,
-                    }}
-                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                    className="absolute text-[44px] sm:text-[48px] font-black uppercase text-black tracking-tight leading-none whitespace-nowrap"
-                  >
-                    EXCELLENT
-                  </motion.span>
+                {/* State Label Watermark Track (Uniform, perfectly matched, no overlap) */}
+                <div className="relative w-full h-[52px] overflow-hidden flex items-center justify-center my-1 pointer-events-none select-none">
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={ratingState}
+                      initial={{ opacity: 0, y: 6, scale: 0.96 }}
+                      animate={{ opacity: 0.18, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -6, scale: 0.96 }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                      className="text-[44px] sm:text-[48px] font-black uppercase text-black tracking-tight leading-none whitespace-nowrap"
+                    >
+                      {currentConfig.label.toUpperCase()}
+                    </motion.span>
+                  </AnimatePresence>
                 </div>
               </div>
 
