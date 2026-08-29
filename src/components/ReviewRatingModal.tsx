@@ -49,20 +49,14 @@ function lerpColor(c1: string, c2: string, t: number): string {
 }
 
 /**
- * Linear color interpolation between 3 exact hex values (0.0 to 1.0)
- * - Not Good (0.0): #F5C518
- * - Good (0.5): #A8D840
- * - Excellent (1.0): #B8E855
+ * Background interpolation based on slider value (0.0 to 1.0):
+ * - Not Good (0.0): #F5C518 (bold yellow)
+ * - Good: interpolate #F5C518 -> #7BC043
+ * - Excellent (1.0): #7BC043 (bold green)
  */
 export function getRatingBackgroundColor(value: number): string {
   const clamped = Math.max(0, Math.min(1, value));
-  if (clamped <= 0.5) {
-    const t = clamped / 0.5;
-    return lerpColor("#F5C518", "#A8D840", t);
-  } else {
-    const t = (clamped - 0.5) / 0.5;
-    return lerpColor("#A8D840", "#B8E855", t);
-  }
+  return lerpColor("#F5C518", "#7BC043", clamped);
 }
 
 /**
@@ -122,32 +116,17 @@ export function ReviewRatingModal({
   const backgroundColor = getRatingBackgroundColor(activeSliderValue);
   const statusText = getRatingStatus(sliderValue);
 
-  // Watermark text logic for slider row level
-  const leftWatermark = sliderValue < 0.5 ? "NOT GOOD" : "GOOD";
-  const rightWatermark = sliderValue < 0.5 ? "GOOD" : "EXCELLENT";
+  // Watermark logic:
+  // sliderValue 0.0-0.33: left="NOT GOOD", right="GOOD"
+  // sliderValue 0.33-0.66: left="GOOD", right="EXCELLENT"
+  // sliderValue 0.66-1.0: left="GOOD", right="EXCELLENT"
+  const leftWatermark = sliderValue < 0.33 ? "NOT GOOD" : "GOOD";
+  const rightWatermark = sliderValue < 0.33 ? "GOOD" : "EXCELLENT";
 
-  // ─── Face Calculations (200x200 coordinate space) ───
-  // Mouth: single SVG bezier stroke only (strokeWidth 3, stroke #111827, no fill)
-  // Frown at 0.0, Straight at 0.5, Smile at 1.0
-  let mouthStartY: number, mouthCtrlY: number, mouthEndY: number;
-
-  if (activeSliderValue <= 0.5) {
-    const t = activeSliderValue / 0.5;
-    // 0.0 (Frown): M 65 144 Q 100 120 135 144 (arches up)
-    // 0.5 (Straight): M 65 134 Q 100 134 135 134 (flat)
-    mouthStartY = 144 + (134 - 144) * t;
-    mouthCtrlY = 120 + (134 - 120) * t;
-    mouthEndY = 144 + (134 - 144) * t;
-  } else {
-    const t = (activeSliderValue - 0.5) / 0.5;
-    // 0.5 (Straight): M 65 134 Q 100 134 135 134 (flat)
-    // 1.0 (Smile): M 65 124 Q 100 150 135 124 (arches down)
-    mouthStartY = 134 + (124 - 134) * t;
-    mouthCtrlY = 134 + (150 - 134) * t;
-    mouthEndY = 134 + (124 - 134) * t;
-  }
-
-  const mouthD = `M 65 ${mouthStartY.toFixed(2)} Q 100 ${mouthCtrlY.toFixed(2)} 135 ${mouthEndY.toFixed(2)}`;
+  // Mouth Bezier Curve control point:
+  // M 10 30 Q 60 [controlY] 110 30
+  // controlY = 10 + (sliderValue * 40)
+  const mouthControlY = 10 + activeSliderValue * 40;
 
   const validateForm = (): boolean => {
     const newErrors: { hasInvested?: string; userIdentity?: string; note?: string } = {};
@@ -298,39 +277,59 @@ export function ReviewRatingModal({
                 /* ─── Case 2: User is Authenticated ─── */
                 <form onSubmit={handleSubmit}>
                   {/* Reviewer Header Badge */}
-                  <div className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-lg bg-white/40 border border-white/60 text-xs text-[#111827] mb-2 backdrop-blur-xs">
+                  <div className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-lg bg-white/30 border border-white/40 text-xs text-[#111827] mb-3 backdrop-blur-xs">
                     <div className="flex items-center gap-2 min-w-0">
                       <div className="w-5 h-5 rounded-full bg-[#111827] text-white font-semibold text-[10px] flex items-center justify-center shrink-0">
                         {reviewerDisplayName.charAt(0).toUpperCase()}
                       </div>
                       <span className="font-medium text-[#111827] truncate text-xs">{reviewerDisplayName}</span>
                     </div>
-                    <span className="text-[10px] font-semibold text-emerald-900 bg-emerald-100/70 px-2 py-0.5 rounded border border-emerald-300/60 shrink-0">
+                    <span className="text-[10px] font-semibold text-emerald-950 bg-emerald-100/80 px-2 py-0.5 rounded border border-emerald-400/50 shrink-0">
                       ✓ যাচাইকৃত
                     </span>
                   </div>
 
-                  {/* Center: Face Area (200x200px centered) */}
-                  <div className="relative w-[200px] h-[200px] mx-auto flex items-center justify-center select-none my-1">
+                  {/* ─── Face Section (NO circle, NO container, NO border around face) ─── */}
+                  <div className="flex flex-col items-center justify-center gap-2 pt-2 pb-1 select-none">
+                    {/* Eyes: Two black (#111827) rounded rectangles (50x28px, rx 14px, 24px gap, centered) */}
+                    <div className="flex items-center justify-center gap-[24px]">
+                      <div className="w-[50px] h-[28px] rounded-[14px] bg-[#111827]" />
+                      <div className="w-[50px] h-[28px] rounded-[14px] bg-[#111827]" />
+                    </div>
+
+                    {/* Mouth: Single SVG 120x50px, quadratic bezier M 10 30 Q 60 controlY 110 30 */}
                     <svg
-                      viewBox="0 0 200 200"
-                      className="w-[200px] h-[200px]"
+                      width="120"
+                      height="50"
+                      viewBox="0 0 120 50"
+                      className="overflow-visible"
                       aria-hidden="true"
                     >
-                      {/* Eyes: two large rounded rectangles (width 45px, height 30px, rx 12px, fill #111827, 20px gap, centered) */}
-                      <rect x={45} y={58} width={45} height={30} rx={12} fill="#111827" />
-                      <rect x={110} y={58} width={45} height={30} rx={12} fill="#111827" />
-
-                      {/* Mouth: single SVG bezier stroke only (strokeWidth 3, stroke #111827, no fill) */}
                       <motion.path
-                        d={mouthD}
+                        d={`M 10 30 Q 60 ${mouthControlY.toFixed(2)} 110 30`}
                         fill="none"
                         stroke="#111827"
                         strokeWidth={3}
                         strokeLinecap="round"
-                        transition={{ type: "spring", stiffness: 80, damping: 20 }}
+                        transition={{ type: "spring", stiffness: 80, damping: 18 }}
                       />
                     </svg>
+                  </div>
+
+                  {/* ─── Status Text (below face: 36px, 900, opacity 0.9, animated) ─── */}
+                  <div className="h-10 flex items-center justify-center select-none overflow-hidden my-1">
+                    <AnimatePresence mode="wait">
+                      <motion.span
+                        key={statusText}
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 0.9, y: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        transition={{ duration: 0.15 }}
+                        className="text-[36px] font-black tracking-tight uppercase text-[#111827] leading-none"
+                      >
+                        {statusText.toUpperCase()}
+                      </motion.span>
+                    </AnimatePresence>
                   </div>
 
                   {/* Success State */}
@@ -342,35 +341,35 @@ export function ReviewRatingModal({
                         exit={{ opacity: 0, scale: 0.95 }}
                         className="flex flex-col items-center justify-center py-4 text-center"
                       >
-                        <CheckCircle2 className="w-9 h-9 text-emerald-800 mb-1.5" />
+                        <CheckCircle2 className="w-9 h-9 text-emerald-950 mb-1.5" />
                         <p className="text-sm font-semibold text-[#111827]">ধন্যবাদ!</p>
-                        <p className="text-xs text-[#111827]/70 mt-0.5">
+                        <p className="text-xs text-[#111827]/75 mt-0.5">
                           আপনার মতামত সফলভাবে জমা হয়েছে।
                         </p>
                       </motion.div>
                     )}
                   </AnimatePresence>
 
-                  {/* Rating Slider with Two Watermarks at Track Level */}
+                  {/* ─── Slider Section (position: relative, overflow: hidden) ─── */}
                   {!isSuccess && (
-                    <div className="relative overflow-hidden py-3 my-1 select-none">
-                      {/* Left word: position absolute, left -20px, transform translateY(-50%), top 50%, z-index 0 */}
+                    <div className="relative overflow-hidden py-4 my-1 select-none">
+                      {/* Left Watermark: absolute, left -16px, top 50%, translateY(-50%), z-0 */}
                       <span
-                        className="absolute -left-[20px] top-1/2 -translate-y-1/2 text-[56px] font-black tracking-[0.05em] uppercase text-[#111827] opacity-[0.12] select-none leading-none whitespace-nowrap pointer-events-none z-0"
+                        className="absolute -left-[16px] top-1/2 -translate-y-1/2 text-[56px] font-black tracking-normal uppercase text-[#111827] opacity-[0.12] select-none leading-none whitespace-nowrap pointer-events-none z-0"
                       >
                         {leftWatermark}
                       </span>
 
-                      {/* Right word: position absolute, right -20px, transform translateY(-50%), top 50%, z-index 0 */}
+                      {/* Right Watermark: absolute, right -16px, top 50%, translateY(-50%), z-0 */}
                       <span
-                        className="absolute -right-[20px] top-1/2 -translate-y-1/2 text-[56px] font-black tracking-[0.05em] uppercase text-[#111827] opacity-[0.12] select-none leading-none whitespace-nowrap pointer-events-none z-0"
+                        className="absolute -right-[16px] top-1/2 -translate-y-1/2 text-[56px] font-black tracking-normal uppercase text-[#111827] opacity-[0.12] select-none leading-none whitespace-nowrap pointer-events-none z-0"
                       >
                         {rightWatermark}
                       </span>
 
-                      {/* Slider components layered on top of watermarks: position relative, z-index 1 */}
-                      <div className="relative z-[1] space-y-2">
-                        {/* Full width, thin track 2px, Thumb 20px black circle #111827 */}
+                      {/* Actual Slider: z-index: 1, position: relative */}
+                      <div className="relative z-[1] space-y-2.5">
+                        {/* Track height 3px, bg rgba(0,0,0,0.2), active #111827, Thumb 22px circle #111827 */}
                         <div className="relative px-0.5 flex items-center">
                           <input
                             type="range"
@@ -381,24 +380,24 @@ export function ReviewRatingModal({
                             onChange={(e) => setSliderValue(parseFloat(e.target.value))}
                             disabled={isSubmitting || isSuccess}
                             aria-label="রেটিং নির্বাচন করুন"
-                            className="corporate-rating-slider w-full h-[2px] appearance-none cursor-pointer focus:outline-none"
+                            className="corporate-rating-slider w-full h-[3px] appearance-none cursor-pointer focus:outline-none"
                             style={{
-                              background: `linear-gradient(to right, #111827 0%, #111827 ${sliderValue * 100}%, rgba(17, 24, 39, 0.2) ${sliderValue * 100}%, rgba(17, 24, 39, 0.2) 100%)`,
+                              background: `linear-gradient(to right, #111827 0%, #111827 ${sliderValue * 100}%, rgba(0, 0, 0, 0.2) ${sliderValue * 100}%, rgba(0, 0, 0, 0.2) 100%)`,
                             }}
                           />
                         </div>
 
-                        {/* Tick dots: 3 only (Bad, Not Bad, Good positions: 0.0, 0.5, 1.0) */}
+                        {/* 3 Tick Dots at 0%, 50%, 100% positions (6px circle, active opacity 1.0, inactive 0.4) */}
                         <div className="flex justify-between items-center px-1 select-none">
                           {[0.0, 0.5, 1.0].map((tick) => {
-                            const isClose = Math.abs(sliderValue - tick) < 0.15;
+                            const isActive = sliderValue >= tick - 0.05;
                             return (
                               <button
                                 key={tick}
                                 type="button"
                                 onClick={() => setSliderValue(tick)}
-                                className={`w-[6px] h-[6px] rounded-full transition-all duration-150 cursor-pointer ${
-                                  isClose ? "bg-[#111827] scale-125" : "bg-[#111827]/30 hover:bg-[#111827]/60"
+                                className={`w-[6px] h-[6px] rounded-full bg-[#111827] transition-opacity duration-150 cursor-pointer ${
+                                  isActive ? "opacity-100 scale-110" : "opacity-40 hover:opacity-75"
                                 }`}
                                 aria-label={`রেটিং ${tick * 100}%`}
                               />
@@ -406,8 +405,8 @@ export function ReviewRatingModal({
                           })}
                         </div>
 
-                        {/* Labels below: "Not Good", "Good", "Excellent" (font-size 11px, color #111827, opacity 0.6) */}
-                        <div className="flex justify-between items-center text-[11px] text-[#111827] opacity-60 px-0.5 pt-0.5 select-none font-medium">
+                        {/* Labels below dots: 11px, color #111827, opacity 0.7 */}
+                        <div className="flex justify-between items-center text-[11px] text-[#111827] opacity-70 px-0.5 select-none font-medium">
                           <button
                             type="button"
                             onClick={() => setSliderValue(0.0)}
@@ -440,7 +439,7 @@ export function ReviewRatingModal({
                     </div>
                   )}
 
-                  {/* ─── Form Fields (Always visible, Glass styling on colored background) ─── */}
+                  {/* ─── Form Fields (below slider: bg rgba(255,255,255,0.25), border 1px solid rgba(255,255,255,0.4), rounded 8px) ─── */}
                   {!isSuccess && (
                     <div className="space-y-3 pt-1">
                       {/* Field 1: আপনি কি বিনিয়োগ করেছেন? (radio হ্যাঁ/না) — required */}
@@ -460,7 +459,7 @@ export function ReviewRatingModal({
                             className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-[8px] text-xs font-medium transition-all cursor-pointer border ${
                               hasInvested === true
                                 ? "bg-[#111827] text-white border-[#111827] shadow-xs"
-                                : "bg-white/30 text-[#111827] border-white/50 hover:bg-white/40"
+                                : "bg-white/25 text-[#111827] border-white/40 hover:bg-white/35"
                             }`}
                           >
                             <span>হ্যাঁ</span>
@@ -477,7 +476,7 @@ export function ReviewRatingModal({
                             className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-[8px] text-xs font-medium transition-all cursor-pointer border ${
                               hasInvested === false
                                 ? "bg-[#111827] text-white border-[#111827] shadow-xs"
-                                : "bg-white/30 text-[#111827] border-white/50 hover:bg-white/40"
+                                : "bg-white/25 text-[#111827] border-white/40 hover:bg-white/35"
                             }`}
                           >
                             <span>না</span>
@@ -506,7 +505,7 @@ export function ReviewRatingModal({
                           }}
                           placeholder="পেশা (যেমন: ব্যবসায়ী, চাকরিজীবী)"
                           disabled={isSubmitting || isSuccess}
-                          className="w-full rounded-[8px] border border-white/50 bg-white/30 px-3 py-2 text-[14px] text-[#111827] placeholder:text-black/40 focus:border-[#111827] focus:outline-none transition-colors"
+                          className="w-full rounded-[8px] border border-white/40 bg-white/25 px-3 py-2 text-[14px] text-[#111827] placeholder:text-black/45 focus:border-[#111827] focus:outline-none transition-colors"
                         />
                         {errors.userIdentity && (
                           <p className="text-[11px] text-rose-600 mt-1 pl-0.5">
@@ -515,7 +514,7 @@ export function ReviewRatingModal({
                         )}
                       </div>
 
-                      {/* Field 3: মতামত — single textarea, always open, no toggle, required */}
+                      {/* Field 3: মতামত — single textarea, required */}
                       <div>
                         <label className="block text-[12px] font-medium text-[#111827] mb-1">
                           মতামত <span className="text-rose-600">*</span>
@@ -532,7 +531,7 @@ export function ReviewRatingModal({
                           placeholder="আপনার মতামত ও বিনিয়োগের অভিজ্ঞতা লিখুন..."
                           rows={3}
                           disabled={isSubmitting || isSuccess}
-                          className="w-full rounded-[8px] border border-white/50 bg-white/30 p-2.5 text-[14px] text-[#111827] placeholder:text-black/40 focus:border-[#111827] focus:outline-none resize-none transition-colors"
+                          className="w-full rounded-[8px] border border-white/40 bg-white/25 p-2.5 text-[14px] text-[#111827] placeholder:text-black/45 focus:border-[#111827] focus:outline-none resize-none transition-colors"
                         />
                         {errors.note && (
                           <p className="text-[11px] text-rose-600 mt-1 pl-0.5">
@@ -543,23 +542,23 @@ export function ReviewRatingModal({
                     </div>
                   )}
 
-                  {/* ─── Buttons (bottom row) ─── */}
+                  {/* ─── Bottom Buttons: space-between ─── */}
                   {!isSuccess && (
                     <div className="pt-4 flex items-center justify-between gap-3">
-                      {/* Left: "নোট যোগ করুন" (ghost, left aligned, border 1px solid rgba(0,0,0,0.2), bg transparent) */}
+                      {/* Left: "নোট যোগ করুন" (ghost button, border: 1px solid rgba(0,0,0,0.25), bg: transparent, rounded: 8px) */}
                       <button
                         type="button"
                         onClick={() => noteInputRef.current?.focus()}
-                        className="py-2.5 px-4 rounded-[8px] border border-black/20 bg-transparent text-[#111827] text-xs font-medium hover:bg-black/5 transition-colors cursor-pointer"
+                        className="py-2.5 px-4 rounded-[8px] border border-black/25 bg-transparent text-[#111827] text-xs font-medium hover:bg-black/5 transition-colors cursor-pointer"
                       >
                         নোট যোগ করুন
                       </button>
 
-                      {/* Right: "জমা দিন →" (pill shape, bg #111827, text white, right aligned) */}
+                      {/* Right: "জমা দিন →" (bg: #111827, color: white, rounded: 24px pill, padding: 12px 28px) */}
                       <button
                         type="submit"
                         disabled={isSubmitting || isSuccess}
-                        className="inline-flex items-center justify-center gap-1.5 py-2.5 px-6 rounded-full bg-[#111827] text-white font-medium text-xs hover:opacity-85 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-sm"
+                        className="inline-flex items-center justify-center gap-1.5 py-3 px-7 rounded-[24px] bg-[#111827] text-white font-medium text-xs hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-sm"
                       >
                         {isSubmitting ? (
                           <>
@@ -575,34 +574,34 @@ export function ReviewRatingModal({
                 </form>
               )}
 
-              {/* Slider Styling (2px track, 20px black thumb) */}
+              {/* Slider Styling (3px track, 22px black thumb) */}
               <style>{`
                 .corporate-rating-slider::-webkit-slider-runnable-track {
-                  height: 2px;
+                  height: 3px;
                   border-radius: 9999px;
                   background: transparent;
                 }
                 .corporate-rating-slider::-moz-range-track {
-                  height: 2px;
+                  height: 3px;
                   border-radius: 9999px;
                   background: transparent;
                 }
                 .corporate-rating-slider::-webkit-slider-thumb {
                   -webkit-appearance: none;
                   appearance: none;
-                  width: 20px;
-                  height: 20px;
+                  width: 22px;
+                  height: 22px;
                   border-radius: 50%;
                   background: #111827;
                   cursor: pointer;
-                  margin-top: -9px;
+                  margin-top: -9.5px;
                   box-shadow: none;
                   border: none;
                   transition: opacity 0.15s ease, transform 0.15s ease;
                 }
                 .corporate-rating-slider::-moz-range-thumb {
-                  width: 20px;
-                  height: 20px;
+                  width: 22px;
+                  height: 22px;
                   border-radius: 50%;
                   background: #111827;
                   cursor: pointer;
