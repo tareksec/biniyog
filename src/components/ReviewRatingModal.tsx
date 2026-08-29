@@ -49,20 +49,19 @@ function lerpColor(c1: string, c2: string, t: number): string {
 }
 
 /**
- * Bold & vibrant background interpolation based on slider value (0.0 to 1.0)
- * - Not Good (0.0-0.33): #F5C518 (bold yellow)
- * - Good (0.33-0.66): #F5C518 → #A8D840 interpolate
- * - Excellent (0.66-1.0): #A8D840 (bold green)
+ * Linear color interpolation between 3 exact hex values (0.0 to 1.0)
+ * - Not Good (0.0): #F5C518
+ * - Good (0.5): #A8D840
+ * - Excellent (1.0): #B8E855
  */
 export function getRatingBackgroundColor(value: number): string {
   const clamped = Math.max(0, Math.min(1, value));
-  if (clamped <= 0.33) {
-    return "#F5C518";
-  } else if (clamped <= 0.66) {
-    const t = (clamped - 0.33) / (0.66 - 0.33);
+  if (clamped <= 0.5) {
+    const t = clamped / 0.5;
     return lerpColor("#F5C518", "#A8D840", t);
   } else {
-    return "#A8D840";
+    const t = (clamped - 0.5) / 0.5;
+    return lerpColor("#A8D840", "#B8E855", t);
   }
 }
 
@@ -354,26 +353,23 @@ export function ReviewRatingModal({
 
                   {/* Rating Slider with Two Watermarks at Track Level */}
                   {!isSuccess && (
-                    <div className="relative py-2 my-1 select-none overflow-visible">
-                      {/* Two fixed watermark words on slider row level (partially cut off at edges) */}
-                      <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-between pointer-events-none -mx-8 z-0">
-                        {/* Left watermark: current state label */}
-                        <span
-                          className="text-[52px] font-black tracking-[0.05em] uppercase text-[#111827] opacity-15 select-none leading-none whitespace-nowrap -translate-x-3 transition-all duration-200"
-                        >
-                          {leftWatermark}
-                        </span>
+                    <div className="relative overflow-hidden py-3 my-1 select-none">
+                      {/* Left word: position absolute, left -20px, transform translateY(-50%), top 50%, z-index 0 */}
+                      <span
+                        className="absolute -left-[20px] top-1/2 -translate-y-1/2 text-[56px] font-black tracking-[0.05em] uppercase text-[#111827] opacity-[0.12] select-none leading-none whitespace-nowrap pointer-events-none z-0"
+                      >
+                        {leftWatermark}
+                      </span>
 
-                        {/* Right watermark: next state label */}
-                        <span
-                          className="text-[52px] font-black tracking-[0.05em] uppercase text-[#111827] opacity-15 select-none leading-none whitespace-nowrap translate-x-3 transition-all duration-200"
-                        >
-                          {rightWatermark}
-                        </span>
-                      </div>
+                      {/* Right word: position absolute, right -20px, transform translateY(-50%), top 50%, z-index 0 */}
+                      <span
+                        className="absolute -right-[20px] top-1/2 -translate-y-1/2 text-[56px] font-black tracking-[0.05em] uppercase text-[#111827] opacity-[0.12] select-none leading-none whitespace-nowrap pointer-events-none z-0"
+                      >
+                        {rightWatermark}
+                      </span>
 
-                      {/* Slider components layered on top of watermarks */}
-                      <div className="relative z-10 space-y-2">
+                      {/* Slider components layered on top of watermarks: position relative, z-index 1 */}
+                      <div className="relative z-[1] space-y-2">
                         {/* Full width, thin track 2px, Thumb 20px black circle #111827 */}
                         <div className="relative px-0.5 flex items-center">
                           <input
