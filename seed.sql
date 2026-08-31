@@ -80,7 +80,7 @@ https://www.facebook.com/thetrekmad
 
 https://www.facebook.com/accessoriespark.ap', ARRAY['https://www.ap.com.bd/cdn/shop/files/accessories-park-logo-icon.svg?v=1759841411&width=100']);
 
-INSERT INTO public.opportunities (slug, name, owner_name, owner_phone, cfa_comment, guarantee, category, bank_details, investment_type, investment_amount, expected_profit, profit_period, status, description, address, organization_type, estimated_capital, website_url, image_urls) VALUES ('amar-foods', 'amar foods', 'polash (Founder and CEO)', '0 1864-216977', 'অভিজ্ঞ, পজিটিভ এবং ভালো মানসিকতার একজন ব্যক্তি। এত বন্ধু সুলভ আচরণ যে কথা বললে মনে হবে একজন তরুণের সাথে কথা বলছেন।', 'check + document', 'এগ্রো', 'Bank Name : Shahjalal Islami Bank
+INSERT INTO public.opportunities (slug, name, owner_name, owner_phone, cfa_comment, guarantee, category, bank_details, investment_type, investment_amount, expected_profit, profit_period, status, description, address, organization_type, estimated_capital, website_url, image_urls) VALUES ('amar-foods', 'amar foods', 'polash (Founder and CEO)', '0 1864-216977', 'অভিজ্ঞ, পজিটিভ এবং ভালো মানসিকতার একজন ব্যক্তি। এত বন্ধু সুলভ আচরণ যে কথা বললে মনে হবে একজন তরুণের সাথে কথা বলছেন।', 'check + document', 'অর্গানিক ফুড', 'Bank Name : Shahjalal Islami Bank
 Account Name : Watermark Enterprise Limited
 Account Number : 401311100006273
 Brach : Banani Branch
