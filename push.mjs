@@ -9,7 +9,7 @@ try {
   
   // Try to commit
   try {
-    execSync('git commit -m "perf: Optimize bundle size, code-split below-fold sections, lazy load images, and fix font loading"', { stdio: 'pipe' });
+    execSync('git commit -m "feat: add risk level control for opportunities with admin dropdown and badges"', { stdio: 'pipe' });
   } catch (e) {}
   
   // Pull remote changes (merge commit style, no rebase to avoid rewriting history)

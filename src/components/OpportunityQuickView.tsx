@@ -60,9 +60,7 @@ export function OpportunityQuickView({
             </span>
             {risk && (
               <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-semibold ${riskChipStyle(risk.level).bg} ${riskChipStyle(risk.level).text}`}>
-                {risk.level === "low" && "নিম্ন ঝুঁকি"}
-                {risk.level === "med" && "মধ্যম ঝুঁকি"}
-                {risk.level === "high" && "উচ্চ ঝুঁকি"}
+                {risk.label}
               </span>
             )}
             {project.profit_period && (

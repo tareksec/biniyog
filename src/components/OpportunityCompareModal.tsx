@@ -107,9 +107,7 @@ export function OpportunityCompareModal({
                     <div key={p.id}>
                       {r ? (
                         <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-semibold ${riskChipStyle(r.level).bg} ${riskChipStyle(r.level).text}`}>
-                          {r.level === "low" && "নিম্ন ঝুঁকি"}
-                          {r.level === "med" && "মধ্যম ঝুঁকি"}
-                          {r.level === "high" && "উচ্চ ঝুঁকি"}
+                          {r.label}
                         </span>
                       ) : (
                         <span className="text-muted-foreground">—</span>

@@ -61,6 +61,7 @@ export type Database = {
           cfa_comment: string | null;
           guarantee: string | null;
           category: string | null;
+          risk_level: string;
           investment_type: string | null;
           bank_details: string | null;
           investment_amount: string | null;
@@ -85,6 +86,7 @@ export type Database = {
           cfa_comment?: string | null;
           guarantee?: string | null;
           category?: string | null;
+          risk_level?: string;
           investment_type?: string | null;
           bank_details?: string | null;
           investment_amount?: string | null;
@@ -109,6 +111,7 @@ export type Database = {
           cfa_comment?: string | null;
           guarantee?: string | null;
           category?: string | null;
+          risk_level?: string;
           investment_type?: string | null;
           bank_details?: string | null;
           investment_amount?: string | null;
@@ -467,6 +470,7 @@ export type Database = {
 export type Opportunity = Database["public"]["Tables"]["opportunities"]["Row"];
 export type OpportunityInsert = Database["public"]["Tables"]["opportunities"]["Insert"];
 export type OpportunityUpdate = Database["public"]["Tables"]["opportunities"]["Update"];
+export type RiskLevel = "নিম্ন" | "মধ্যম" | "উচ্চ";
 
 export type OpportunityRisk = Database["public"]["Tables"]["opportunity_risks"]["Row"];
 export type OpportunityRiskInsert = Database["public"]["Tables"]["opportunity_risks"]["Insert"];

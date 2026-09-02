@@ -242,35 +242,35 @@ export function uniqueCategories(list: Opportunity[]): string[] {
   return Array.from(s).sort((a, b) => a.localeCompare(b, "bn"));
 }
 
-/** Deterministic risk level based on business category */
+/** Risk level directly controlled via opportunity.risk_level */
 export function getRiskLevel(p: Opportunity): { level: "low" | "med" | "high"; label: string; color: string; bg: string } {
-  const name = (p.name || "").toLowerCase();
-  const slug = (p.slug || "").toLowerCase();
-  const type = (p.category || "").toLowerCase();
-  
-  // Specific project overrides: Amar Foods & Agro Desh (not high-risk farming/raw agro)
-  if (
-    name.includes("amar food") ||
-    slug.includes("amar-food") ||
-    name.includes("আমার ফুড") ||
-    slug.includes("আমার-ফুড") ||
-    name.includes("agro desh") ||
-    slug.includes("agro-desh") ||
-    name.includes("এগ্রো দেশ") ||
-    slug.includes("এগ্রো-দেশ")
-  ) {
-    return { level: "med", label: "মাঝারি ঝুঁকি", color: "text-yellow-600 dark:text-yellow-500", bg: "bg-yellow-500/10" };
+  const raw = (p.risk_level || "").trim();
+
+  if (raw === "নিম্ন") {
+    return {
+      level: "low",
+      label: "নিম্ন ঝুঁকি",
+      color: "text-emerald-700 dark:text-emerald-400",
+      bg: "bg-emerald-500/10",
+    };
   }
-  
-  if (type.includes("এগ্রো") || type.includes("কৃষি") || type.includes("খামার") || type.includes("টেক") || type.includes("স্টার্টআপ")) {
-    return { level: "high", label: "উচ্চ ঝুঁকি", color: "text-destructive", bg: "bg-destructive/10" };
+
+  if (raw === "উচ্চ") {
+    return {
+      level: "high",
+      label: "উচ্চ ঝুঁকি",
+      color: "text-red-700 dark:text-red-400",
+      bg: "bg-red-500/10",
+    };
   }
-  
-  if (type.includes("গার্মেন্টস") || type.includes("ফ্যাশন") || type.includes("খাবার") || type.includes("রেস্টুরেন্ট") || type.includes("ফুড") || type.includes("ই-কমার্স")) {
-    return { level: "med", label: "মাঝারি ঝুঁকি", color: "text-yellow-600 dark:text-yellow-500", bg: "bg-yellow-500/10" };
-  }
-  
-  return { level: "low", label: "নিম্ন ঝুঁকি", color: "text-primary", bg: "bg-primary/10" };
+
+  // Default: মধ্যম ঝুঁকি
+  return {
+    level: "med",
+    label: "মধ্যম ঝুঁকি",
+    color: "text-orange-700 dark:text-orange-400",
+    bg: "bg-orange-500/10",
+  };
 }
 
 /** 

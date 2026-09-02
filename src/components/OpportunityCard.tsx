@@ -102,11 +102,11 @@ export function getStatusRingColors(status: string | null): { stroke: string; tr
 export function riskChipStyle(level: "low" | "med" | "high"): { bg: string; text: string } {
   switch (level) {
     case "low":
-      return { bg: "bg-[#DAF1DE]", text: "text-[#163832]" };
+      return { bg: "bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/40", text: "text-emerald-700 dark:text-emerald-400" };
     case "med":
-      return { bg: "bg-amber-50 dark:bg-amber-900/30", text: "text-amber-700 dark:text-amber-400" };
+      return { bg: "bg-orange-50 dark:bg-orange-950/40 border border-orange-200/60 dark:border-orange-800/40", text: "text-orange-700 dark:text-orange-400" };
     case "high":
-      return { bg: "bg-rose-50 dark:bg-rose-900/30", text: "text-rose-700 dark:text-rose-400" };
+      return { bg: "bg-red-50 dark:bg-red-950/40 border border-red-200/60 dark:border-red-800/40", text: "text-red-700 dark:text-red-400" };
   }
 }
 

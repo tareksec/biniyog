@@ -73,6 +73,12 @@ const RISK_LEVELS = [
   { value: "উচ্চ", label: "উচ্চ (High)" },
 ];
 
+const OVERALL_RISK_OPTIONS = [
+  { value: "নিম্ন", label: "নিম্ন ঝুঁকি" },
+  { value: "মধ্যম", label: "মধ্যম ঝুঁকি" },
+  { value: "উচ্চ", label: "উচ্চ ঝুঁকি" },
+];
+
 const PAYOUT_STATUSES = [
   { value: "পরিশোধিত", label: "পরিশোধিত (Paid)" },
   { value: "প্রক্রিয়াধীন", label: "প্রক্রিয়াধীন (Processing)" },
@@ -144,6 +150,7 @@ export function OpportunityForm({
     cfa_comment: "",
     guarantee: "",
     category: "",
+    risk_level: "মধ্যম",
     investment_type: "",
     bank_details: "",
     investment_amount: "",
@@ -174,6 +181,7 @@ export function OpportunityForm({
           cfa_comment: opportunity.cfa_comment || "",
           guarantee: opportunity.guarantee || "",
           category: opportunity.category || "",
+          risk_level: opportunity.risk_level || "মধ্যম",
           investment_type: opportunity.investment_type || "",
           bank_details: opportunity.bank_details || "",
           investment_amount: opportunity.investment_amount || "",
@@ -218,6 +226,7 @@ export function OpportunityForm({
           cfa_comment: "",
           guarantee: "",
           category: "",
+          risk_level: "মধ্যম",
           investment_type: "",
           bank_details: "",
           investment_amount: "",
@@ -445,6 +454,7 @@ export function OpportunityForm({
           cfa_comment: form.cfa_comment.trim() || null,
           guarantee: form.guarantee.trim() || null,
           category: form.category.trim() || null,
+          risk_level: form.risk_level || "মধ্যম",
           investment_type: form.investment_type.trim() || null,
           bank_details: form.bank_details.trim() || null,
           investment_amount: form.investment_amount.trim() || null,
@@ -475,6 +485,7 @@ export function OpportunityForm({
           cfa_comment: form.cfa_comment.trim() || null,
           guarantee: form.guarantee.trim() || null,
           category: form.category.trim() || null,
+          risk_level: form.risk_level || "মধ্যম",
           investment_type: form.investment_type.trim() || null,
           bank_details: form.bank_details.trim() || null,
           investment_amount: form.investment_amount.trim() || null,
@@ -701,7 +712,7 @@ export function OpportunityForm({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                   <div className="space-y-1.5">
                     <Label htmlFor="opp-category" className="text-xs font-bold text-slate-700">
                       ক্যাটাগরি
@@ -732,6 +743,33 @@ export function OpportunityForm({
                         {STATUS_OPTIONS.map((opt) => (
                           <SelectItem key={opt.value} value={opt.value} className="text-xs">
                             {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-bold text-slate-700">সামগ্রিক ঝুঁকি মাত্রা</Label>
+                    <Select value={form.risk_level} onValueChange={(v) => updateField("risk_level", v)}>
+                      <SelectTrigger className="rounded-xl bg-slate-50/50">
+                        <SelectValue placeholder="ঝুঁকি মাত্রা বাছুন" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-2xl">
+                        {OVERALL_RISK_OPTIONS.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value} className="text-xs">
+                            <span className="flex items-center gap-2">
+                              <span
+                                className={`h-2 w-2 rounded-full ${
+                                  opt.value === "নিম্ন"
+                                    ? "bg-emerald-500"
+                                    : opt.value === "উচ্চ"
+                                    ? "bg-red-500"
+                                    : "bg-orange-500"
+                                }`}
+                              />
+                              {opt.label}
+                            </span>
                           </SelectItem>
                         ))}
                       </SelectContent>

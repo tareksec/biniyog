@@ -195,6 +195,32 @@ function statusBadge(status: string | null) {
   );
 }
 
+function riskBadge(riskLevel: string | null) {
+  const r = (riskLevel || "").trim();
+  if (r === "নিম্ন") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+        নিম্ন ঝুঁকি
+      </span>
+    );
+  }
+  if (r === "উচ্চ") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-red-50 text-red-700 border border-red-200">
+        <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+        উচ্চ ঝুঁকি
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-orange-50 text-orange-700 border border-orange-200">
+      <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
+      {r ? `${r} ঝুঁকি` : "মধ্যম ঝুঁকি"}
+    </span>
+  );
+}
+
 // ─── Animation variants ─────────────────────────────────────────────
 const cardVariant = {
   hidden: { opacity: 0, y: 18 },
@@ -1407,6 +1433,7 @@ function AdminDashboard() {
                             <th className="px-4 py-3.5 w-10"><Checkbox checked={paginatedOpportunities.length > 0 && selectedOppIds.size === paginatedOpportunities.length} onCheckedChange={toggleSelectAllOpps} /></th>
                             <th className="px-4 py-3.5">সুযোগ</th>
                             <th className="px-4 py-3.5">ক্যাটাগরি</th>
+                            <th className="px-4 py-3.5">ঝুঁকির মাত্রা</th>
                             <th className="px-4 py-3.5">বিনিয়োগ</th>
                             <th className="px-4 py-3.5">মুনাফা</th>
                             <th className="px-4 py-3.5">স্ট্যাটাস</th>
@@ -1426,6 +1453,7 @@ function AdminDashboard() {
                                 </div>
                               </td>
                               <td className="px-4 py-3.5"><span className="px-2.5 py-0.5 rounded-lg text-[11px] font-semibold bg-gray-100 text-gray-700">{opp.category || "—"}</span></td>
+                              <td className="px-4 py-3.5">{riskBadge(opp.risk_level)}</td>
                               <td className="px-4 py-3.5 font-bold text-[#111827]">{opp.investment_amount || "—"}</td>
                               <td className="px-4 py-3.5 font-semibold text-emerald-700">{opp.expected_profit || "—"}</td>
                               <td className="px-4 py-3.5">{statusBadge(opp.status)}</td>

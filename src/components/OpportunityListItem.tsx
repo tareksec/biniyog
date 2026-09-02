@@ -114,9 +114,7 @@ export function OpportunityListItem({
             </span>
             {risk && (
               <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${riskChipStyle(risk.level).bg} ${riskChipStyle(risk.level).text}`}>
-                {risk.level === "low" && "নিম্ন ঝুঁকি"}
-                {risk.level === "med" && "মধ্যম ঝুঁকি"}
-                {risk.level === "high" && "উচ্চ ঝুঁকি"}
+                {risk.label}
               </span>
             )}
           </div>
