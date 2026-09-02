@@ -246,6 +246,7 @@ export function WhyChooseSection() {
   const prefersReduced = usePrefersReducedMotion();
   const isMobile = useIsMobile();
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [mobileOpenIndex, setMobileOpenIndex] = useState<number>(0);
   const sectionRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-10%" });
 
@@ -434,11 +435,108 @@ export function WhyChooseSection() {
         {/* ──── LIST + DETAIL LAYOUT ──── */}
         <div
           ref={sectionRef}
-          className="mt-12 flex flex-col gap-5 sm:mt-14 sm:flex-row sm:gap-6"
+          className="mt-10 flex flex-col gap-4 md:mt-14 md:flex-row md:gap-6"
         >
-          {/* ── LEFT SIDEBAR: floating card (desktop) ── */}
+          {/* ── MOBILE ACCORDION (Option B: < md) ── */}
+          <div className="flex w-full flex-col gap-2.5 md:hidden">
+            {WHY_DATA.map((item, i) => {
+              const isOpen = mobileOpenIndex === i;
+              return (
+                <div
+                  key={item.id}
+                  className={`overflow-hidden rounded-2xl border transition-all duration-200 ${
+                    isOpen
+                      ? "border-emerald-500/50 bg-[#daf1de]/40 dark:bg-emerald-950/30 shadow-sm ring-1 ring-emerald-500/30"
+                      : "border-border/60 bg-card/80 hover:border-border/90 hover:bg-card"
+                  }`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setMobileOpenIndex(isOpen ? -1 : i)}
+                    className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors cursor-pointer"
+                    aria-expanded={isOpen}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <NumBadge n={i + 1} isActive={isOpen} isLight={true} />
+                      <span
+                        className={`text-sm font-bold leading-snug truncate ${
+                          isOpen ? "text-[#143d33] dark:text-emerald-300" : "text-foreground"
+                        }`}
+                      >
+                        {item.label}
+                      </span>
+                    </div>
+                    <ChevronRight
+                      size={16}
+                      strokeWidth={2.5}
+                      className={`shrink-0 transition-transform duration-200 ${
+                        isOpen
+                          ? "rotate-90 text-[#143d33] dark:text-emerald-300"
+                          : "text-muted-foreground opacity-60"
+                      }`}
+                    />
+                  </button>
+
+                  <AnimatePresence initial={false}>
+                    {isOpen && (
+                      <motion.div
+                        initial={prefersReduced ? {} : { height: 0, opacity: 0 }}
+                        animate={prefersReduced ? {} : { height: "auto", opacity: 1 }}
+                        exit={prefersReduced ? {} : { height: 0, opacity: 0 }}
+                        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                      >
+                        <div className="px-3 pb-3.5 pt-0.5">
+                          <div
+                            className="rounded-xl p-4 shadow-xs"
+                            style={{
+                              background: item.gradient,
+                            }}
+                          >
+                            <div className="mb-2 flex items-center gap-2">
+                              <IconBadge item={item} size={20} />
+                              <span
+                                className="text-xs font-bold uppercase tracking-wider"
+                                style={{
+                                  color: item.isLight ? "#143d33" : "#ffffff",
+                                  opacity: 0.8,
+                                }}
+                              >
+                                {toBengaliNumeral(i + 1)}. {item.label}
+                              </span>
+                            </div>
+                            <p
+                              className="text-xs sm:text-sm leading-[1.75]"
+                              style={{
+                                color: item.isLight
+                                  ? "rgba(20,61,51,0.92)"
+                                  : "rgba(255,255,255,0.92)",
+                              }}
+                            >
+                              {item.expandedDesc}
+                            </p>
+                            <Link
+                              to={"/insights/keno-somriddhite-biniyog#" + item.articleHash}
+                              className="mt-3.5 inline-flex items-center gap-1.5 text-xs font-bold hover:underline underline-offset-4"
+                              style={{
+                                color: item.isLight ? "#143d33" : "#8EB69B",
+                              }}
+                            >
+                              <span>বিস্তারিত পড়ুন</span>
+                              <ChevronRight size={12} strokeWidth={2.5} />
+                            </Link>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* ── LEFT SIDEBAR: floating card (desktop md+) ── */}
           <motion.div
-            className="hidden shrink-0 flex-col gap-1 sm:flex sm:w-[230px] lg:w-[260px]"
+            className="hidden shrink-0 flex-col gap-1 md:flex md:w-[240px] lg:w-[270px]"
             variants={prefersReduced ? {} : sidebarContainerVariants}
             initial="hidden"
             animate={isInView ? "show" : "hidden"}
@@ -506,27 +604,8 @@ export function WhyChooseSection() {
             </div>
           </motion.div>
 
-          {/* ── MOBILE DROPDOWN (floating card style) ── */}
-          <div className="sm:hidden">
-            <label htmlFor="why-select" className="sr-only">
-              একটি কারণ বাছাই করুন
-            </label>
-            <select
-              id="why-select"
-              value={selectedIndex}
-              onChange={(e) => handleItemClick(Number(e.target.value))}
-              className="w-full min-h-[44px] rounded-2xl border border-border/60 bg-card/90 px-4 py-3.5 text-base font-semibold text-foreground shadow-[0_4px_20px_rgba(0,0,0,0.04)] backdrop-blur-sm transition-all duration-200 focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
-            >
-              {WHY_DATA.map((item, i) => (
-                <option key={item.id} value={i}>
-                  {i + 1}. {item.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* ── RIGHT DETAIL PANEL ── */}
-          <div className="min-w-0 flex-1 relative">
+          {/* ── RIGHT DETAIL PANEL (desktop md+) ── */}
+          <div className="hidden md:block min-w-0 flex-1 relative">
             <AnimatePresence mode="popLayout">
               <motion.div
                 key={selectedIndex}

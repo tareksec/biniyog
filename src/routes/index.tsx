@@ -397,7 +397,7 @@ function Hero({
               maxWidth: "360px",
             }}
           >
-            দেশের সম্ভাবনাময় ব্যবসায় বিনিয়োগ করুন
+            সম্ভাবনাময় ব্যাবসা প্রতিষ্ঠানে বিনিয়োগ করুন
           </h1>
 
           {/* Green underline */}
@@ -634,10 +634,10 @@ function Hero({
 
               {/* 2. Headline */}
               <div className="mt-5 sm:mt-6 w-full">
-                <h1 className="sr-only">দেশের সম্ভাবনাময় ব্যবসায় বিনিয়োগ করুন</h1>
+                <h1 className="sr-only">সম্ভাবনাময় ব্যাবসা প্রতিষ্ঠানে বিনিয়োগ করুন</h1>
                 <div aria-hidden="true">
                   <FlipFadeText 
-                    words={["দেশের সম্ভাবনাময় ব্যবসায় বিনিয়োগ করুন"]}
+                    words={["সম্ভাবনাময় ব্যাবসা প্রতিষ্ঠানে বিনিয়োগ করুন"]}
                     textClassName="font-[900] leading-[1.18] text-[#111827] text-[clamp(2rem,4vw,3.5rem)] flex flex-wrap justify-center lg:justify-start text-center lg:text-left tracking-tight"
                     className="justify-center lg:justify-start min-h-[auto]"
                     staggerDelay={0.03}
