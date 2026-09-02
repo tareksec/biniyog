@@ -18,6 +18,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "sonner";
 import { LumaSpin } from "@/components/ui/luma-spin";
+import { Analytics } from "@vercel/analytics/react";
 
 function FullPageLoader() {
   return (
@@ -404,6 +405,7 @@ function RootComponent() {
         {!isAdminRoute && <GlobalNav />}
         <FloatingWhatsAppButton />
         <Toaster position="top-center" richColors />
+        <Analytics />
       </AppErrorBoundary>
     </QueryClientProvider>
   );
