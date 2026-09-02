@@ -13,15 +13,23 @@ export const Route = createFileRoute("/sitemap.xml")({
           fetchPublishedBlogPosts().catch(() => []),
         ]);
 
-        const staticPages = [
+        interface SitemapItem {
+          loc: string;
+          priority: string;
+          changefreq: string;
+          lastmod?: string;
+        }
+
+        const staticPages: SitemapItem[] = [
           { loc: `${baseUrl}/`, priority: "1.0", changefreq: "daily" },
+          { loc: `${baseUrl}/about`, priority: "0.9", changefreq: "weekly" },
           { loc: `${baseUrl}/opportunities`, priority: "0.9", changefreq: "daily" },
           { loc: `${baseUrl}/blog`, priority: "0.8", changefreq: "daily" },
           { loc: `${baseUrl}/reviews`, priority: "0.6", changefreq: "weekly" },
           { loc: `${baseUrl}/insights`, priority: "0.6", changefreq: "weekly" },
         ];
 
-        const opportunityPages = (opportunities || []).map((opp) => {
+        const opportunityPages: SitemapItem[] = (opportunities || []).map((opp) => {
           const slugOrId = opp.slug || opp.id;
           return {
             loc: `${baseUrl}/opportunities/${slugOrId}`,
@@ -31,7 +39,7 @@ export const Route = createFileRoute("/sitemap.xml")({
           };
         });
 
-        const blogPages = (blogPosts || []).map((post) => ({
+        const blogPages: SitemapItem[] = (blogPosts || []).map((post) => ({
           loc: `${baseUrl}/blog/${post.slug}`,
           priority: "0.7",
           changefreq: "weekly",
@@ -40,14 +48,15 @@ export const Route = createFileRoute("/sitemap.xml")({
             : undefined,
         }));
 
-        const urls = [
+        const urls: SitemapItem[] = [
           staticPages[0], // /
-          staticPages[1], // /opportunities
+          staticPages[1], // /about
+          staticPages[2], // /opportunities
           ...opportunityPages,
-          staticPages[2], // /blog
+          staticPages[3], // /blog
           ...blogPages,
-          staticPages[3], // /reviews
-          staticPages[4], // /insights
+          staticPages[4], // /reviews
+          staticPages[5], // /insights
         ];
 
         const xml = `<?xml version="1.0" encoding="UTF-8"?>

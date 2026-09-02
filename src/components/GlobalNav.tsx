@@ -52,6 +52,7 @@ export function GlobalNav() {
 
   const dockItems: DockItem[] = [
     { title: "হোম", icon: Home, onClick: () => scrollTo("top") },
+    { title: "আমাদের সম্পর্কে", icon: User, onClick: () => { setOpen(false); navigate({ to: "/about" as any }); } },
     { title: "এক্সপার্ট", icon: GraduationCap, onClick: () => scrollTo("expert") },
     { title: "ক্যালকুলেটর", icon: Calculator, onClick: () => scrollTo("calculator"), accent: true },
     { title: "ব্লগ", icon: BookOpen, onClick: () => { setOpen(false); navigate({ to: "/blog" }); } },
@@ -105,9 +106,11 @@ export function GlobalNav() {
                 const id = item.title === "হোম" ? "top" : item.title === "এক্সপার্ট" ? "expert" : item.title === "ক্যালকুলেটর" ? "calculator" : "";
                 const isOpp = item.title === "সক্রিয় সুযোগ";
                 const isBlog = item.title === "ব্লগ";
+                const isAbout = item.title === "আমাদের সম্পর্কে";
                 const isActive = (id && activeSection === id && router.location.pathname === '/') || 
                                  (isOpp && router.location.pathname.startsWith('/opportunities')) ||
-                                 (isBlog && router.location.pathname.startsWith('/blog'));
+                                 (isBlog && router.location.pathname.startsWith('/blog')) ||
+                                 (isAbout && router.location.pathname === '/about');
                 return (
                   <button
                     key={item.title}

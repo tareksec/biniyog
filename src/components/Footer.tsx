@@ -48,6 +48,12 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link to="/about" className="text-white/70 hover:text-white transition-colors inline-flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#8EB69B]"></span>
+                  আমাদের সম্পর্কে
+                </Link>
+              </li>
+              <li>
                 <Link to="/opportunities" className="text-white/70 hover:text-white transition-colors inline-flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#8EB69B]"></span>
                   সুযোগসমূহ

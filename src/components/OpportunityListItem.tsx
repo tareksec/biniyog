@@ -94,7 +94,7 @@ export function OpportunityListItem({
           <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full overflow-hidden ring-4 ring-muted">
             <img
               src={resolveImageUrl(project)}
-              alt=""
+              alt={`${project.name} বিনিয়োগ সুযোগ বাংলাদেশ`}
               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
               loading="lazy"
               decoding="async"

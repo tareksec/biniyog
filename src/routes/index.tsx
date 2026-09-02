@@ -34,33 +34,36 @@ type OpportunitiesSearch = {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "বিনিয়োগ বৃদ্ধি | যাচাইকৃত SME ব্যবসায় বিনিয়োগ বাংলাদেশ" },
+      { title: "বিনিয়োগ বৃদ্ধি | যাচাইকৃত SME ব্যবসায় বিনিয়োগ বাংলাদেশ ২০২৬" },
       {
         name: "description",
         content:
-          "বাংলাদেশের যাচাইকৃত SME ব্যবসায় বিনিয়োগ করুন। লাভজনক co-investment সুযোগ। বিনিয়োগ বৃদ্ধি — বাংলাদেশের বিশ্বস্ত বিনিয়োগ প্ল্যাটফর্ম।",
+          "বাংলাদেশে যাচাইকৃত SME ব্যবসায় বিনিয়োগ করুন। লাভজনক co-investment সুযোগ। বিনিয়োগ বৃদ্ধি — বাংলাদেশের বিশ্বস্ত বিনিয়োগ প্ল্যাটফর্ম।",
       },
       {
         property: "og:title",
-        content: "বিনিয়োগ বৃদ্ধি | যাচাইকৃত SME ব্যবসায় বিনিয়োগ বাংলাদেশ",
+        content: "বিনিয়োগ বৃদ্ধি | SME বিনিয়োগ প্ল্যাটফর্ম বাংলাদেশ",
       },
       {
         property: "og:description",
         content:
-          "বাংলাদেশের যাচাইকৃত SME ব্যবসায় বিনিয়োগ করুন। লাভজনক co-investment সুযোগ। বিনিয়োগ বৃদ্ধি — বাংলাদেশের বিশ্বস্ত বিনিয়োগ প্ল্যাটফর্ম।",
+          "বাংলাদেশে যাচাইকৃত SME ব্যবসায় বিনিয়োগ করুন। লাভজনক co-investment সুযোগ। বিনিয়োগ বৃদ্ধি — বাংলাদেশের বিশ্বস্ত বিনিয়োগ প্ল্যাটফর্ম।",
       },
+      { property: "og:image", content: "https://biniyogbriddhi.com/og-image.jpg" },
       { property: "og:url", content: "https://biniyogbriddhi.com" },
       { property: "og:type", content: "website" },
+      { property: "og:locale", content: "bn_BD" },
       { name: "twitter:card", content: "summary_large_image" },
       {
         name: "twitter:title",
-        content: "বিনিয়োগ বৃদ্ধি | যাচাইকৃত SME ব্যবসায় বিনিয়োগ বাংলাদেশ",
+        content: "বিনিয়োগ বৃদ্ধি | SME বিনিয়োগ প্ল্যাটফর্ম বাংলাদেশ",
       },
       {
         name: "twitter:description",
         content:
-          "বাংলাদেশের যাচাইকৃত SME ব্যবসায় বিনিয়োগ করুন। লাভজনক co-investment সুযোগ। বিনিয়োগ বৃদ্ধি — বাংলাদেশের বিশ্বস্ত বিনিয়োগ প্ল্যাটফর্ম।",
+          "বাংলাদেশে যাচাইকৃত SME ব্যবসায় বিনিয়োগ করুন। লাভজনক co-investment সুযোগ। বিনিয়োগ বৃদ্ধি — বাংলাদেশের বিশ্বস্ত বিনিয়োগ প্ল্যাটফর্ম।",
       },
+      { name: "twitter:image", content: "https://biniyogbriddhi.com/og-image.jpg" },
     ],
     scripts: [
       {
@@ -68,17 +71,81 @@ export const Route = createFileRoute("/")({
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "FinancialService",
-          name: "বিনিয়োগ বৃদ্ধি",
-          url: "https://biniyogbriddhi.com",
-          description: "যাচাইকৃত SME ব্যবসায় বিনিয়োগ প্ল্যাটফর্ম, বাংলাদেশ",
-          areaServed: "BD",
-          currenciesAccepted: "BDT",
-          telephone: "+8801316110209",
-          email: "support@biniyogbriddhi.com",
-          sameAs: [
+          "name": "বিনিয়োগ বৃদ্ধি",
+          "alternateName": "Biniyog Briddhi",
+          "url": "https://biniyogbriddhi.com",
+          "logo": "https://biniyogbriddhi.com/logo.png",
+          "description": "বাংলাদেশে যাচাইকৃত SME ব্যবসায় বিনিয়োগ প্ল্যাটফর্ম",
+          "areaServed": {
+            "@type": "Country",
+            "name": "Bangladesh"
+          },
+          "currenciesAccepted": "BDT",
+          "telephone": "+8801316110209",
+          "email": "support@biniyogbriddhi.com",
+          "address": {
+            "@type": "PostalAddress",
+            "addressCountry": "BD"
+          },
+          "sameAs": [
             "https://www.facebook.com/mohaimin1",
             "https://www.linkedin.com/in/mohaimin-patwary-cfa-a8416aab/",
+            "https://www.instagram.com/mohaiminpatwary"
           ],
+          "founder": {
+            "@type": "Person",
+            "name": "মোহাইমিন পাটোয়ারী",
+            "jobTitle": "CFA Charterholder"
+          }
+        }),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "পার্টনারশিপ মডেল কীভাবে কাজ করে?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "পার্টনারশিপ মডেল হলো এমন একটি ব্যবসায়িক কাঠামো যেখানে দুই বা ততোধিক ব্যক্তি যৌথভাবে মূলধন বিনিয়োগ করে এবং চুক্তির শর্ত অনুযায়ী অর্জিত লাভ বা ক্ষতি ভাগ করে নেয়।"
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "প্রজেক্ট যাচাইকরণ কীভাবে হয়?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "প্রতিটি প্রজেক্টের ব্যবসায়িক কার্যক্রম, আয়ের উৎস, আর্থিক বিবরণী ও উদ্যোক্তার ব্যাকগ্রাউন্ড স্বাধীনভাবে যাচাই করা হয়।"
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "মুনাফা কীভাবে ও কখন পাব?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "প্রতিটি প্রজেক্টের নির্দিষ্ট পেআউট শিডিউল থাকে — মাসিক, ত্রৈমাসিক বা বার্ষিক। মুনাফা প্রকৃত ব্যবসায়িক আয়ের ভিত্তিতে সরাসরি আপনার ব্যাংক অ্যাকাউন্টে পাঠানো হয়।"
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "আইনি সুরক্ষা কীভাবে নিশ্চিত হয়?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "প্রতিটি বিনিয়োগের জন্য চুক্তিনামা, সিকিউরিটি চেক রাখা হয়। উদ্যোক্তার ব্যাকগ্রাউন্ড ও ব্যবসার আর্থিক বিবরণী স্বাধীনভাবে যাচাই করা হয়।"
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "বিনিয়োগ থেকে বের হতে চাইলে কী হবে?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "চুক্তির মেয়াদ শেষে মূলধন ও অর্জিত মুনাফা ফেরত পাওয়া যায়। মেয়াদের মাঝে বের হওয়ার প্রয়োজন হলে অন্য বিনিয়োগকারীর কাছে পোর্টফোলিও হস্তান্তরের সুযোগ থাকতে পারে।"
+              }
+            }
+          ]
         }),
       },
     ],
@@ -367,6 +434,7 @@ function Hero({
           alt=""
           aria-hidden="true"
           loading="eager"
+          fetchPriority="high"
           style={{
             position: "absolute",
             inset: 0,
@@ -388,7 +456,9 @@ function Hero({
           }}
         >
           {/* Headline */}
-          <h1
+          <div
+            role="heading"
+            aria-level={2}
             className="tracking-tight font-[900]"
             style={{
               fontSize: "clamp(1.85rem, 7.5vw, 2.5rem)",
@@ -398,7 +468,7 @@ function Hero({
             }}
           >
             সম্ভাবনাময় ব্যাবসা প্রতিষ্ঠানে বিনিয়োগ করুন
-          </h1>
+          </div>
 
           {/* Green underline */}
           <div
@@ -612,6 +682,7 @@ function Hero({
           className="absolute top-0 bottom-0 right-0 left-auto h-full w-auto object-contain z-0 pointer-events-none"
           style={{ objectPosition: "center right" }}
           loading="eager"
+          fetchPriority="high"
         />
 
         {/* Gradient Overlay */}
@@ -634,7 +705,7 @@ function Hero({
 
               {/* 2. Headline */}
               <div className="mt-5 sm:mt-6 w-full">
-                <h1 className="sr-only">সম্ভাবনাময় ব্যাবসা প্রতিষ্ঠানে বিনিয়োগ করুন</h1>
+                <h1 className="sr-only">বাংলাদেশে যাচাইকৃত ব্যবসায় বিনিয়োগ করুন</h1>
                 <div aria-hidden="true">
                   <FlipFadeText 
                     words={["সম্ভাবনাময় ব্যাবসা প্রতিষ্ঠানে বিনিয়োগ করুন"]}

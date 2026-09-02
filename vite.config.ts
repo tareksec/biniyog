@@ -5,8 +5,38 @@
 //     React/TanStack dedupe, error logger plugins, and sandbox detection (port/host/strictPort).
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import type { Plugin } from "vite";
+
+/**
+ * Image performance plugin:
+ * - All images default to loading="lazy" and decoding="async"
+ * - Hero images are prioritized with loading="eager" and fetchpriority="high"
+ */
+function imageLazyLoadPlugin(): Plugin {
+  return {
+    name: "vite-image-lazy-load",
+    transformIndexHtml(html: string) {
+      return html.replace(/<img\s+([^>]*?)>/gi, (match, attrs) => {
+        const isHero = /hero|banner|eager|high/i.test(attrs);
+        if (isHero) {
+          let updated = attrs;
+          if (!/loading=/i.test(updated)) updated += ' loading="eager"';
+          if (!/fetchpriority=/i.test(updated)) updated += ' fetchpriority="high"';
+          return `<img ${updated}>`;
+        }
+        let updated = attrs;
+        if (!/loading=/i.test(updated)) updated += ' loading="lazy"';
+        if (!/decoding=/i.test(updated)) updated += ' decoding="async"';
+        return `<img ${updated}>`;
+      });
+    },
+  };
+}
 
 export default defineConfig({
+  vite: {
+    plugins: [imageLazyLoadPlugin()],
+  },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this

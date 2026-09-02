@@ -191,6 +191,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:description", content: "যাচাইকৃত SME এবং যাচাইকৃত ব্যবসা প্রতিষ্ঠানে স্বচ্ছ উপায়ে বিনিয়োগ করুন — আকর্ষণীয় লাভ।" },
       { property: "og:image", content: "/og-image.jpg" },
       { name: "twitter:image", content: "/og-image.jpg" },
+      { name: "robots", content: "index, follow" },
+      { name: "googlebot", content: "index, follow" },
     ],
     links: [
       { rel: "icon", type: "image/png", href: "/logo.png" },
@@ -209,6 +211,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wdth,wght@100,100..900&display=swap",
       },
       {
+        rel: "alternate",
+        hrefLang: "bn",
+        href: "https://biniyogbriddhi.com",
+      },
+      {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=swap",
       },
@@ -224,10 +231,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  const router = useRouter();
+  const pathname = router.state.location.pathname;
+
   return (
     <html lang="bn" suppressHydrationWarning>
       <head>
         <HeadContent />
+        <link rel="canonical" href={`https://biniyogbriddhi.com${pathname}`} />
+        <link rel="alternate" hrefLang="bn" href="https://biniyogbriddhi.com" />
+        <meta name="robots" content="index, follow" />
+        <meta name="googlebot" content="index, follow" />
       </head>
       <body suppressHydrationWarning>
         {children}

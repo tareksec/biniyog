@@ -58,12 +58,20 @@ export const Route = createFileRoute("/opportunities/$id")({
     const jsonLd = {
       "@context": "https://schema.org",
       "@type": "Product",
-      "name": p.name,
-      "description": p.description,
-      "offers": {
+      name: p.name,
+      description: p.description,
+      brand: {
+        "@type": "Brand",
+        name: "বিনিয়োগ বৃদ্ধি",
+      },
+      offers: {
         "@type": "Offer",
-        "priceCurrency": "BDT",
-        "availability": "https://schema.org/InStock",
+        priceCurrency: "BDT",
+        availability: "https://schema.org/InStock",
+        seller: {
+          "@type": "Organization",
+          name: "বিনিয়োগ বৃদ্ধি",
+        },
       },
     };
 

@@ -13,7 +13,7 @@ export const Route = createFileRoute("/blog/")({
       {
         name: "description",
         content:
-          "SME ব্যবসায় বিনিয়োগ, লাভজনক বিনিয়োগ কৌশল ও co-investment সম্পর্কে বিশেষজ্ঞ গাইড পড়ুন।",
+          "SME ব্যবসায় বিনিয়োগ ও লাভজনক বিনিয়োগ কৌশল সম্পর্কে বিশেষজ্ঞ গাইড পড়ুন। বিনিয়োগ বৃদ্ধি বাংলাদেশ।",
       },
       {
         property: "og:title",
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/blog/")({
       {
         property: "og:description",
         content:
-          "SME ব্যবসায় বিনিয়োগ, লাভজনক বিনিয়োগ কৌশল ও co-investment সম্পর্কে বিশেষজ্ঞ গাইড পড়ুন।",
+          "SME ব্যবসায় বিনিয়োগ ও লাভজনক বিনিয়োগ কৌশল সম্পর্কে বিশেষজ্ঞ গাইড পড়ুন। বিনিয়োগ বৃদ্ধি বাংলাদেশ।",
       },
       { property: "og:url", content: "https://biniyogbriddhi.com/blog" },
       { property: "og:type", content: "website" },
@@ -34,7 +34,7 @@ export const Route = createFileRoute("/blog/")({
       {
         name: "twitter:description",
         content:
-          "SME ব্যবসায় বিনিয়োগ, লাভজনক বিনিয়োগ কৌশল ও co-investment সম্পর্কে বিশেষজ্ঞ গাইড পড়ুন।",
+          "SME ব্যবসায় বিনিয়োগ ও লাভজনক বিনিয়োগ কৌশল সম্পর্কে বিশেষজ্ঞ গাইড পড়ুন। বিনিয়োগ বৃদ্ধি বাংলাদেশ।",
       },
     ],
   }),

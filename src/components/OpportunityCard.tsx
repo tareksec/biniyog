@@ -169,7 +169,7 @@ export function OpportunityCard({
           {!imgError && cardImage ? (
             <img
               src={cardImage}
-              alt={project.name || "Opportunity image"}
+              alt={`${project.name} বিনিয়োগ সুযোগ বাংলাদেশ`}
               className="h-48 w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
               loading="lazy"
               decoding="async"
