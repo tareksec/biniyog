@@ -49,7 +49,12 @@ export const Route = createFileRoute("/")({
         content:
           "বাংলাদেশে যাচাইকৃত SME ব্যবসায় বিনিয়োগ করুন। লাভজনক co-investment সুযোগ। বিনিয়োগ বৃদ্ধি — বাংলাদেশের বিশ্বস্ত বিনিয়োগ প্ল্যাটফর্ম।",
       },
-      { property: "og:image", content: "https://biniyogbriddhi.com/og-image.jpg" },
+      { property: "og:image", content: "https://biniyogbriddhi.com/new-og-image.png" },
+      { property: "og:image:secure_url", content: "https://biniyogbriddhi.com/new-og-image.png" },
+      { property: "og:image:type", content: "image/png" },
+      { property: "og:image:width", content: "1536" },
+      { property: "og:image:height", content: "1024" },
+      { property: "og:image:alt", content: "বিনিয়োগ বৃদ্ধি | SME বিনিয়োগ প্ল্যাটফর্ম বাংলাদেশ" },
       { property: "og:url", content: "https://biniyogbriddhi.com" },
       { property: "og:type", content: "website" },
       { property: "og:locale", content: "bn_BD" },
@@ -63,7 +68,8 @@ export const Route = createFileRoute("/")({
         content:
           "বাংলাদেশে যাচাইকৃত SME ব্যবসায় বিনিয়োগ করুন। লাভজনক co-investment সুযোগ। বিনিয়োগ বৃদ্ধি — বাংলাদেশের বিশ্বস্ত বিনিয়োগ প্ল্যাটফর্ম।",
       },
-      { name: "twitter:image", content: "https://biniyogbriddhi.com/og-image.jpg" },
+      { name: "twitter:image", content: "https://biniyogbriddhi.com/new-og-image.png" },
+      { name: "twitter:image:alt", content: "বিনিয়োগ বৃদ্ধি | SME বিনিয়োগ প্ল্যাটফর্ম বাংলাদেশ" },
     ],
     scripts: [
       {

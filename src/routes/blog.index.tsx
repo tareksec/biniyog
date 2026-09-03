@@ -26,6 +26,12 @@ export const Route = createFileRoute("/blog/")({
       },
       { property: "og:url", content: "https://biniyogbriddhi.com/blog" },
       { property: "og:type", content: "website" },
+      { property: "og:image", content: "https://biniyogbriddhi.com/new-og-image.png" },
+      { property: "og:image:secure_url", content: "https://biniyogbriddhi.com/new-og-image.png" },
+      { property: "og:image:type", content: "image/png" },
+      { property: "og:image:width", content: "1536" },
+      { property: "og:image:height", content: "1024" },
+      { property: "og:image:alt", content: "বিনিয়োগ ব্লগ | SME ব্যবসা বিনিয়োগ গাইড | বিনিয়োগ বৃদ্ধি" },
       { name: "twitter:card", content: "summary_large_image" },
       {
         name: "twitter:title",
@@ -36,6 +42,7 @@ export const Route = createFileRoute("/blog/")({
         content:
           "SME ব্যবসায় বিনিয়োগ ও লাভজনক বিনিয়োগ কৌশল সম্পর্কে বিশেষজ্ঞ গাইড পড়ুন। বিনিয়োগ বৃদ্ধি বাংলাদেশ।",
       },
+      { name: "twitter:image", content: "https://biniyogbriddhi.com/new-og-image.png" },
     ],
   }),
   component: BlogListingPage,

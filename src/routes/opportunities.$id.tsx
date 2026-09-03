@@ -54,7 +54,13 @@ export const Route = createFileRoute("/opportunities/$id")({
     const p = loaderData.project;
     const title = `${p.name} | SME বিনিয়োগ সুযোগ | বিনিয়োগ বৃদ্ধি`;
     const description = `${p.name} এ বিনিয়োগ করুন। ${p.expected_profit} মুনাফা। নূন্যতম বিনিয়োগ: ${p.investment_amount}। যাচাইকৃত ব্যবসা বিনিয়োগ বাংলাদেশ।`;
-    const ogImage = (Array.isArray(p.image_urls) && p.image_urls[0]) || (p as any).image_url || "/og-image.jpg";
+    const rawOgImage =
+      (Array.isArray(p.image_urls) && p.image_urls[0]) ||
+      (p as any).image_url ||
+      "https://biniyogbriddhi.com/new-og-image.png";
+    const ogImage = rawOgImage.startsWith("http")
+      ? rawOgImage
+      : `https://biniyogbriddhi.com${rawOgImage.startsWith("/") ? "" : "/"}${rawOgImage}`;
     const jsonLd = {
       "@context": "https://schema.org",
       "@type": "Product",
@@ -82,6 +88,7 @@ export const Route = createFileRoute("/opportunities/$id")({
         { property: "og:title", content: title },
         { property: "og:description", content: description },
         { property: "og:image", content: ogImage },
+        { property: "og:image:secure_url", content: ogImage },
         { property: "og:type", content: "website" },
         { name: "twitter:card", content: "summary_large_image" },
         { name: "twitter:title", content: title },

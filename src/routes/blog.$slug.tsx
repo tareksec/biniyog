@@ -24,7 +24,10 @@ export const Route = createFileRoute("/blog/$slug")({
     const post = loaderData.post;
     const title = `${post.title} | বিনিয়োগ বৃদ্ধি`;
     const description = post.meta_description || post.excerpt;
-    const ogImage = post.cover_image_url ?? "/og-image.jpg";
+    const rawOgImage = post.cover_image_url || "https://biniyogbriddhi.com/new-og-image.png";
+    const ogImage = rawOgImage.startsWith("http")
+      ? rawOgImage
+      : `https://biniyogbriddhi.com${rawOgImage.startsWith("/") ? "" : "/"}${rawOgImage}`;
 
     const jsonLd = {
       "@context": "https://schema.org",
@@ -59,6 +62,7 @@ export const Route = createFileRoute("/blog/$slug")({
         { property: "og:title", content: title },
         { property: "og:description", content: description },
         { property: "og:image", content: ogImage },
+        { property: "og:image:secure_url", content: ogImage },
         { property: "og:type", content: "article" },
         { name: "twitter:card", content: "summary_large_image" },
         { name: "twitter:title", content: title },

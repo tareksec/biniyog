@@ -58,6 +58,12 @@ export const Route = createFileRoute("/reviews")({
       },
       { property: "og:url", content: "https://biniyogbriddhi.com/reviews" },
       { property: "og:type", content: "website" },
+      { property: "og:image", content: "https://biniyogbriddhi.com/new-og-image.png" },
+      { property: "og:image:secure_url", content: "https://biniyogbriddhi.com/new-og-image.png" },
+      { property: "og:image:type", content: "image/png" },
+      { property: "og:image:width", content: "1536" },
+      { property: "og:image:height", content: "1024" },
+      { property: "og:image:alt", content: "বিনিয়োগকারীদের রিভিউ | বিনিয়োগ বৃদ্ধি বাংলাদেশ" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "বিনিয়োগকারীদের রিভিউ | বিনিয়োগ বৃদ্ধি বাংলাদেশ" },
       {
@@ -65,6 +71,7 @@ export const Route = createFileRoute("/reviews")({
         content:
           "বিনিয়োগ বৃদ্ধি প্ল্যাটফর্মে বিনিয়োগকারীদের অভিজ্ঞতা ও রিভিউ পড়ুন। যাচাইকৃত SME বিনিয়োগ বাংলাদেশ।",
       },
+      { name: "twitter:image", content: "https://biniyogbriddhi.com/new-og-image.png" },
     ],
   }),
   loader: async ({ context }) => {

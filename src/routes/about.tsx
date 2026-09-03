@@ -45,7 +45,11 @@ export const Route = createFileRoute("/about")({
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://biniyogbriddhi.com/about" },
-      { property: "og:image", content: "/og-image.jpg" },
+      { property: "og:image", content: "https://biniyogbriddhi.com/new-og-image.png" },
+      { property: "og:image:secure_url", content: "https://biniyogbriddhi.com/new-og-image.png" },
+      { property: "og:image:type", content: "image/png" },
+      { property: "og:image:width", content: "1536" },
+      { property: "og:image:height", content: "1024" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "আমাদের সম্পর্কে | বিনিয়োগ বৃদ্ধি বাংলাদেশ" },
       {
@@ -53,6 +57,7 @@ export const Route = createFileRoute("/about")({
         content:
           "বিনিয়োগ বৃদ্ধি (Biniyog Briddhi) — মোহাইমিন পাটোয়ারী CFA এর নেতৃত্বে পরিচালিত বাংলাদেশের শীর্ষস্থানীয় স্বচ্ছ ব্যবসায়িক বিনিয়োগ প্ল্যাটফর্ম।",
       },
+      { name: "twitter:image", content: "https://biniyogbriddhi.com/new-og-image.png" },
     ],
   }),
   component: AboutPage,
