@@ -9,12 +9,14 @@ import {
   List as ListIcon,
   X,
   ChevronDown,
+  Users,
 } from "lucide-react";
 import { OpportunityCard } from "@/components/OpportunityCard";
 import { OpportunityListItem } from "@/components/OpportunityListItem";
 import { OpportunityCompareModal } from "@/components/OpportunityCompareModal";
 import {
   useOpportunities,
+  useTotalUsersCount,
   isOpen,
   parseAmount,
   parseRoi,
@@ -31,6 +33,7 @@ import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { listItem } from "@/lib/animations";
+import { CountUp, toBengali } from "@/components/CountUp";
 
 interface OpportunitiesSearch {
   q?: string;
@@ -87,11 +90,17 @@ export const Route = createFileRoute("/opportunities/")({
   }),
   component: OpportunitiesPage,
   loader: async ({ context }) => {
-    const { fetchOpportunitiesSSR } = await import("@/lib/projects");
-    await context.queryClient.ensureQueryData({
-      queryKey: ["opportunities"],
-      queryFn: fetchOpportunitiesSSR,
-    });
+    const { fetchOpportunitiesSSR, fetchTotalUsersCount } = await import("@/lib/projects");
+    await Promise.all([
+      context.queryClient.ensureQueryData({
+        queryKey: ["opportunities"],
+        queryFn: fetchOpportunitiesSSR,
+      }),
+      context.queryClient.ensureQueryData({
+        queryKey: ["public_total_users"],
+        queryFn: fetchTotalUsersCount,
+      }),
+    ]);
   },
   validateSearch: (search: Record<string, unknown>): OpportunitiesSearch => {
     return {
@@ -114,6 +123,7 @@ function OpportunitiesPage() {
   const searchParams = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
   const { data: projects = [], isLoading, isFetching } = useOpportunities();
+  const { data: totalUsersCount = 0 } = useTotalUsersCount();
   const showLoading = isLoading || (isFetching && projects.length === 0);
 
   // Parse arrays from comma-separated strings
@@ -190,8 +200,9 @@ function OpportunitiesPage() {
       active: activeCount,
       avgRoi: avgRoi,
       totalInvestableFormatted: formatMoney(totalInvestable),
+      totalUsers: totalUsersCount,
     };
-  }, [projects]);
+  }, [projects, totalUsersCount]);
 
   const categories = ["all", ...uniqueCategories(projects)];
 
@@ -202,7 +213,7 @@ function OpportunitiesPage() {
       if (searchParams.q) {
         const q = searchParams.q.toLowerCase();
         const matchesName = (p.name || "").toLowerCase().includes(q);
-        const matchesLoc = (p.location || "").toLowerCase().includes(q);
+        const matchesLoc = ((p as any).location || p.address || "").toLowerCase().includes(q);
         if (!matchesName && !matchesLoc) return false;
       }
       // Category
@@ -398,19 +409,23 @@ function OpportunitiesPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="rounded-xl bg-card p-4 shadow-sm border border-border">
               <div className="text-sm text-muted-foreground font-medium mb-1">মোট সুযোগ</div>
-              <div className="text-2xl font-bold text-foreground">{stats.total}</div>
+              <div className="text-2xl font-bold text-foreground">{toBengali(stats.total)}</div>
             </div>
             <div className="rounded-xl bg-card p-4 shadow-sm border border-border">
               <div className="text-sm text-muted-foreground font-medium mb-1">সক্রিয় ব্যবসা</div>
-              <div className="text-2xl font-bold text-foreground">{stats.active}</div>
+              <div className="text-2xl font-bold text-foreground">{toBengali(stats.active)}</div>
             </div>
             <div className="rounded-xl bg-card p-4 shadow-sm border border-border">
               <div className="text-sm text-muted-foreground font-medium mb-1">গড় সম্ভাব্য লাভ</div>
-              <div className="text-2xl font-bold text-primary">{stats.avgRoi}%</div>
+              <div className="text-2xl font-bold text-primary">{toBengali(stats.avgRoi)}%</div>
             </div>
             <div className="rounded-xl bg-card p-4 shadow-sm border border-border">
-              <div className="text-sm text-muted-foreground font-medium mb-1">মোট বিনিয়োগযোগ্য</div>
-              <div className="text-2xl font-bold text-foreground">৳ {stats.totalInvestableFormatted}</div>
+              <div className="text-sm text-muted-foreground font-medium mb-1 flex items-center gap-1.5">
+                <Users className="h-4 w-4 text-emerald-600" /> মোট ব্যবহারকারী
+              </div>
+              <div className="text-2xl font-bold text-foreground">
+                <CountUp to={stats.totalUsers} bengali={true} duration={0.8} suffix={stats.totalUsers > 0 ? " জন" : " জন"} />
+              </div>
             </div>
           </div>
         </div>

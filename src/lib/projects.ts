@@ -134,6 +134,47 @@ export function useOpportunities() {
   });
 }
 
+/**
+ * Fetches total count of registered users/investors safely for public display.
+ */
+export async function fetchTotalUsersCount(): Promise<number> {
+  try {
+    // 1. Try public RPC function
+    const { data: rpcCount, error: rpcErr } = await supabase.rpc("get_total_users_count" as any);
+    if (!rpcErr && typeof rpcCount === "number") {
+      return rpcCount;
+    }
+
+    // 2. Try profiles table exact count
+    const { count, error: countErr } = await supabase
+      .from("profiles")
+      .select("id", { count: "exact", head: true });
+
+    if (!countErr && typeof count === "number") {
+      return count;
+    }
+
+    // 3. Try get_all_users RPC (if authenticated)
+    const { data: allUsers, error: allUsersErr } = await supabase.rpc("get_all_users" as any);
+    if (!allUsersErr && Array.isArray(allUsers)) {
+      return allUsers.length;
+    }
+
+    return 0;
+  } catch (err) {
+    console.warn("[fetchTotalUsersCount] Error fetching user count:", err);
+    return 0;
+  }
+}
+
+export function useTotalUsersCount() {
+  return useQuery({
+    queryKey: ["public_total_users"],
+    queryFn: fetchTotalUsersCount,
+    staleTime: 1000 * 60 * 5, // 5 min
+  });
+}
+
 export async function fetchOpportunitySubsections(opportunityId: string) {
   if (!opportunityId) return { risks: [], payouts: [], legalChecks: [] };
   

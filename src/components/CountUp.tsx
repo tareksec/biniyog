@@ -3,8 +3,8 @@ import { useInView, animate } from "framer-motion";
 import { usePrefersReducedMotion } from "@/lib/animations";
 
 // Bengali digit map
-const BN = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
-function toBengali(n: number | string): string {
+export const BN = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
+export function toBengali(n: number | string): string {
   return String(n)
     .split("")
     .map((d) => (/\d/.test(d) ? BN[Number(d)] : d))

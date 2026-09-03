@@ -13,14 +13,19 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts";
-import { fetchOpportunities, parseAmount, parseRoi, statusLabel, isOpen } from "@/lib/projects";
+import { fetchOpportunities, fetchTotalUsersCount, useTotalUsersCount, parseAmount, parseRoi, statusLabel, isOpen } from "@/lib/projects";
 import { getCategoryIcon } from "@/components/OpportunityCard";
-import { ArrowRight, Briefcase, Activity, TrendingUp, PiggyBank, Sparkles } from "lucide-react";
+import { ArrowRight, Briefcase, Activity, TrendingUp, PiggyBank, Sparkles, Users } from "lucide-react";
 import { revealVariants, staggerContainer } from "@/lib/animations";
+import { CountUp, toBengali } from "@/components/CountUp";
 
 export const Route = createFileRoute("/dashboard")({
   loader: async () => {
-    return await fetchOpportunities();
+    const [opportunities, totalUsers] = await Promise.all([
+      fetchOpportunities(),
+      fetchTotalUsersCount(),
+    ]);
+    return { opportunities, totalUsers };
   },
   head: () => ({
     meta: [
@@ -63,7 +68,10 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 function DashboardPage() {
-  const opportunities = Route.useLoaderData();
+  const loaderData = Route.useLoaderData();
+  const opportunities = Array.isArray(loaderData) ? loaderData : (loaderData?.opportunities || []);
+  const initialUsers = Array.isArray(loaderData) ? 0 : (loaderData?.totalUsers || 0);
+  const { data: liveTotalUsers = initialUsers } = useTotalUsersCount();
 
   const metrics = useMemo(() => {
     let active = 0;
@@ -127,11 +135,12 @@ function DashboardPage() {
       avgRoi: validRoiCount > 0 ? (totalRoi / validRoiCount).toFixed(1) : "0",
       totalAmountFormatted: `৳ ${formattedAmount}`,
       totalAmountRaw: totalAmount,
+      totalUsers: liveTotalUsers,
       categories: Object.entries(categoryMap).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value),
       statuses: Object.entries(statusMap).map(([name, value]) => ({ name, value })),
       ranges: Object.entries(rangeMap).map(([name, value]) => ({ name, value })),
     };
-  }, [opportunities]);
+  }, [opportunities, liveTotalUsers]);
 
   const recentOpps = useMemo(() => {
     return [...opportunities]
@@ -181,24 +190,24 @@ function DashboardPage() {
         {/* Top Highlight & KPI Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
-          {/* Highlight Card */}
+          {/* Highlight Card: মোট ব্যবহারকারী */}
           <div className="lg:col-span-1 rounded-[2rem] bg-gradient-to-br from-primary via-[#0f5434] to-[#0a3621] p-8 text-primary-foreground shadow-xl relative overflow-hidden flex flex-col justify-between min-h-[220px] card-hover">
             <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
             <div className="relative z-10">
               <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-bold backdrop-blur-sm text-white/90 mb-4">
-                <Activity className="h-3.5 w-3.5" /> লাইভ মার্কেট
+                <Users className="h-3.5 w-3.5" /> সক্রিয় কমিউনিটি
               </div>
-              <h2 className="text-lg font-medium text-white/80 mb-1">মোট বিনিয়োগযোগ্য পরিমাণ</h2>
+              <h2 className="text-lg font-medium text-white/80 mb-1">মোট ব্যবহারকারী</h2>
               <div className="text-4xl sm:text-5xl font-display font-black tracking-tight num">
-                {metrics.totalAmountFormatted}
+                <CountUp to={metrics.totalUsers} bengali={true} duration={0.8} suffix={metrics.totalUsers > 0 ? " জন" : " জন"} />
               </div>
             </div>
             <div className="relative z-10 mt-6 flex justify-between items-end">
               <p className="text-sm font-medium leading-relaxed text-white/70 max-w-[200px]">
-                প্ল্যাটফর্মে থাকা বর্তমান সক্রিয় সুযোগের মোট মূলধন।
+                প্ল্যাটফর্মে নিবন্ধিত সম্মানিত বিনিয়োগকারী ও ব্যবহারকারী।
               </p>
               <div className="h-12 w-12 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-md">
-                <TrendingUp className="h-6 w-6 text-white" />
+                <Users className="h-6 w-6 text-white" />
               </div>
             </div>
           </div>
@@ -213,19 +222,19 @@ function DashboardPage() {
           >
             <KpiCard 
               label="মোট সুযোগ" 
-              value={metrics.total.toString()} 
+              value={toBengali(metrics.total)} 
               icon={<Briefcase className="h-5 w-5" />} 
               color="#146C43"
             />
             <KpiCard 
               label="সক্রিয় সুযোগ" 
-              value={metrics.active.toString()} 
+              value={toBengali(metrics.active)} 
               icon={<Activity className="h-5 w-5" />} 
               color="#2FA36F"
             />
             <KpiCard 
               label="গড় সম্ভাব্য লাভ" 
-              value={`${metrics.avgRoi}%`} 
+              value={`${toBengali(metrics.avgRoi)}%`} 
               icon={<PiggyBank className="h-5 w-5" />} 
               color="#0ea5e9"
             />
@@ -351,7 +360,7 @@ function DashboardPage() {
   );
 }
 
-function KpiCard({ label, value, icon, color }: { label: string, value: string, icon: React.ReactNode, color: string }) {
+function KpiCard({ label, value, icon, color }: { label: string, value: React.ReactNode, icon: React.ReactNode, color: string }) {
   return (
     <motion.div
       variants={revealVariants}
