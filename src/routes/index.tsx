@@ -34,42 +34,42 @@ type OpportunitiesSearch = {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "বিনিয়োগ বৃদ্ধি | যাচাইকৃত SME ব্যবসায় বিনিয়োগ বাংলাদেশ ২০২৬" },
+      { title: "বিনিয়োগ বৃদ্ধি | যাচাইকৃত ব্যবসায় বিনিয়োগ বাংলাদেশ" },
       {
         name: "description",
         content:
-          "বাংলাদেশে যাচাইকৃত SME ব্যবসায় বিনিয়োগ করুন। লাভজনক co-investment সুযোগ। বিনিয়োগ বৃদ্ধি — বাংলাদেশের বিশ্বস্ত বিনিয়োগ প্ল্যাটফর্ম।",
+          "বাংলাদেশে যাচাইকৃত ব্যবসায় বিনিয়োগ করুন। লাভজনক co-investment সুযোগ। বিনিয়োগ বৃদ্ধি — বাংলাদেশের বিশ্বস্ত বিনিয়োগ প্ল্যাটফর্ম।",
       },
       {
         property: "og:title",
-        content: "বিনিয়োগ বৃদ্ধি | SME বিনিয়োগ প্ল্যাটফর্ম বাংলাদেশ",
+        content: "বিনিয়োগ বৃদ্ধি | যাচাইকৃত ব্যবসায় বিনিয়োগ বাংলাদেশ",
       },
       {
         property: "og:description",
         content:
-          "বাংলাদেশে যাচাইকৃত SME ব্যবসায় বিনিয়োগ করুন। লাভজনক co-investment সুযোগ। বিনিয়োগ বৃদ্ধি — বাংলাদেশের বিশ্বস্ত বিনিয়োগ প্ল্যাটফর্ম।",
+          "বাংলাদেশে যাচাইকৃত ব্যবসায় বিনিয়োগ করুন। লাভজনক co-investment সুযোগ। বিনিয়োগ বৃদ্ধি — বাংলাদেশের বিশ্বস্ত বিনিয়োগ প্ল্যাটফর্ম।",
       },
       { property: "og:image", content: "https://biniyogbriddhi.com/new-og-image.png" },
       { property: "og:image:secure_url", content: "https://biniyogbriddhi.com/new-og-image.png" },
       { property: "og:image:type", content: "image/png" },
       { property: "og:image:width", content: "1536" },
       { property: "og:image:height", content: "1024" },
-      { property: "og:image:alt", content: "বিনিয়োগ বৃদ্ধি | SME বিনিয়োগ প্ল্যাটফর্ম বাংলাদেশ" },
+      { property: "og:image:alt", content: "বিনিয়োগ বৃদ্ধি | যাচাইকৃত ব্যবসায় বিনিয়োগ বাংলাদেশ" },
       { property: "og:url", content: "https://biniyogbriddhi.com" },
       { property: "og:type", content: "website" },
       { property: "og:locale", content: "bn_BD" },
       { name: "twitter:card", content: "summary_large_image" },
       {
         name: "twitter:title",
-        content: "বিনিয়োগ বৃদ্ধি | SME বিনিয়োগ প্ল্যাটফর্ম বাংলাদেশ",
+        content: "বিনিয়োগ বৃদ্ধি | যাচাইকৃত ব্যবসায় বিনিয়োগ বাংলাদেশ",
       },
       {
         name: "twitter:description",
         content:
-          "বাংলাদেশে যাচাইকৃত SME ব্যবসায় বিনিয়োগ করুন। লাভজনক co-investment সুযোগ। বিনিয়োগ বৃদ্ধি — বাংলাদেশের বিশ্বস্ত বিনিয়োগ প্ল্যাটফর্ম।",
+          "বাংলাদেশে যাচাইকৃত ব্যবসায় বিনিয়োগ করুন। লাভজনক co-investment সুযোগ। বিনিয়োগ বৃদ্ধি — বাংলাদেশের বিশ্বস্ত বিনিয়োগ প্ল্যাটফর্ম।",
       },
       { name: "twitter:image", content: "https://biniyogbriddhi.com/new-og-image.png" },
-      { name: "twitter:image:alt", content: "বিনিয়োগ বৃদ্ধি | SME বিনিয়োগ প্ল্যাটফর্ম বাংলাদেশ" },
+      { name: "twitter:image:alt", content: "বিনিয়োগ বৃদ্ধি | যাচাইকৃত ব্যবসায় বিনিয়োগ বাংলাদেশ" },
     ],
     scripts: [
       {
@@ -81,7 +81,7 @@ export const Route = createFileRoute("/")({
           "alternateName": "Biniyog Briddhi",
           "url": "https://biniyogbriddhi.com",
           "logo": "https://biniyogbriddhi.com/logo.png",
-          "description": "বাংলাদেশে যাচাইকৃত SME ব্যবসায় বিনিয়োগ প্ল্যাটফর্ম",
+          "description": "বাংলাদেশে যাচাইকৃত ব্যবসায় বিনিয়োগ প্ল্যাটফর্ম",
           "areaServed": {
             "@type": "Country",
             "name": "Bangladesh"
