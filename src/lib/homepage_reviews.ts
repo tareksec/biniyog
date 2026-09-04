@@ -7,12 +7,14 @@ export type HomepageReviewUpdate = Database["public"]["Tables"]["homepage_review
 
 const FETCH_TIMEOUT_MS = 4_000;
 
+const HOMEPAGE_REVIEW_COLUMNS = "id, name, location, quote, rating, avatar_url, sort_order, created_at";
+
 export async function fetchHomepageReviewsSSR(): Promise<HomepageReview[]> {
   let supabasePromise: Promise<unknown> | undefined;
   try {
     supabasePromise = supabase
       .from("homepage_reviews")
-      .select("*")
+      .select(HOMEPAGE_REVIEW_COLUMNS)
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: false });
 
@@ -51,7 +53,7 @@ export async function fetchHomepageReviewsSSR(): Promise<HomepageReview[]> {
 export async function fetchHomepageReviews(): Promise<HomepageReview[]> {
   const { data, error } = await supabase
     .from("homepage_reviews")
-    .select("*")
+    .select(HOMEPAGE_REVIEW_COLUMNS)
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: false });
 

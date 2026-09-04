@@ -80,7 +80,7 @@ function TermsPage() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 py-3.5 sm:py-4">
           <div className="flex items-center gap-3 sm:gap-6">
             <Link to="/" className="inline-flex items-center gap-2 font-display text-lg sm:text-xl font-black text-primary">
-              <img src="/logo.png" alt="বিনিয়োগ বৃদ্ধি" className="h-8 sm:h-9 w-auto rounded-lg" />
+              <img src="/logo.png" alt="বিনিয়োগ বৃদ্ধি" width={36} height={36} className="h-8 sm:h-9 w-auto rounded-lg" loading="lazy" decoding="async" />
               <span>বিনিয়োগ বৃদ্ধি</span>
             </Link>
             <div className="hidden sm:block h-4 w-px bg-border/60" />

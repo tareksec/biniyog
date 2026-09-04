@@ -58,7 +58,7 @@ export function GlobalNav() {
 
   const leftContent = (
     <button onClick={() => scrollTo("top")} className="flex items-center transition-transform hover:scale-105 cursor-pointer">
-      <img src="/logo.png" alt="বিনিয়োগ বৃদ্ধি" className="h-7 sm:h-10 w-auto rounded-lg shrink-0" />
+      <img src="/logo.png" alt="বিনিয়োগ বৃদ্ধি" width={40} height={40} className="h-7 sm:h-10 w-auto rounded-lg shrink-0" loading="eager" decoding="async" />
     </button>
   );
 

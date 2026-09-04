@@ -5,7 +5,7 @@ import type { BlogPost, BlogCategory } from "@/lib/database.types";
 export async function fetchBlogCategories(): Promise<BlogCategory[]> {
   const { data, error } = await supabase
     .from("blog_categories")
-    .select("*")
+    .select("id, name, slug, description, created_at")
     .order("name", { ascending: true });
 
   if (error) {
@@ -51,13 +51,15 @@ export function useBlogPosts() {
   });
 }
 
+const BLOG_POST_LIST_COLUMNS = `
+  id, slug, title, excerpt, cover_image_url, author_name, read_time_minutes, status, published_at, category_id, created_at,
+  category:blog_categories(id, name, slug)
+`;
+
 export async function fetchPublishedBlogPosts(): Promise<(BlogPost & { category: BlogCategory | null })[]> {
   const { data, error } = await supabase
     .from("blog_posts")
-    .select(`
-      *,
-      category:blog_categories(*)
-    `)
+    .select(BLOG_POST_LIST_COLUMNS)
     .eq("status", "published")
     .order("published_at", { ascending: false });
 
@@ -108,7 +110,7 @@ export function useBlogPostBySlug(slug?: string) {
 export async function fetchBlogPost(id: string): Promise<BlogPost | null> {
   const { data, error } = await supabase
     .from("blog_posts")
-    .select("*")
+    .select("id, title, slug, excerpt, content_html, cover_image_url, category_id, status, author_name, meta_title, meta_description, published_at, created_at, updated_at")
     .eq("id", id)
     .single();
 

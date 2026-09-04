@@ -2,6 +2,14 @@
 @import "tw-animate-css";
 @source "../src";
 
+@font-face {
+  font-family: "Hind Siliguri";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("https://fonts.gstatic.com/s/hindsiliguri/v14/ijwTs5juQtsyLLR5jN4cxBEofJs.ttf") format("truetype");
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -463,5 +471,20 @@
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-
-
+/* ── Mobile / Touch performance optimizations ── */
+@media (hover: none) and (pointer: coarse) {
+  /* Prevent sticky hover transforms/transitions on mobile devices */
+  .hover\:scale-105:hover,
+  .hover\:scale-110:hover,
+  .hover\:scale-\[1\.02\]:hover,
+  .hover\:scale-102:hover,
+  .hover\:-translate-y-1:hover,
+  .hover\:-translate-y-1\.5:hover,
+  .hover\:-translate-y-2:hover,
+  .group:hover .group-hover\:scale-105,
+  .group:hover .group-hover\:scale-110,
+  .group:hover .group-hover\:scale-\[1\.02\] {
+    transform: none !important;
+    transition: none !important;
+  }
+}

@@ -3,10 +3,12 @@ import { Link } from "@tanstack/react-router";
 import { motion, AnimatePresence, useInView, useTime, useTransform } from "framer-motion";
 import { usePrefersReducedMotion } from "@/lib/animations";
 import { useIsMobile } from "@/hooks/use-mobile";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { gsap } from "gsap/dist/gsap";
+import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 
-gsap.registerPlugin(ScrollTrigger);
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 import {
   Users,

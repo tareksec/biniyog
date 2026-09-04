@@ -1,14 +1,15 @@
 import { createFileRoute, useNavigate, Link, redirect } from "@tanstack/react-router";
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from "react";
 import { useAuth, getAuthSnapshot } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
 import type { Opportunity, Testimonial, HomepageReview } from "@/lib/database.types";
 import { useBlogPosts, useBlogCategories } from "@/lib/blog";
 import type { BlogPost, BlogCategory } from "@/lib/database.types";
-import { OpportunityForm } from "@/components/admin/OpportunityForm";
-import { TestimonialForm } from "@/components/admin/TestimonialForm";
-import { HomepageReviewForm } from "@/components/admin/HomepageReviewForm";
-import { UserReviewManager } from "@/components/admin/UserReviewManager";
+
+const OpportunityForm = lazy(() => import("@/components/admin/OpportunityForm").then(m => ({ default: m.OpportunityForm })));
+const TestimonialForm = lazy(() => import("@/components/admin/TestimonialForm").then(m => ({ default: m.TestimonialForm })));
+const HomepageReviewForm = lazy(() => import("@/components/admin/HomepageReviewForm").then(m => ({ default: m.HomepageReviewForm })));
+const UserReviewManager = lazy(() => import("@/components/admin/UserReviewManager").then(m => ({ default: m.UserReviewManager })));
 import { CountUp } from "@/components/CountUp";
 import { motion } from "framer-motion";
 import {
@@ -1489,7 +1490,7 @@ function AdminDashboard() {
                               <td className="px-4 py-3.5">
                                 <div className="flex items-center gap-3">
                                   <div className="w-10 h-10 rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center shrink-0">
-                                    {opp.image_urls?.[0] ? <img src={opp.image_urls[0]} alt="" className="w-full h-full object-cover" /> : <span className="font-bold text-sm text-[#1a6b4a]">{opp.name?.charAt(0)}</span>}
+                                    {opp.image_urls?.[0] ? <img src={opp.image_urls[0]} alt="" width={40} height={40} loading="lazy" decoding="async" className="w-full h-full object-cover" /> : <span className="font-bold text-sm text-[#1a6b4a]">{opp.name?.charAt(0)}</span>}
                                   </div>
                                   <div className="min-w-0"><p className="font-bold text-[#111827] text-sm truncate max-w-[220px]">{opp.name}</p><p className="text-[11px] text-[#6b7280] font-mono truncate">/{opp.slug}</p></div>
                                 </div>
@@ -1593,7 +1594,7 @@ function AdminDashboard() {
                               <td className="px-4 py-3.5">
                                 <div className="flex items-center gap-3">
                                   <div className="w-14 h-10 rounded-xl overflow-hidden bg-gray-100 shrink-0">
-                                    {post.cover_image_url ? <img src={post.cover_image_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-purple-700 bg-purple-50"><BookOpen className="h-4 w-4" /></div>}
+                                    {post.cover_image_url ? <img src={post.cover_image_url} alt="" width={56} height={40} loading="lazy" decoding="async" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-purple-700 bg-purple-50"><BookOpen className="h-4 w-4" /></div>}
                                   </div>
                                   <div className="min-w-0"><p className="font-bold text-[#111827] text-sm truncate max-w-[240px]">{post.title}</p><p className="text-[11px] text-[#6b7280] font-mono truncate">/blog/{post.slug}</p></div>
                                 </div>
@@ -1816,7 +1817,9 @@ function AdminDashboard() {
 
                 {/* Sub-tab 0: ইউজার রিভিউ অনুমোদন */}
                 {reviewSubTab === "user_reviews" && (
-                  <UserReviewManager opportunities={opportunities} />
+                  <Suspense fallback={<div className="flex items-center justify-center p-8"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>}>
+                    <UserReviewManager opportunities={opportunities} />
+                  </Suspense>
                 )}
 
                 {/* Sub-tab 1: হোম রিভিউ Table */}
@@ -1859,7 +1862,7 @@ function AdminDashboard() {
                                   <div className="flex items-center gap-3">
                                     <div className="w-8 h-8 rounded-full overflow-hidden bg-rose-100 text-rose-800 flex items-center justify-center font-bold text-xs shrink-0">
                                       {r.avatar_url ? (
-                                        <img src={r.avatar_url} alt="" className="w-full h-full object-cover" />
+                                        <img src={r.avatar_url} alt="" width={32} height={32} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                                       ) : (
                                         r.name?.charAt(0) || "ব"
                                       )}
@@ -1993,7 +1996,7 @@ function AdminDashboard() {
                                     <div className="flex items-center gap-3">
                                       <div className="w-8 h-8 rounded-full overflow-hidden bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs shrink-0">
                                         {t.avatar_url ? (
-                                          <img src={t.avatar_url} alt="" className="w-full h-full object-cover" />
+                                          <img src={t.avatar_url} alt="" width={32} height={32} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                                         ) : (
                                           initial
                                         )}
@@ -2077,10 +2080,12 @@ function AdminDashboard() {
         </div>
       </div>
 
-      {/* ═══════════ ALL DIALOGS ═══════════ */}
-      <OpportunityForm open={oppFormOpen} onOpenChange={setOppFormOpen} opportunity={editingOpp} onSuccess={fetchOpportunities} />
-      <TestimonialForm open={testFormOpen} onOpenChange={setTestFormOpen} testimonial={editingTest} onSuccess={fetchTestimonials} opportunities={opportunities} />
-      <HomepageReviewForm open={homeRevFormOpen} onOpenChange={setHomeRevFormOpen} review={editingHomeRev} onSuccess={fetchHomepageReviews} />
+      {/* ═══════════ ALL DIALOGS (Lazy Loaded) ═══════════ */}
+      <Suspense fallback={null}>
+        {oppFormOpen && <OpportunityForm open={oppFormOpen} onOpenChange={setOppFormOpen} opportunity={editingOpp} onSuccess={fetchOpportunities} />}
+        {testFormOpen && <TestimonialForm open={testFormOpen} onOpenChange={setTestFormOpen} testimonial={editingTest} onSuccess={fetchTestimonials} opportunities={opportunities} />}
+        {homeRevFormOpen && <HomepageReviewForm open={homeRevFormOpen} onOpenChange={setHomeRevFormOpen} review={editingHomeRev} onSuccess={fetchHomepageReviews} />}
+      </Suspense>
 
       <AlertDialog open={!!deletingOpp} onOpenChange={(o) => !o && setDeletingOpp(null)}>
         <AlertDialogContent className="rounded-2xl p-6"><AlertDialogHeader><AlertDialogTitle className="text-xl font-bold">সুযোগটি মুছতে চান?</AlertDialogTitle><AlertDialogDescription className="text-sm"><strong>"{deletingOpp?.name}"</strong> মুছে ফেলা হবে।</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="rounded-xl">বাতিল</AlertDialogCancel><AlertDialogAction onClick={handleDeleteOpp} disabled={deletingOppLoading} className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl">{deletingOppLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}মুছে ফেলুন</AlertDialogAction></AlertDialogFooter></AlertDialogContent>

@@ -84,7 +84,7 @@ function AdminLoginPage() {
         {/* Logo / Header */}
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-sm border border-border">
-            <img src="/logo.png" alt="বিনিয়োগ বৃদ্ধি" className="h-12 w-12 object-contain" />
+            <img src="/logo.png" alt="বিনিয়োগ বৃদ্ধি" width={48} height={48} className="h-12 w-12 object-contain" loading="lazy" decoding="async" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">
             Admin Dashboard

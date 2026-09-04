@@ -238,6 +238,8 @@ function InsightsPage() {
                   <img 
                     src={article.image} 
                     alt={article.title}
+                    width={600}
+                    height={350}
                     loading="lazy"
                     decoding="async"
                     className="h-full w-full object-cover transition duration-500 group-hover:scale-105"

@@ -9,6 +9,7 @@ import { getApprovedReviews, submitUserReview } from "@/lib/user_reviews";
 import {
   fetchOpportunitiesSSR,
   fetchOpportunities,
+  fetchOpportunityDetails,
   isFullyFunded,
   statusLabel,
   parseLinks,
@@ -50,19 +51,22 @@ const InvestmentCalculator = lazy(() => import("@/components/InvestmentCalculato
 
 export const Route = createFileRoute("/opportunities/$id")({
   loader: async ({ params, context }) => {
-    const allProjects = await fetchOpportunitiesSSR();
-    const project = allProjects.find((p) => p.id === params.id || p.slug === params.id);
-    if (!project) throw notFound();
-    const subsections = await fetchOpportunitySubsections(project.id);
-    await context.queryClient.ensureQueryData({
-      queryKey: ["testimonials-opp", project.id],
-      queryFn: () => fetchTestimonialsSSR(project.id),
-    });
-    await context.queryClient.ensureQueryData({
-      queryKey: ["user-reviews-opp", project.id],
-      queryFn: () => getApprovedReviews("opportunity", project.id),
-    });
-    return { project, ...subsections };
+    const details = await fetchOpportunityDetails(params.id);
+    if (!details) throw notFound();
+    const { project, risks, payouts, legalChecks } = details;
+
+    await Promise.all([
+      context.queryClient.ensureQueryData({
+        queryKey: ["testimonials-opp", project.id],
+        queryFn: () => fetchTestimonialsSSR(project.id),
+      }),
+      context.queryClient.ensureQueryData({
+        queryKey: ["user-reviews-opp", project.id],
+        queryFn: () => getApprovedReviews("opportunity", project.id),
+      }),
+    ]);
+
+    return { project, risks, payouts, legalChecks };
   },
   head: ({ loaderData }) => {
     if (!loaderData) {
@@ -256,7 +260,7 @@ function OpportunityDetailsPage() {
             </svg>
             সব সুযোগ
           </button>
-          <img src="/logo.png" alt="বিনিয়োগ বৃদ্ধি" className="h-6 w-auto" />
+          <img src="/logo.png" alt="বিনিয়োগ বৃদ্ধি" width={24} height={24} className="h-6 w-auto" loading="lazy" decoding="async" />
         </div>
       </header>
 
@@ -269,7 +273,11 @@ function OpportunityDetailsPage() {
           <img
             src={resolveImageUrl(project)}
             alt={`${project.name} SME বিনিয়োগ`}
+            width={640}
+            height={360}
             className="h-full w-full object-cover"
+            loading="eager"
+            decoding="async"
             fetchPriority="high"
           />
           {/* Subtle gradient overlay */}
@@ -397,6 +405,8 @@ function OpportunityDetailsPage() {
                       <img
                         src={url}
                         alt={`${project.name} SME বিনিয়োগ সুযোগ বাংলাদেশ`}
+                        width={1200}
+                        height={384}
                         className="h-64 w-full object-cover sm:h-80 lg:h-96"
                         loading={i === 0 ? "eager" : "lazy"}
                         decoding="async"
@@ -417,7 +427,10 @@ function OpportunityDetailsPage() {
               <img
                 src={resolveImageUrl(project)}
                 alt={`${project.name} SME বিনিয়োগ সুযোগ বাংলাদেশ`}
+                width={1200}
+                height={384}
                 className="h-64 w-full object-cover sm:h-80 lg:h-96"
+                loading="eager"
                 decoding="async"
                 fetchPriority="high"
                 onError={(e) => {
@@ -457,21 +470,6 @@ function OpportunityDetailsPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 text-sm font-medium">
-            <a
-              href="https://docs.google.com/spreadsheets/d/1HsSR7t_2zZaNbvqmbhWiuYikfYsF8rfzcQK2gmfIB4U/edit?gid=0#gid=0"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-primary hover:bg-primary hover:text-primary-foreground transition shadow-2xs"
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <polyline points="14 2 14 8 20 8" />
-                <line x1="16" y1="13" x2="8" y2="13" />
-                <line x1="16" y1="17" x2="8" y2="17" />
-              </svg>
-              <span>যোগাযোগের তথ্য দেখুন (গুগল শিট)</span>
-            </a>
-
             <div className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3.5 py-2 text-muted-foreground">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
                 <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
@@ -801,6 +799,8 @@ function UnifiedReviewCard({
               <img
                 src={review.avatarUrl}
                 alt={review.reviewerName}
+                width={44}
+                height={44}
                 className="h-10 w-10 sm:h-11 sm:w-11 shrink-0 rounded-full object-cover border border-border shadow-xs"
                 loading="lazy"
                 decoding="async"
@@ -1263,23 +1263,9 @@ function BankDetailsSection({ project, funded }: { project: Opportunity; funded:
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">
-                এই প্রজেক্টের জন্য ব্যাংক বিবরণ শীঘ্রই যুক্ত করা হবে অথবা গুগল শিটে বিস্তারিত দেখুন।
+                এই প্রজেক্টের জন্য ব্যাংক বিবরণ শীঘ্রই যুক্ত করা হবে।
               </p>
             )}
-          </div>
-
-          <div className="pt-2">
-            <a
-              href="https://docs.google.com/spreadsheets/d/1HsSR7t_2zZaNbvqmbhWiuYikfYsF8rfzcQK2gmfIB4U/edit?gid=0#gid=0"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group inline-flex items-center gap-3 rounded-xl px-5 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition hover:scale-[1.01]"
-              style={{ background: "var(--gradient-primary)" }}
-            >
-              <Building2 className="h-4 w-4" />
-              <span>সকল প্রজেক্টের যোগাযোগ ও ব্যাংক তথ্য গুগল শিটে দেখুন</span>
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-            </a>
           </div>
         </div>
       )}

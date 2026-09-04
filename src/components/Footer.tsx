@@ -13,7 +13,7 @@ export function Footer() {
           <div className="space-y-6 lg:col-span-1">
             <div>
               <Link to="/" className="inline-flex items-center gap-2">
-                <img src="/logo.png" alt="বিনিয়োগ বৃদ্ধি" className="h-10 sm:h-12 w-auto rounded-xl" />
+                <img src="/logo.png" alt="বিনিয়োগ বৃদ্ধি" width={48} height={48} className="h-10 sm:h-12 w-auto rounded-xl" loading="lazy" decoding="async" />
               </Link>
             </div>
             <p className="text-white/70 text-[15px] leading-relaxed">

@@ -72,6 +72,8 @@ export function TestimonialCard({ item }: { item: Testimonial }) {
           <img
             src={item.avatar_url}
             alt={item.name}
+            width={44}
+            height={44}
             className="h-11 w-11 shrink-0 rounded-full object-cover border border-border"
             loading="lazy"
             decoding="async"
@@ -110,6 +112,8 @@ export function HomepageReviewCard({ item, index = 0 }: { item: HomepageReview, 
             <img
               src={item.avatar_url}
               alt={item.name}
+              width={48}
+              height={48}
               className="h-10 w-10 sm:h-12 sm:w-12 shrink-0 rounded-full object-cover border-2 border-background shadow-sm"
               loading="lazy"
               decoding="async"

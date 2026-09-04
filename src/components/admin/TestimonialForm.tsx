@@ -215,6 +215,10 @@ export function TestimonialForm({
                 <img
                   src={form.avatar_url}
                   alt="Avatar"
+                  width={64}
+                  height={64}
+                  loading="lazy"
+                  decoding="async"
                   className="h-full w-full object-cover"
                 />
               ) : (

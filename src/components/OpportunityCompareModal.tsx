@@ -45,6 +45,8 @@ export function OpportunityCompareModal({
                         <img 
                           src={resolveImageUrl(p)} 
                           alt="" 
+                          width={64}
+                          height={64}
                           className="h-full w-full object-cover"
                           loading="lazy"
                           decoding="async"

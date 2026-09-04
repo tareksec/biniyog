@@ -181,7 +181,11 @@ function AboutPage() {
               <img
                 src="/logo.png"
                 alt="বিনিয়োগ বৃদ্ধি"
+                width={36}
+                height={36}
                 className="h-8 sm:h-9 w-auto rounded-lg"
+                loading="lazy"
+                decoding="async"
               />
               <span>বিনিয়োগ বৃদ্ধি</span>
             </Link>

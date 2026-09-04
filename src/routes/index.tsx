@@ -5,8 +5,8 @@ import { motion, useReducedMotion, AnimatePresence } from "framer-motion";
 import { OpportunityCard, getCategoryIcon, formatProfit } from "@/components/OpportunityCard";
 import { useOpportunities, isFullyFunded, isOpen, statusLabel, parseAmount, parseRoi, resolveImageUrl } from "@/lib/projects";
 import type { Opportunity } from "@/lib/projects";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { gsap } from "gsap/dist/gsap";
+import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -445,6 +445,8 @@ function Hero({
           src="/images/hero-bg-mobile.png"
           alt=""
           aria-hidden="true"
+          width={420}
+          height={840}
           loading="eager"
           fetchPriority="high"
           style={{
@@ -691,6 +693,8 @@ function Hero({
           src="/images/hero-bg.png"
           alt=""
           aria-hidden="true"
+          width={1000}
+          height={800}
           className="absolute top-0 bottom-0 right-0 left-auto h-full w-auto object-contain z-0 pointer-events-none"
           style={{ objectPosition: "center right" }}
           loading="eager"
@@ -1188,6 +1192,8 @@ function Opportunities({ opportunities }: { opportunities: Opportunity[] }) {
                     <img
                       src={img}
                       alt={p.name}
+                      width={400}
+                      height={420}
                       className="absolute inset-0 h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                       loading="lazy"
                       decoding="async"
@@ -1252,6 +1258,8 @@ function Opportunities({ opportunities }: { opportunities: Opportunity[] }) {
                       <img
                         src={img}
                         alt={p.name}
+                        width={400}
+                        height={300}
                         className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                         loading="lazy"
                         decoding="async"
@@ -1334,18 +1342,30 @@ function Opportunities({ opportunities }: { opportunities: Opportunity[] }) {
                 <div className="flex -space-x-2">
                   <img
                     src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100&auto=format&fit=crop"
+                    width={24}
+                    height={24}
                     className="h-6 w-6 rounded-full border-2 border-[#d5ea66] object-cover"
                     alt=""
+                    loading="lazy"
+                    decoding="async"
                   />
                   <img
                     src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100&auto=format&fit=crop"
+                    width={24}
+                    height={24}
                     className="h-6 w-6 rounded-full border-2 border-[#d5ea66] object-cover"
                     alt=""
+                    loading="lazy"
+                    decoding="async"
                   />
                   <img
                     src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=100&auto=format&fit=crop"
+                    width={24}
+                    height={24}
                     className="h-6 w-6 rounded-full border-2 border-[#d5ea66] object-cover"
                     alt=""
+                    loading="lazy"
+                    decoding="async"
                   />
                 </div>
                 <span className="text-[11px] font-bold text-[#1e2e17]">
@@ -1473,6 +1493,8 @@ function LatestBlogSection() {
                     <img
                       src={post.image}
                       alt={post.title}
+                      width={400}
+                      height={225}
                       loading="lazy"
                       decoding="async"
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"

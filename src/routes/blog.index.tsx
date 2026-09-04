@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { usePublishedBlogPosts } from "@/lib/blog";
+import { optimizeSupabaseImageUrl } from "@/lib/projects";
 import { format } from "date-fns";
 import { Loader2, ArrowRight, BookOpen, Search, Sparkles, Calendar, Clock, Tag } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -131,7 +132,7 @@ function BlogListingPage() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 py-3.5 sm:py-4">
           <div className="flex items-center gap-3 sm:gap-6">
             <Link to="/" className="inline-flex items-center gap-2 font-display text-lg sm:text-xl font-black text-primary">
-              <img src="/logo.png" alt="বিনিয়োগ বৃদ্ধি" className="h-8 sm:h-9 w-auto rounded-lg" />
+              <img src="/logo.png" alt="বিনিয়োগ বৃদ্ধি" width={36} height={36} className="h-8 sm:h-9 w-auto rounded-lg" loading="lazy" decoding="async" />
               <span>বিনিয়োগ বৃদ্ধি</span>
             </Link>
             <div className="hidden sm:block h-4 w-px bg-border/60" />
@@ -294,8 +295,10 @@ function BlogListingPage() {
                   {/* Cover image container */}
                   <Link to="/blog/$slug" params={{ slug: post.slug }} className="relative aspect-video overflow-hidden bg-muted block">
                     <img
-                      src={post.cover_image_url || "https://images.unsplash.com/photo-1579532537598-459ecdaf39cc?q=80&w=800&auto=format&fit=crop"}
+                      src={optimizeSupabaseImageUrl(post.cover_image_url, "card") || "https://images.unsplash.com/photo-1579532537598-459ecdaf39cc?q=80&w=800&auto=format&fit=crop"}
                       alt={post.title}
+                      width={400}
+                      height={225}
                       loading="lazy"
                       decoding="async"
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"

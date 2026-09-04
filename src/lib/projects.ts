@@ -6,6 +6,10 @@ export type { Opportunity, OpportunityRisk, OpportunityPayout, OpportunityLegalC
 /** Timeout (ms) for the live Supabase fetch before falling back. */
 const FETCH_TIMEOUT_MS = 4_000;
 
+/** Explicit column selection for listing queries — only select what is rendered in cards/filters */
+export const OPPORTUNITY_LIST_COLUMNS =
+  "id, slug, name, category, risk_level, investment_type, investment_amount, expected_profit, profit_period, status, image_urls, created_at, address, estimated_capital, organization_type";
+
 /** Ensure a promise rejection doesn't go unhandled (e.g. the loser of a Promise.race). */
 function suppressUnhandled(p: any): void {
   if (p && typeof p.catch === "function") {
@@ -15,17 +19,43 @@ function suppressUnhandled(p: any): void {
   }
 }
 
+/**
+ * Appends width and quality optimization query parameters to Supabase Storage URLs.
+ * - Cards: ?width=800&quality=75
+ * - Thumbnails: ?width=400&quality=70
+ */
+export function optimizeSupabaseImageUrl(
+  url: string | null | undefined,
+  variant: "card" | "thumbnail" | "original" = "card"
+): string {
+  if (!url || typeof url !== "string") return "";
+  const trimmed = url.trim();
+  if (!trimmed) return "";
+
+  // Only apply to Supabase Storage objects
+  if (!trimmed.includes("/storage/v1/object/public/")) {
+    return trimmed;
+  }
+
+  const base = trimmed.split("?")[0];
+  if (variant === "thumbnail") {
+    return `${base}?width=400&quality=70`;
+  }
+  if (variant === "card") {
+    return `${base}?width=800&quality=75`;
+  }
+  return base;
+}
 
 export async function fetchOpportunitiesSSR(): Promise<Opportunity[]> {
   let supabasePromise: Promise<unknown> | undefined;
   try {
-    // Race the Supabase query against a timeout.
-    // IMPORTANT: we save a reference to the losing promise so it doesn't
-    // become an unhandled rejection if it settles after the race resolves.
+    // Race the Supabase query against a timeout with explicit columns and limit(20)
     supabasePromise = supabase
       .from("opportunities")
-      .select("*")
-      .order("created_at", { ascending: false });
+      .select(OPPORTUNITY_LIST_COLUMNS)
+      .order("created_at", { ascending: false })
+      .limit(20);
 
     const result = await Promise.race([
       supabasePromise,
@@ -56,12 +86,78 @@ export async function fetchOpportunitiesSSR(): Promise<Opportunity[]> {
   }
 }
 
+/**
+ * Opportunity detail query: fetches opportunity and its related risks, payouts,
+ * and legal checks in a single query with joins instead of multiple roundtrips.
+ */
+export async function fetchOpportunityDetails(idOrSlug: string): Promise<{
+  project: Opportunity;
+  risks: OpportunityRisk[];
+  payouts: OpportunityPayout[];
+  legalChecks: OpportunityLegalCheck[];
+} | null> {
+  let supabasePromise: Promise<unknown> | undefined;
+  try {
+    const query = supabase
+      .from("opportunities")
+      .select(`
+        id, slug, name, owner_name, owner_phone, cfa_comment, guarantee,
+        category, risk_level, investment_type, bank_details, investment_amount,
+        expected_profit, profit_period, status, description, address,
+        organization_type, estimated_capital, website_url, image_urls, created_at, updated_at,
+        opportunity_risks (id, opportunity_id, risk_name, risk_level, description, sort_order),
+        opportunity_payouts (id, opportunity_id, cycle_name, target_profit, actual_profit, status, sort_order),
+        opportunity_legal_checks (id, opportunity_id, check_text, sort_order)
+      `)
+      .or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`)
+      .maybeSingle();
+
+    supabasePromise = query;
+
+    const result = await Promise.race([
+      supabasePromise,
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Supabase fetch timed out")), FETCH_TIMEOUT_MS)
+      ),
+    ]);
+
+    const { data, error } = result as { data: any | null; error: { message: string } | null };
+    if (error) throw new Error(error.message);
+    if (!data) throw new Error("Not found in Supabase");
+
+    const { opportunity_risks, opportunity_payouts, opportunity_legal_checks, ...projectData } = data;
+
+    const sortAsc = (a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0);
+
+    return {
+      project: projectData as Opportunity,
+      risks: ((opportunity_risks || []) as OpportunityRisk[]).sort(sortAsc),
+      payouts: ((opportunity_payouts || []) as OpportunityPayout[]).sort(sortAsc),
+      legalChecks: ((opportunity_legal_checks || []) as OpportunityLegalCheck[]).sort(sortAsc),
+    };
+  } catch (err) {
+    suppressUnhandled(supabasePromise);
+    console.warn("[fetchOpportunityDetails] Supabase error or not found, using fallback:", err instanceof Error ? err.message : err);
+    // Fallback: search fallback dataset
+    try {
+      const module = await import("@/data/opportunities-fallback.json");
+      const allProjects = module.default as Opportunity[];
+      const project = allProjects.find((p) => p.id === idOrSlug || p.slug === idOrSlug);
+      if (!project) return null;
+      const subsections = await fetchOpportunitySubsections(project.id);
+      return { project, ...subsections };
+    } catch {
+      return null;
+    }
+  }
+}
+
 export async function fetchTestimonialsSSR(opportunityId?: string): Promise<Testimonial[]> {
   let supabasePromise: Promise<unknown> | undefined;
   try {
     let query = supabase
         .from("testimonials")
-        .select("*")
+        .select("id, name, location, quote, brand_name, related_opportunity_id, role_title, rating, avatar_url, investment_amount, created_at")
         .order("created_at", { ascending: false });
     
     if (opportunityId) {
@@ -104,8 +200,9 @@ export async function fetchOpportunities(): Promise<Opportunity[]> {
   try {
     const { data, error } = await supabase
       .from("opportunities")
-      .select("*")
-      .order("created_at", { ascending: false });
+      .select(OPPORTUNITY_LIST_COLUMNS)
+      .order("created_at", { ascending: false })
+      .limit(20);
 
     if (error) {
       console.warn("[fetchOpportunities] Supabase error:", error.message);
@@ -116,7 +213,7 @@ export async function fetchOpportunities(): Promise<Opportunity[]> {
       return [];
     }
 
-    return data;
+    return data as Opportunity[];
   } catch (err) {
     console.warn(
       "[fetchOpportunities] Fetch failed:",
@@ -179,9 +276,9 @@ export async function fetchOpportunitySubsections(opportunityId: string) {
   if (!opportunityId) return { risks: [], payouts: [], legalChecks: [] };
   
   const [risksRes, payoutsRes, legalRes] = await Promise.all([
-    supabase.from("opportunity_risks").select("*").eq("opportunity_id", opportunityId).order("sort_order", { ascending: true }),
-    supabase.from("opportunity_payouts").select("*").eq("opportunity_id", opportunityId).order("sort_order", { ascending: true }),
-    supabase.from("opportunity_legal_checks").select("*").eq("opportunity_id", opportunityId).order("sort_order", { ascending: true }),
+    supabase.from("opportunity_risks").select("id, opportunity_id, risk_name, risk_level, description, sort_order").eq("opportunity_id", opportunityId).order("sort_order", { ascending: true }),
+    supabase.from("opportunity_payouts").select("id, opportunity_id, cycle_name, target_profit, actual_profit, status, sort_order").eq("opportunity_id", opportunityId).order("sort_order", { ascending: true }),
+    supabase.from("opportunity_legal_checks").select("id, opportunity_id, check_text, sort_order").eq("opportunity_id", opportunityId).order("sort_order", { ascending: true }),
   ]);
 
   return {
@@ -318,9 +415,9 @@ export function getRiskLevel(p: Opportunity): { level: "low" | "med" | "high"; l
  * Resolves the final image URL. If uploaded via our admin, it will be a Supabase public URL.
  * If missing, falls back to internet images based on category.
  */
-export function resolveImageUrl(project: Opportunity): string {
+export function resolveImageUrl(project: Opportunity, variant: "card" | "thumbnail" = "card"): string {
   if (project.image_urls && project.image_urls.length > 0 && project.image_urls[0].trim() !== "") {
-    return project.image_urls[0].trim();
+    return optimizeSupabaseImageUrl(project.image_urls[0].trim(), variant);
   }
 
   const c = (project.category || "").toLowerCase();
@@ -367,13 +464,13 @@ export function resolveImageUrl(project: Opportunity): string {
  * Resolves all image URLs for a project (up to 3).
  * Falls back to an array containing a single default category image if none exist.
  */
-export function resolveImageUrls(project: Opportunity): string[] {
+export function resolveImageUrls(project: Opportunity, variant: "card" | "thumbnail" = "card"): string[] {
   if (project.image_urls && project.image_urls.length > 0) {
     const validUrls = project.image_urls.filter(url => url && url.trim() !== "");
     if (validUrls.length > 0) {
-      return validUrls.map(url => url.trim());
+      return validUrls.map(url => optimizeSupabaseImageUrl(url.trim(), variant));
     }
   }
   
-  return [resolveImageUrl(project)];
+  return [resolveImageUrl(project, variant)];
 }

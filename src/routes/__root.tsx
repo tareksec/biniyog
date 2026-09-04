@@ -7,9 +7,9 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { Component, useEffect, useLayoutEffect, useState, useRef, Suspense, type ReactNode, type ErrorInfo } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { usePrefersReducedMotion, pageTransition } from "@/lib/animations";
+import { Component, useEffect, useLayoutEffect, useState, useRef, Suspense, lazy, type ReactNode, type ErrorInfo } from "react";
+
+const PageTransitionWrapper = lazy(() => import("@/components/PageTransitionWrapper"));
 
 import { GlobalNav } from "@/components/GlobalNav";
 import { TopStickyLogo } from "@/components/TopStickyLogo";
@@ -209,8 +209,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
+      { rel: "dns-prefetch", href: "https://dfblfoyjhxhxmnckyspa.supabase.co" },
+      { rel: "preconnect", href: "https://dfblfoyjhxhxmnckyspa.supabase.co", crossOrigin: "anonymous" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "preload",
+        as: "font",
+        type: "font/ttf",
+        href: "https://fonts.gstatic.com/s/hindsiliguri/v14/ijwTs5juQtsyLLR5jN4cxBEofJs.ttf",
+        crossOrigin: "anonymous",
+      },
+      {
+        rel: "preload",
+        as: "style",
+        href: "https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap",
+      },
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap",
@@ -246,6 +260,15 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="bn" suppressHydrationWarning>
       <head>
+        <link rel="dns-prefetch" href="https://dfblfoyjhxhxmnckyspa.supabase.co" />
+        <link rel="preconnect" href="https://dfblfoyjhxhxmnckyspa.supabase.co" crossOrigin="" />
+        <link
+          rel="preload"
+          as="font"
+          type="font/ttf"
+          href="https://fonts.gstatic.com/s/hindsiliguri/v14/ijwTs5juQtsyLLR5jN4cxBEofJs.ttf"
+          crossOrigin="anonymous"
+        />
         <HeadContent />
         <link rel="canonical" href={`https://biniyogbriddhi.com${pathname}`} />
         <link rel="alternate" hrefLang="bn" href="https://biniyogbriddhi.com" />
@@ -368,7 +391,6 @@ function GlobalScrollRestoration() {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
-  const prefersReduced = usePrefersReducedMotion();
   const hydrated = useIsHydrated();
   const locationKey = router.state.location.pathname + (router.state.location.searchStr || "");
 
@@ -386,20 +408,11 @@ function RootComponent() {
         <GlobalScrollRestoration />
         <div className="flex flex-col min-h-screen">
           {hydrated ? (
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={locationKey}
-                initial={prefersReduced ? "animate" : "initial"}
-                animate="animate"
-                exit={prefersReduced ? "animate" : "exit"}
-                variants={pageTransition}
-                className="flex-grow"
-                suppressHydrationWarning
-              >
-                {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+            <Suspense fallback={<div className="flex-grow">{outletContent}</div>}>
+              <PageTransitionWrapper locationKey={locationKey}>
                 {outletContent}
-              </motion.div>
-            </AnimatePresence>
+              </PageTransitionWrapper>
+            </Suspense>
           ) : (
             <div className="flex-grow" style={{ opacity: 1 }}>
               {outletContent}

@@ -176,6 +176,8 @@ export function OpportunityCard({
             <img
               src={cardImage}
               alt={`${project.name} বিনিয়োগ সুযোগ`}
+              width={400}
+              height={300}
               className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
               loading="lazy"
               decoding="async"

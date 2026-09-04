@@ -1,6 +1,6 @@
 import { useLocation, Link, useNavigate } from "@tanstack/react-router";
 import { Home, Info, TrendingUp, BookOpen, LayoutDashboard } from "lucide-react";
-import { gsap } from "gsap";
+import { gsap } from "gsap/dist/gsap";
 import { useRef, useEffect, useState, useLayoutEffect } from "react";
 
 interface NavItem {
@@ -18,7 +18,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: "dashboard", label: "ড্যাশবোর্ড", icon: LayoutDashboard, route: "/dashboard" },
 ];
 
-const CIRCLE_SIZE = 46; // Active circle diameter (fits comfortably inside 60px pill)
+const CIRCLE_SIZE = 48; // Active circle diameter (fits comfortably inside 62px pill)
 
 export function MobileNavBar() {
   const location = useLocation();
@@ -157,15 +157,15 @@ export function MobileNavBar() {
   return (
     <div
       className="fixed bottom-3 left-0 right-0 z-50 md:hidden pointer-events-none flex justify-center px-4"
-      style={{ paddingBottom: "max(4px, env(safe-area-inset-bottom))" }}
+      style={{ paddingBottom: "max(6px, env(safe-area-inset-bottom))" }}
     >
       {/* Horizontal Pill Navigation Bar */}
       <nav
         ref={navRef}
-        className="pointer-events-auto relative w-[356px] max-w-[calc(100%-16px)] h-[60px] rounded-full bg-white dark:bg-zinc-900 shadow-[0_8px_30px_rgba(35,83,71,0.12)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)] border border-[#DAF1DE]/80 dark:border-white/[0.08] flex items-center justify-around px-2"
+        className="pointer-events-auto relative w-[360px] max-w-[calc(100%-16px)] h-[62px] rounded-full bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md shadow-[0_10px_35px_rgba(5,31,32,0.18)] dark:shadow-[0_10px_35px_rgba(0,0,0,0.6)] border-2 border-[#DAF1DE] dark:border-white/[0.15] flex items-center justify-around px-2.5"
         aria-label="মোবাইল নেভিগেশন"
       >
-        {/* Floating Active Circular Indicator with Brand Green Ring (#235347) */}
+        {/* Floating Active Circular Indicator with Brand Green Fill & Glow */}
         <div
           ref={circleRef}
           style={{
@@ -175,10 +175,10 @@ export function MobileNavBar() {
             width: `${CIRCLE_SIZE}px`,
             height: `${CIRCLE_SIZE}px`,
             borderRadius: "50%",
-            backgroundColor: "#FFFFFF",
-            border: "2.5px solid #235347",
+            background: "linear-gradient(135deg, #235347 0%, #163832 100%)",
+            border: "2.5px solid #DAF1DE",
             boxShadow:
-              "0 4px 16px rgba(35, 83, 71, 0.3), 0 2px 6px rgba(0, 0, 0, 0.06)",
+              "0 6px 20px rgba(35, 83, 71, 0.45), 0 2px 8px rgba(0, 0, 0, 0.15)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -187,11 +187,19 @@ export function MobileNavBar() {
             transform: "translateY(-50%)",
             willChange: "transform",
           }}
-          className="dark:bg-zinc-900"
+          className="dark:border-emerald-400/40"
         >
-          {/* Active Centered Brand Green Icon */}
+          {/* Active Label Badge floating above indicator */}
+          <div
+            className="absolute -top-7.5 px-2.5 py-0.5 rounded-full bg-[#163832] dark:bg-emerald-950 text-white text-[11px] font-bold tracking-wide shadow-md border border-[#DAF1DE]/40 whitespace-nowrap pointer-events-none transition-all"
+            style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.2))" }}
+          >
+            {NAV_ITEMS[displayedIndex]?.label}
+          </div>
+
+          {/* Active Centered Bright White Icon */}
           <div ref={iconRef} className="flex items-center justify-center">
-            <ActiveIcon className="h-5 w-5 text-[#235347] dark:text-emerald-400 stroke-[2.2]" />
+            <ActiveIcon className="h-6 w-6 text-white stroke-[2.4]" />
           </div>
         </div>
 
@@ -212,14 +220,16 @@ export function MobileNavBar() {
               aria-label={item.label}
               title={item.label}
             >
-              {/* Inactive Icon: Muted gray, thin stroke */}
-              <Icon
-                className={`h-5 w-5 transition-colors duration-200 ${
-                  isActive
-                    ? "opacity-0" // Covered cleanly by active circular indicator
-                    : "text-zinc-400 dark:text-zinc-500 hover:text-[#235347] stroke-[1.8]"
-                }`}
-              />
+              {/* Inactive Icon: High-contrast brand green/slate, thicker stroke, clear touch target */}
+              <div className="w-10 h-10 rounded-full flex items-center justify-center transition-colors active:bg-[#DAF1DE]/50">
+                <Icon
+                  className={`h-[22px] w-[22px] transition-colors duration-200 ${
+                    isActive
+                      ? "opacity-0" // Covered cleanly by active circular indicator
+                      : "text-[#163832] dark:text-zinc-200 hover:text-[#235347] stroke-[2.2]"
+                  }`}
+                />
+              </div>
             </Link>
           );
         })}

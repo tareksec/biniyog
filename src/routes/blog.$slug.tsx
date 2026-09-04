@@ -1,5 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { fetchBlogPostBySlug, useBlogPostBySlug, useRelatedBlogPosts, sanitizeBlogHtml } from "@/lib/blog";
+import { optimizeSupabaseImageUrl } from "@/lib/projects";
 import { Loader2, ChevronLeft, ArrowRight, Calendar, User, Clock, Share2, Sparkles, BookOpen } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -268,8 +269,10 @@ function BlogDetailPage() {
           {post.cover_image_url && (
             <div className="relative aspect-video rounded-2xl sm:rounded-3xl overflow-hidden border border-border/80 shadow-md bg-muted">
               <img
-                src={post.cover_image_url}
+                src={optimizeSupabaseImageUrl(post.cover_image_url, "card")}
                 alt={post.title}
+                width={800}
+                height={450}
                 loading="eager"
                 decoding="async"
                 fetchPriority="high"
@@ -318,6 +321,8 @@ function BlogDetailPage() {
                     <img
                       src={relPost.cover_image_url || "https://images.unsplash.com/photo-1579532537598-459ecdaf39cc?q=80&w=800&auto=format&fit=crop"}
                       alt={relPost.title}
+                      width={360}
+                      height={200}
                       loading="lazy"
                       decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

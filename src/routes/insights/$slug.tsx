@@ -184,6 +184,8 @@ function DynamicBlogPostPage() {
               <img
                 src={post.cover_image_url}
                 alt={post.title}
+                width={800}
+                height={450}
                 className="w-full h-full object-cover"
                 loading="eager"
                 decoding="async"

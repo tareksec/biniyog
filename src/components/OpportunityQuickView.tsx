@@ -34,6 +34,8 @@ export function OpportunityQuickView({
           <img
             src={resolveImageUrl(project)}
             alt={project.name || "Project image"}
+            width={512}
+            height={192}
             className="h-full w-full object-cover"
             loading="lazy"
             decoding="async"

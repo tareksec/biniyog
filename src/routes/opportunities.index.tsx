@@ -1,9 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
-import { Search, X, MapPin, ChevronDown, Bookmark, SlidersHorizontal } from "lucide-react";
+import { Search, X, MapPin, ChevronDown, Bookmark, SlidersHorizontal, ArrowUpDown, Shield, Filter } from "lucide-react";
 import { OpportunityCard, formatProfit } from "@/components/OpportunityCard";
-import { useOpportunities, useTotalUsersCount, getRiskLevel, resolveImageUrl } from "@/lib/projects";
+import { useOpportunities, useTotalUsersCount, getRiskLevel, isOpen, isFullyFunded, resolveImageUrl } from "@/lib/projects";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -154,7 +154,7 @@ function OpportunitiesPage() {
     setSearchQuery("");
   };
 
-  // Filter projects based on search query & category pills & saved
+  // Filter projects based on search query & category pills & saved & risk
   const filteredProjects = useMemo(() => {
     return projects.filter((p) => {
       // Saved filter
@@ -188,11 +188,62 @@ function OpportunitiesPage() {
         if (!matchesCat) return false;
       }
 
+      // Risk level filter
+      if (searchParams.risk) {
+        const risk = getRiskLevel(p);
+        if (risk.level !== searchParams.risk) return false;
+      }
+
+      // Status filter
+      if (searchParams.status) {
+        if (searchParams.status === "open" && !isOpen(p)) return false;
+        if (searchParams.status === "funded" && !isFullyFunded(p)) return false;
+      }
+
       return true;
     });
-  }, [projects, searchParams.q, searchParams.category, searchParams.saved, savedIds]);
+  }, [projects, searchParams.q, searchParams.category, searchParams.saved, savedIds, searchParams.risk, searchParams.status]);
 
-  const sortedProjects = filteredProjects;
+  // Sort logic
+  const sortedProjects = useMemo(() => {
+    const sorted = [...filteredProjects];
+    switch (searchParams.sort) {
+      case "profit_high": {
+        sorted.sort((a, b) => {
+          const aP = parseFloat((a.expected_profit || "0").replace(/[^\d.]/g, "")) || 0;
+          const bP = parseFloat((b.expected_profit || "0").replace(/[^\d.]/g, "")) || 0;
+          return bP - aP;
+        });
+        break;
+      }
+      case "profit_low": {
+        sorted.sort((a, b) => {
+          const aP = parseFloat((a.expected_profit || "0").replace(/[^\d.]/g, "")) || 0;
+          const bP = parseFloat((b.expected_profit || "0").replace(/[^\d.]/g, "")) || 0;
+          return aP - bP;
+        });
+        break;
+      }
+      case "risk_low": {
+        const riskOrder = { low: 0, med: 1, high: 2 };
+        sorted.sort((a, b) => riskOrder[getRiskLevel(a).level] - riskOrder[getRiskLevel(b).level]);
+        break;
+      }
+      case "risk_high": {
+        const riskOrder = { low: 0, med: 1, high: 2 };
+        sorted.sort((a, b) => riskOrder[getRiskLevel(b).level] - riskOrder[getRiskLevel(a).level]);
+        break;
+      }
+      case "newest":
+      default:
+        sorted.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        break;
+    }
+    return sorted;
+  }, [filteredProjects, searchParams.sort]);
+
+  // Count active filters
+  const activeFilterCount = [searchParams.saved, searchParams.risk, searchParams.status, searchParams.sort && searchParams.sort !== "newest"].filter(Boolean).length;
 
   return (
     <div className="min-h-screen bg-background pb-32">
@@ -306,6 +357,70 @@ function OpportunitiesPage() {
           })}
         </div>
 
+        {/* ── Mobile Filter Row: Risk, Status, Sort ── */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 snap-x mb-3">
+          {/* Risk pills */}
+          {[
+            { value: undefined, label: "সব ঝুঁকি" },
+            { value: "low", label: "নিম্ন" },
+            { value: "med", label: "মধ্যম" },
+            { value: "high", label: "উচ্চ" },
+          ].map((opt) => (
+            <button
+              key={opt.label}
+              type="button"
+              onClick={() => handleUpdateFilter("risk", opt.value)}
+              className={`shrink-0 rounded-full px-3.5 py-1.5 text-[11px] font-semibold transition-all cursor-pointer border ${
+                searchParams.risk === opt.value || (!searchParams.risk && !opt.value)
+                  ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
+                  : "bg-white/90 dark:bg-zinc-800/80 text-zinc-500 dark:text-zinc-400 border-zinc-200/80 dark:border-zinc-700"
+              }`}
+            >
+              {opt.value ? `⚡ ${opt.label}` : opt.label}
+            </button>
+          ))}
+
+          {/* Divider */}
+          <div className="h-5 w-px bg-zinc-200 dark:bg-zinc-700 shrink-0" />
+
+          {/* Sort pills */}
+          {[
+            { value: undefined, label: "সাজান" },
+            { value: "profit_high", label: "মুনাফা ↓" },
+            { value: "risk_low", label: "ঝুঁকি ↑" },
+          ].map((opt) => (
+            <button
+              key={opt.label}
+              type="button"
+              onClick={() => handleUpdateFilter("sort", opt.value)}
+              className={`shrink-0 rounded-full px-3.5 py-1.5 text-[11px] font-semibold transition-all cursor-pointer border ${
+                searchParams.sort === opt.value || (!searchParams.sort && !opt.value)
+                  ? "bg-zinc-900 text-white border-zinc-900 dark:bg-white dark:text-zinc-900 dark:border-white shadow-sm"
+                  : "bg-white/90 dark:bg-zinc-800/80 text-zinc-500 dark:text-zinc-400 border-zinc-200/80 dark:border-zinc-700"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Saved bookmark info (mobile) */}
+        {searchParams.saved && (
+          <div className="flex items-center gap-2.5 rounded-2xl bg-amber-50/90 dark:bg-amber-900/20 border border-amber-200/60 dark:border-amber-800/40 px-4 py-2.5 mb-4">
+            <Bookmark className="h-4 w-4 fill-amber-500 text-amber-500 shrink-0" />
+            <p className="text-xs font-bold text-amber-800 dark:text-amber-300 flex-1">
+              সংরক্ষিত {savedIds.size}টি সুযোগ
+            </p>
+            <button
+              type="button"
+              onClick={() => handleUpdateFilter("saved", undefined)}
+              className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 hover:underline cursor-pointer"
+            >
+              সব দেখুন
+            </button>
+          </div>
+        )}
+
         {/* ── Screen 2: Card list (mobile) ── */}
         {showLoading ? (
           <div className="flex flex-col gap-4">
@@ -348,6 +463,8 @@ function OpportunitiesPage() {
                     <img
                       src={img}
                       alt={p.name}
+                      width={640}
+                      height={400}
                       className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
                       loading="lazy"
                       decoding="async"
@@ -444,7 +561,7 @@ function OpportunitiesPage() {
         </div>
 
         {/* ── Category Filter Pills: Horizontal Row ── */}
-        <div className="flex items-center justify-start sm:justify-center gap-2.5 overflow-x-auto pb-4 pt-1 px-2 scrollbar-hide snap-x snap-mandatory max-w-full mb-8">
+        <div className="flex items-center justify-start sm:justify-center gap-2.5 overflow-x-auto pb-4 pt-1 px-2 scrollbar-hide snap-x snap-mandatory max-w-full">
           {CATEGORY_PILLS.map((pill) => {
             const isActive =
               pill === "সব"
@@ -467,6 +584,184 @@ function OpportunitiesPage() {
             );
           })}
         </div>
+
+        {/* ── Filter Bar: Bookmark, Risk, Sort, Active Count ── */}
+        <div className="flex items-center justify-between gap-3 mb-8 mt-4 max-w-4xl mx-auto">
+          {/* Left: Filter buttons */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Bookmark filter */}
+            <button
+              type="button"
+              onClick={() => handleUpdateFilter("saved", searchParams.saved ? undefined : true)}
+              className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 cursor-pointer border ${
+                searchParams.saved
+                  ? "bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border-amber-300/60 dark:border-amber-700/50 shadow-sm"
+                  : "bg-white/80 dark:bg-zinc-800/80 text-muted-foreground border-border/80 shadow-sm hover:bg-white dark:hover:bg-zinc-800 hover:text-foreground"
+              }`}
+              title="সংরক্ষিত সুযোগ দেখুন"
+            >
+              <Bookmark className={`h-3.5 w-3.5 ${searchParams.saved ? "fill-amber-500 text-amber-500" : ""}`} />
+              <span>সংরক্ষিত</span>
+              {searchParams.saved && savedIds.size > 0 && (
+                <span className="ml-0.5 h-5 min-w-5 px-1 rounded-full bg-amber-500 text-white text-[11px] font-bold flex items-center justify-center">
+                  {savedIds.size}
+                </span>
+              )}
+            </button>
+
+            {/* Risk level filter */}
+            <div className="relative group">
+              <button
+                type="button"
+                className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 cursor-pointer border ${
+                  searchParams.risk
+                    ? "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border-emerald-300/60 dark:border-emerald-700/50 shadow-sm"
+                    : "bg-white/80 dark:bg-zinc-800/80 text-muted-foreground border-border/80 shadow-sm hover:bg-white dark:hover:bg-zinc-800 hover:text-foreground"
+                }`}
+              >
+                <Shield className="h-3.5 w-3.5" />
+                <span>{searchParams.risk === "low" ? "নিম্ন ঝুঁকি" : searchParams.risk === "med" ? "মধ্যম ঝুঁকি" : searchParams.risk === "high" ? "উচ্চ ঝুঁকি" : "ঝুঁকি স্তর"}</span>
+                <ChevronDown className="h-3 w-3" />
+              </button>
+              <div className="absolute top-full left-0 mt-1 z-50 hidden group-hover:block">
+                <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-border/80 shadow-xl p-1.5 min-w-[160px]">
+                  {[
+                    { value: undefined, label: "সব ঝুঁকি" },
+                    { value: "low", label: "নিম্ন ঝুঁকি" },
+                    { value: "med", label: "মধ্যম ঝুঁকি" },
+                    { value: "high", label: "উচ্চ ঝুঁকি" },
+                  ].map((opt) => (
+                    <button
+                      key={opt.label}
+                      type="button"
+                      onClick={() => handleUpdateFilter("risk", opt.value)}
+                      className={`w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors cursor-pointer ${
+                        searchParams.risk === opt.value || (!searchParams.risk && !opt.value)
+                          ? "bg-primary/10 text-primary"
+                          : "text-foreground hover:bg-muted"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Status filter */}
+            <div className="relative group">
+              <button
+                type="button"
+                className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 cursor-pointer border ${
+                  searchParams.status
+                    ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-300/60 dark:border-blue-700/50 shadow-sm"
+                    : "bg-white/80 dark:bg-zinc-800/80 text-muted-foreground border-border/80 shadow-sm hover:bg-white dark:hover:bg-zinc-800 hover:text-foreground"
+                }`}
+              >
+                <Filter className="h-3.5 w-3.5" />
+                <span>{searchParams.status === "open" ? "চলমান" : searchParams.status === "funded" ? "সম্পন্ন" : "অবস্থা"}</span>
+                <ChevronDown className="h-3 w-3" />
+              </button>
+              <div className="absolute top-full left-0 mt-1 z-50 hidden group-hover:block">
+                <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-border/80 shadow-xl p-1.5 min-w-[160px]">
+                  {[
+                    { value: undefined, label: "সব অবস্থা" },
+                    { value: "open", label: "চলমান সুযোগ" },
+                    { value: "funded", label: "সম্পন্ন/বন্ধ" },
+                  ].map((opt) => (
+                    <button
+                      key={opt.label}
+                      type="button"
+                      onClick={() => handleUpdateFilter("status", opt.value)}
+                      className={`w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors cursor-pointer ${
+                        searchParams.status === opt.value || (!searchParams.status && !opt.value)
+                          ? "bg-primary/10 text-primary"
+                          : "text-foreground hover:bg-muted"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right: Sort dropdown + filter count */}
+          <div className="flex items-center gap-2">
+            {/* Sort */}
+            <div className="relative group">
+              <button
+                type="button"
+                className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold bg-white/80 dark:bg-zinc-800/80 text-muted-foreground border border-border/80 shadow-sm hover:bg-white dark:hover:bg-zinc-800 hover:text-foreground transition-all duration-200 cursor-pointer"
+              >
+                <ArrowUpDown className="h-3.5 w-3.5" />
+                <span>
+                  {searchParams.sort === "profit_high" ? "মুনাফা: বেশি"
+                    : searchParams.sort === "profit_low" ? "মুনাফা: কম"
+                    : searchParams.sort === "risk_low" ? "ঝুঁকি: কম"
+                    : searchParams.sort === "risk_high" ? "ঝুঁকি: বেশি"
+                    : "সাজান"}
+                </span>
+                <ChevronDown className="h-3 w-3" />
+              </button>
+              <div className="absolute top-full right-0 mt-1 z-50 hidden group-hover:block">
+                <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-border/80 shadow-xl p-1.5 min-w-[180px]">
+                  {[
+                    { value: undefined, label: "সর্বশেষ যোগ হয়েছে" },
+                    { value: "profit_high", label: "মুনাফা: বেশি → কম" },
+                    { value: "profit_low", label: "মুনাফা: কম → বেশি" },
+                    { value: "risk_low", label: "ঝুঁকি: কম → বেশি" },
+                    { value: "risk_high", label: "ঝুঁকি: বেশি → কম" },
+                  ].map((opt) => (
+                    <button
+                      key={opt.label}
+                      type="button"
+                      onClick={() => handleUpdateFilter("sort", opt.value)}
+                      className={`w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors cursor-pointer ${
+                        searchParams.sort === opt.value || (!searchParams.sort && !opt.value)
+                          ? "bg-primary/10 text-primary"
+                          : "text-foreground hover:bg-muted"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Active filter count + clear */}
+            {activeFilterCount > 0 && (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-bold bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 border border-red-200/60 dark:border-red-800/50 hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors cursor-pointer"
+              >
+                <X className="h-3 w-3" />
+                <span>{activeFilterCount} ফিল্টার মুছুন</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Saved bookmark info bar */}
+        {searchParams.saved && (
+          <div className="max-w-4xl mx-auto mb-6 flex items-center gap-3 rounded-2xl bg-amber-50/80 dark:bg-amber-900/20 border border-amber-200/60 dark:border-amber-800/40 px-5 py-3">
+            <Bookmark className="h-5 w-5 fill-amber-500 text-amber-500 shrink-0" />
+            <div>
+              <p className="text-sm font-bold text-amber-800 dark:text-amber-300">সংরক্ষিত সুযোগ</p>
+              <p className="text-xs text-amber-600 dark:text-amber-400/80">আপনার বুকমার্ক করা {savedIds.size}টি বিনিয়োগ সুযোগ দেখাচ্ছে</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => handleUpdateFilter("saved", undefined)}
+              className="ml-auto text-xs font-semibold text-amber-700 dark:text-amber-400 hover:underline cursor-pointer"
+            >
+              সব দেখুন
+            </button>
+          </div>
+        )}
 
         {/* ── Cards Display: Desktop Grid (1-4 cols) ── */}
         {showLoading ? (

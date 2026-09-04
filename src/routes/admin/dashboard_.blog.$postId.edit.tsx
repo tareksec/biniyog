@@ -1,11 +1,12 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
-import { BlogPostForm } from "@/components/admin/BlogPostForm";
+import { lazy, Suspense, useEffect } from "react";
 import { useAuth, getAuthSnapshot } from "@/hooks/useAuth";
 import { isAdminEmail } from "@/lib/admin";
 import { useBlogPost } from "@/lib/blog";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+
+const BlogPostForm = lazy(() => import("@/components/admin/BlogPostForm").then(m => ({ default: m.BlogPostForm })));
 
 export const Route = createFileRoute("/admin/dashboard_/blog/$postId/edit")({
   beforeLoad: () => {
@@ -57,7 +58,9 @@ function BlogEditRoute() {
 
   return (
     <div className="p-6">
-      <BlogPostForm post={post} />
+      <Suspense fallback={<div className="flex items-center justify-center min-h-[400px]"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>}>
+        <BlogPostForm post={post} />
+      </Suspense>
     </div>
   );
 }

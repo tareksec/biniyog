@@ -224,6 +224,10 @@ export function HomepageReviewForm({
                   <img
                     src={form.avatar_url}
                     alt="Preview"
+                    width={64}
+                    height={64}
+                    loading="lazy"
+                    decoding="async"
                     className="h-full w-full rounded-full object-cover"
                   />
                   <button

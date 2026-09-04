@@ -493,7 +493,7 @@ export function BlogPostForm({ post }: BlogPostFormProps) {
 
           {coverImageUrl ? (
             <div className="relative aspect-video rounded-2xl border border-slate-200 overflow-hidden group bg-slate-100 max-h-[320px] shadow-sm">
-              <img src={coverImageUrl} alt="Cover" className="w-full h-full object-cover" />
+              <img src={coverImageUrl} alt="Cover" width={640} height={360} loading="lazy" decoding="async" className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                 <label
                   htmlFor="change-cover-file"

@@ -42,7 +42,11 @@ export function TopStickyLogo() {
         <img
           src="/logo.png"
           alt="BiniyogBriddhi Logo"
+          width={32}
+          height={32}
           className="h-7 sm:h-8 w-auto rounded-md shadow-2xs"
+          loading="eager"
+          fetchPriority="high"
         />
         <div className="flex flex-col text-left">
           <span className="font-extrabold text-[15px] sm:text-[16px] leading-tight text-[#0f3e26] tracking-tight">

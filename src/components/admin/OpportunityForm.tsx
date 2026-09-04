@@ -1347,7 +1347,7 @@ export function OpportunityForm({
                           key={i}
                           className="group relative rounded-2xl overflow-hidden border border-slate-200 aspect-video bg-slate-100 shadow-2xs"
                         >
-                          <img src={url} alt={`Opportunity ${i + 1}`} className="w-full h-full object-cover" />
+                          <img src={url} alt={`Opportunity ${i + 1}`} width={160} height={90} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                           <div className="absolute top-2 left-2 bg-[#0B2B26]/80 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                             #{i + 1} {i === 0 && "(কভার)"}
                           </div>

@@ -114,7 +114,7 @@ export async function getApprovedReviews(
   try {
     let query = supabase
       .from("user_reviews")
-      .select("*")
+      .select("id, target_type, target_id, user_name, user_email, user_phone, user_role, rating, comment, status, created_at")
       .eq("status", "approved")
       .order("created_at", { ascending: false });
 
@@ -143,7 +143,7 @@ export async function getApprovedReviews(
 export async function getPendingReviewsAdmin(): Promise<UserReview[]> {
   const { data, error } = await supabase
     .from("user_reviews")
-    .select("*")
+    .select("id, created_at, user_id, reviewer_name, reviewer_email, rating, note, status, target_type, target_id, has_invested, user_identity, investment_details, admin_note, updated_at")
     .eq("status", "pending")
     .order("created_at", { ascending: false });
 
@@ -160,7 +160,7 @@ export async function getPendingReviewsAdmin(): Promise<UserReview[]> {
 export async function getAllReviewsAdmin(statusFilter?: "all" | "pending" | "approved" | "rejected"): Promise<UserReview[]> {
   let query = supabase
     .from("user_reviews")
-    .select("*")
+    .select("id, created_at, user_id, reviewer_name, reviewer_email, rating, note, status, target_type, target_id, has_invested, user_identity, investment_details, admin_note, updated_at")
     .order("created_at", { ascending: false });
 
   if (statusFilter && statusFilter !== "all") {

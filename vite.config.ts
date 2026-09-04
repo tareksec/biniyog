@@ -36,6 +36,39 @@ function imageLazyLoadPlugin(): Plugin {
 export default defineConfig({
   vite: {
     plugins: [imageLazyLoadPlugin()],
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id: string) {
+            const normalized = id.replace(/\\/g, "/");
+            if (normalized.includes("/node_modules/")) {
+              if (
+                normalized.includes("/node_modules/react/") ||
+                normalized.includes("/node_modules/react-dom/") ||
+                normalized.includes("/node_modules/scheduler/")
+              ) {
+                return "vendor-react";
+              }
+              if (normalized.includes("/node_modules/@tanstack/")) {
+                return "vendor-tanstack";
+              }
+              if (normalized.includes("/node_modules/@radix-ui/")) {
+                return "vendor-radix";
+              }
+              if (normalized.includes("/node_modules/gsap/")) {
+                return "vendor-gsap";
+              }
+              if (normalized.includes("/node_modules/framer-motion/")) {
+                return "vendor-framer";
+              }
+              if (normalized.includes("/node_modules/@supabase/")) {
+                return "vendor-supabase";
+              }
+            }
+          },
+        },
+      },
+    },
   },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
