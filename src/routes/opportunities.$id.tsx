@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { createFileRoute, Link, notFound, useRouter, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
@@ -40,6 +40,7 @@ import {
   Bookmark,
   MapPin,
   ChevronLeft,
+  ChevronRight,
   Coins,
 } from "lucide-react";
 import { formatProfit } from "@/components/OpportunityCard";
@@ -773,79 +774,84 @@ function UnifiedReviewCard({
   opportunityName: string;
 }) {
   const initial = (review.reviewerName || "").trim().charAt(0) || "ব";
-  const displayCompany = review.companyName || opportunityName;
+  const starCount =
+    review.rating && review.rating > 0
+      ? review.rating > 1
+        ? Math.min(5, Math.max(1, Math.round(review.rating)))
+        : Math.round(review.rating * 5)
+      : 5;
 
   return (
-    <div className="w-full h-full flex flex-col justify-between rounded-3xl border border-border/80 bg-card p-6 sm:p-7 shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
-      <div>
-        {/* Company name pill badge top-left (from old system) or opportunity name */}
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold text-primary w-fit">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-            <span className="truncate max-w-[200px]">{displayCompany}</span>
+    <div className="w-[320px] sm:w-[420px] h-[210px] sm:h-[230px] shrink-0 snap-start rounded-[24px] border border-border/80 bg-card p-5 sm:p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col justify-between relative overflow-hidden group transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)]">
+      {/* Background Large Faint Watermark Quote */}
+      <svg
+        className="absolute -bottom-4 -right-4 w-32 h-32 text-foreground/[0.04] dark:text-foreground/[0.03] rotate-12 pointer-events-none transition-transform duration-500 group-hover:scale-105"
+        fill="currentColor"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M14 17h3l2-4V7h-6v6h3M6 17h3l2-4V7H5v6h3" />
+      </svg>
+
+      <div className="relative z-10 flex flex-col h-full justify-between">
+        {/* Top Header: Avatar + Reviewer Name/Role + Star Rating */}
+        <header className="flex items-center justify-between gap-3 mb-3">
+          <div className="flex items-center gap-3 min-w-0">
+            {review.avatarUrl ? (
+              <img
+                src={review.avatarUrl}
+                alt={review.reviewerName}
+                className="h-10 w-10 sm:h-11 sm:w-11 shrink-0 rounded-full object-cover border border-border shadow-xs"
+                loading="lazy"
+                decoding="async"
+              />
+            ) : (
+              <span className="grid h-10 w-10 sm:h-11 sm:w-11 shrink-0 place-items-center rounded-full bg-[#e6f0ed] text-[#164e3f] dark:bg-primary/20 dark:text-primary text-sm font-bold border border-[#c4e0d7] dark:border-primary/30 shadow-xs">
+                {initial}
+              </span>
+            )}
+            <div className="min-w-0">
+              <div className="truncate text-sm sm:text-base font-bold text-foreground">
+                {review.reviewerName}
+              </div>
+              <div className="truncate text-xs text-muted-foreground font-medium">
+                {review.roleOrOccupation || "বিনিয়োগকারী"}
+              </div>
+            </div>
           </div>
 
-          {review.hasInvested && (
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
-              <Check className="w-3 h-3 text-emerald-600" />
-              <span>বিনিয়োগকারী</span>
-            </span>
-          )}
+          {/* 5 Yellow Stars */}
+          <div className="flex items-center gap-0.5 shrink-0 self-start pt-1">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star
+                key={i}
+                className={`h-3.5 w-3.5 ${
+                  i < starCount
+                    ? "fill-amber-400 text-amber-400"
+                    : "text-muted-foreground/20"
+                }`}
+              />
+            ))}
+          </div>
+        </header>
+
+        {/* Quote Content with small quote icon */}
+        <div className="flex-1 min-h-0 relative pl-4 sm:pl-4.5 pt-0.5">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            className="text-muted-foreground/30 dark:text-muted-foreground/40 absolute top-0 left-0"
+            aria-hidden="true"
+          >
+            <path d="M7.17 6C4.87 6 3 7.87 3 10.17V18h7v-7.83H6.5C6.5 8.7 7.7 7.5 9.17 7.5V6h-2zM17.17 6c-2.3 0-4.17 1.87-4.17 4.17V18h7v-7.83h-3.5c0-1.47 1.2-2.67 2.67-2.67V6h-2z" />
+          </svg>
+          <p className="text-sm sm:text-[15px] leading-relaxed text-foreground/90 line-clamp-4 font-normal">
+            {review.quote}
+          </p>
         </div>
-
-        {/* Quote icon " */}
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          className="text-primary/35 mb-2"
-          aria-hidden="true"
-        >
-          <path d="M7.17 6C4.87 6 3 7.87 3 10.17V18h7v-7.83H6.5C6.5 8.7 7.7 7.5 9.17 7.5V6h-2zM17.17 6c-2.3 0-4.17 1.87-4.17 4.17V18h7v-7.83h-3.5c0-1.47 1.2-2.67 2.67-2.67V6h-2z" />
-        </svg>
-
-        {/* Review text */}
-        <p className="text-base leading-relaxed text-foreground sm:text-[16.5px] font-normal">
-          "{review.quote}"
-        </p>
-
-        {/* Investment details/amount badge if provided */}
-        {review.investmentAmount && review.investmentAmount.trim() && (
-          <div className="mt-3.5 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-md border border-emerald-200 dark:border-emerald-800/50">
-            <Coins className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
-            <span>{review.investmentAmount.trim()}</span>
-          </div>
-        )}
       </div>
-
-      {/* Divider line */}
-      <footer className="mt-6 flex items-center justify-between gap-3 pt-4 border-t border-border/60">
-        {/* Avatar circle + reviewer name + role/occupation */}
-        <div className="flex items-center gap-3 min-w-0">
-          {review.avatarUrl ? (
-            <img
-              src={review.avatarUrl}
-              alt={review.reviewerName}
-              className="h-11 w-11 shrink-0 rounded-full object-cover border border-border"
-              loading="lazy"
-              decoding="async"
-            />
-          ) : (
-            <div className="h-11 w-11 shrink-0 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm border border-primary/20">
-              {initial}
-            </div>
-          )}
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-sm font-semibold text-foreground">
-              {review.reviewerName}
-            </div>
-            <div className="truncate text-xs text-muted-foreground">
-              {review.roleOrOccupation}
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
@@ -853,6 +859,9 @@ function UnifiedReviewCard({
 function OpportunityReviewsSection({ project }: { project: Opportunity }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const queryClient = useQueryClient();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
 
   // Source 1: old manually added testimonials (SSR preloaded + query cache)
   const { data: testimonials = [], isLoading: isLoadingOld } = useQuery({
@@ -905,6 +914,36 @@ function OpportunityReviewsSection({ project }: { project: Opportunity }) {
     })),
   ];
 
+  const updateScrollButtons = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setCanScrollLeft(scrollLeft > 10);
+      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 10);
+    }
+  };
+
+  useEffect(() => {
+    updateScrollButtons();
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    el.addEventListener("scroll", updateScrollButtons, { passive: true });
+    window.addEventListener("resize", updateScrollButtons);
+    return () => {
+      el.removeEventListener("scroll", updateScrollButtons);
+      window.removeEventListener("resize", updateScrollButtons);
+    };
+  }, [allReviews.length]);
+
+  const scroll = (direction: "left" | "right") => {
+    if (scrollContainerRef.current) {
+      const cardWidth = 340;
+      scrollContainerRef.current.scrollBy({
+        left: direction === "left" ? -cardWidth : cardWidth,
+        behavior: "smooth",
+      });
+    }
+  };
+
   const isLoading = isLoadingOld && isLoadingNew && allReviews.length === 0;
 
   return (
@@ -945,7 +984,7 @@ function OpportunityReviewsSection({ project }: { project: Opportunity }) {
         />
       )}
 
-      {/* Header: Section heading + subtext on left, "রিভিউ দিন" button on top-right */}
+      {/* Header: Section heading + subtext on left, Next / Prev controls + "রিভিউ দিন" button on top-right */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-3 border-l-4 border-primary pl-3.5">
           <div>
@@ -958,14 +997,43 @@ function OpportunityReviewsSection({ project }: { project: Opportunity }) {
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setIsModalOpen(true)}
-          className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-2 text-xs sm:text-sm font-semibold text-primary bg-primary/10 border border-primary/20 hover:bg-primary hover:text-primary-foreground transition-all cursor-pointer shadow-xs self-start sm:self-auto"
-        >
-          <MessageSquarePlus className="w-4 h-4" />
-          <span>রিভিউ দিন</span>
-        </button>
+        <div className="flex items-center gap-2.5 self-start sm:self-auto">
+          {/* Next / Prev scroll buttons */}
+          {allReviews.length > 1 && (
+            <div className="flex items-center gap-1 bg-muted/70 p-1 rounded-full border border-border/80 shadow-2xs">
+              <button
+                type="button"
+                onClick={() => scroll("left")}
+                disabled={!canScrollLeft}
+                className="h-8 w-8 rounded-full flex items-center justify-center text-foreground hover:bg-background transition-all disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                aria-label="পূর্ববর্তী রিভিউ"
+                title="পূর্ববর্তী রিভিউ"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => scroll("right")}
+                disabled={!canScrollRight}
+                className="h-8 px-3 rounded-full flex items-center gap-1 text-xs font-semibold text-foreground hover:bg-background transition-all disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                aria-label="পরবর্তী রিভিউ"
+                title="পরবর্তী রিভিউ"
+              >
+                <span>পরবর্তী</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setIsModalOpen(true)}
+            className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-2 text-xs sm:text-sm font-semibold text-primary bg-primary/10 border border-primary/20 hover:bg-primary hover:text-primary-foreground transition-all cursor-pointer shadow-xs"
+          >
+            <MessageSquarePlus className="w-4 h-4" />
+            <span>রিভিউ দিন</span>
+          </button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -973,14 +1041,45 @@ function OpportunityReviewsSection({ project }: { project: Opportunity }) {
           রিভিউ লোড হচ্ছে...
         </div>
       ) : allReviews.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          {allReviews.map((r) => (
-            <UnifiedReviewCard
-              key={r.id}
-              review={r}
-              opportunityName={project.name}
-            />
-          ))}
+        <div className="relative group/carousel">
+          <div
+            ref={scrollContainerRef}
+            className="flex flex-row gap-4 overflow-x-auto pb-4 pt-1 px-1 scrollbar-hide snap-x scroll-smooth"
+          >
+            {allReviews.map((r) => (
+              <UnifiedReviewCard
+                key={r.id}
+                review={r}
+                opportunityName={project.name}
+              />
+            ))}
+          </div>
+
+          {/* Floating Next Button at right edge */}
+          {allReviews.length > 1 && canScrollRight && (
+            <button
+              type="button"
+              onClick={() => scroll("right")}
+              className="hidden sm:flex absolute -right-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-background/95 hover:bg-background border border-border shadow-lg items-center justify-center text-foreground transition-all hover:scale-110 z-20 cursor-pointer"
+              aria-label="পরবর্তী রিভিউ দেখুন"
+              title="পরবর্তী রিভিউ"
+            >
+              <ChevronRight className="w-5 h-5 text-primary" />
+            </button>
+          )}
+
+          {/* Floating Prev Button at left edge */}
+          {allReviews.length > 1 && canScrollLeft && (
+            <button
+              type="button"
+              onClick={() => scroll("left")}
+              className="hidden sm:flex absolute -left-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-background/95 hover:bg-background border border-border shadow-lg items-center justify-center text-foreground transition-all hover:scale-110 z-20 cursor-pointer"
+              aria-label="পূর্ববর্তী রিভিউ দেখুন"
+              title="পূর্ববর্তী রিভিউ"
+            >
+              <ChevronLeft className="w-5 h-5 text-primary" />
+            </button>
+          )}
         </div>
       ) : (
         /* Empty state: If zero total reviews → show empty state with "প্রথম মতামত দিন" CTA */

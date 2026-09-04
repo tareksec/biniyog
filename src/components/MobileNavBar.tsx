@@ -1,5 +1,5 @@
 import { useLocation, Link, useNavigate } from "@tanstack/react-router";
-import { Home, Search, TrendingUp, BookOpen, User } from "lucide-react";
+import { Home, Info, TrendingUp, BookOpen, LayoutDashboard } from "lucide-react";
 import { gsap } from "gsap";
 import { useRef, useEffect, useState, useLayoutEffect } from "react";
 
@@ -12,10 +12,10 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { id: "home", label: "হোম", icon: Home, route: "/" },
-  { id: "search", label: "খুঁজুন", icon: Search, route: "/opportunities" },
+  { id: "about", label: "সম্পর্কে", icon: Info, route: "/about" },
   { id: "opportunities", label: "সুযোগ", icon: TrendingUp, route: "/opportunities" },
   { id: "blog", label: "ব্লগ", icon: BookOpen, route: "/blog" },
-  { id: "profile", label: "প্রোফাইল", icon: User, route: "/dashboard" },
+  { id: "dashboard", label: "ড্যাশবোর্ড", icon: LayoutDashboard, route: "/dashboard" },
 ];
 
 const CIRCLE_SIZE = 46; // Active circle diameter (fits comfortably inside 60px pill)
@@ -25,7 +25,6 @@ export function MobileNavBar() {
   const navigate = useNavigate();
   const pathname = location.pathname;
   const hash = location.hash;
-  const search = location.search as Record<string, any> | undefined;
 
   const navRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
@@ -38,27 +37,25 @@ export function MobileNavBar() {
     return null;
   }
 
-  const isSearchActive =
-    pathname === "/opportunities" &&
-    (Boolean(search?.search) || Boolean(search?.q));
-
-  const isOpportunitiesActive =
-    pathname.startsWith("/opportunities") && !isSearchActive;
-
-  const isHomeActive = pathname === "/" && !hash;
-  const isBlogActive = pathname.startsWith("/blog");
-  const isProfileActive =
+  // Determine active tab index in order:
+  // 0: Home (/), 1: About (/about), 2: Opportunities (/opportunities), 3: Blog (/blog), 4: Dashboard (/dashboard)
+  let activeIndex = 0;
+  if (pathname === "/" && !hash) {
+    activeIndex = 0;
+  } else if (pathname === "/about" || pathname.startsWith("/about")) {
+    activeIndex = 1;
+  } else if (pathname.startsWith("/opportunities")) {
+    activeIndex = 2;
+  } else if (pathname.startsWith("/blog")) {
+    activeIndex = 3;
+  } else if (
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/login") ||
     pathname.startsWith("/register") ||
-    pathname.startsWith("/profile");
-
-  let activeIndex = 0;
-  if (isHomeActive) activeIndex = 0;
-  else if (isSearchActive) activeIndex = 1;
-  else if (isOpportunitiesActive) activeIndex = 2;
-  else if (isBlogActive) activeIndex = 3;
-  else if (isProfileActive) activeIndex = 4;
+    pathname.startsWith("/profile")
+  ) {
+    activeIndex = 4;
+  }
 
   const [displayedIndex, setDisplayedIndex] = useState(activeIndex);
 
@@ -84,7 +81,7 @@ export function MobileNavBar() {
         force3D: true,
       });
     } else {
-      // Snappy, fast and silky smooth translation (0.28s with power2.out)
+      // Fast, snappy, silky smooth translation (0.28s with power2.out)
       gsap.to(circle, {
         x: targetX,
         yPercent: -50,
@@ -116,7 +113,6 @@ export function MobileNavBar() {
   useLayoutEffect(() => {
     if (!isMounted.current) {
       isMounted.current = true;
-      // Slight delay for layout settling
       requestAnimationFrame(() => {
         updateCirclePosition(false);
       });
@@ -136,42 +132,21 @@ export function MobileNavBar() {
   }, [activeIndex]);
 
   const handleTabClick = (e: React.MouseEvent, index: number) => {
-    if (index === 0) {
-      if (pathname === "/" && !hash) {
-        e.preventDefault();
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }
-    } else if (index === 1) {
+    if (index === 0 && pathname === "/" && !hash) {
       e.preventDefault();
-      if (pathname === "/opportunities") {
-        const input = document.querySelector<HTMLInputElement>(
-          'input[placeholder*="সুযোগ"], input[type="text"]'
-        );
-        if (input) {
-          input.focus();
-          input.scrollIntoView({ behavior: "smooth", block: "center" });
-        }
-        navigate({
-          to: "/opportunities",
-          search: (prev: any) => ({ ...prev, search: "1" }),
-        });
-      } else {
-        navigate({
-          to: "/opportunities",
-          search: { search: "1" },
-        });
-      }
-    } else if (index === 2) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else if (index === 1 && pathname === "/about") {
       e.preventDefault();
-      navigate({
-        to: "/opportunities",
-        search: (prev: any) => {
-          const next = { ...prev };
-          delete next.search;
-          delete next.q;
-          return next;
-        },
-      });
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else if (index === 2 && pathname === "/opportunities") {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else if (index === 3 && pathname === "/blog") {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else if (index === 4 && pathname === "/dashboard") {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 

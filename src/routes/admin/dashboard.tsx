@@ -101,6 +101,7 @@ import {
   ArrowUpRight,
   Image as ImageIcon,
   SlidersHorizontal,
+  Home,
 } from "lucide-react";
 import { toast } from "sonner";
 import { isAdminEmail } from "@/lib/admin";
@@ -875,8 +876,22 @@ function AdminDashboard() {
             })}
           </nav>
 
-          {/* Bottom Admin Avatar */}
+          {/* Bottom Admin Actions */}
           <div className="mt-auto flex flex-col items-center gap-3">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  to="/"
+                  className="w-9 h-9 rounded-full flex items-center justify-center text-white/60 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
+                >
+                  <Home className="h-4 w-4" />
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="bg-[#0f3d2e] text-white border-none text-xs font-bold">
+                হোম পেজ
+              </TooltipContent>
+            </Tooltip>
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
@@ -927,7 +942,27 @@ function AdminDashboard() {
             </div>
 
             {/* Right side */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
+              {/* Home Button */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    asChild
+                    className="h-9 px-3 gap-1.5 rounded-xl border-emerald-200/90 bg-emerald-50/60 text-[#1a6b4a] hover:bg-emerald-100 hover:text-[#0f3d2e] hover:border-emerald-300 font-semibold transition-all shadow-2xs"
+                  >
+                    <Link to="/">
+                      <Home className="h-4 w-4 text-[#1a6b4a]" />
+                      <span className="text-xs sm:text-sm font-semibold">হোম</span>
+                    </Link>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className="text-xs">
+                  মূল ওয়েবসাইটে ফিরে যান
+                </TooltipContent>
+              </Tooltip>
+
               <Button
                 variant="ghost"
                 size="icon"
@@ -970,6 +1005,13 @@ function AdminDashboard() {
           {/* Mobile nav dropdown */}
           {mobileMenuOpen && (
             <div className="lg:hidden bg-white border-b border-gray-200 p-4 flex flex-wrap gap-2">
+              <Link
+                to="/"
+                className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all bg-emerald-50 text-[#1a6b4a] hover:bg-emerald-100 border border-emerald-200"
+              >
+                <Home className="h-3.5 w-3.5" />
+                <span>হোম</span>
+              </Link>
               {navItems.map((item) => {
                 const Icon = item.icon;
                 return (
