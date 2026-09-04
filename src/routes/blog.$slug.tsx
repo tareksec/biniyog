@@ -24,7 +24,7 @@ export const Route = createFileRoute("/blog/$slug")({
     }
     const post = loaderData.post;
     const title = `${post.title} | বিনিয়োগ বৃদ্ধি`;
-    const description = post.meta_description || post.excerpt;
+    const description = post.meta_description || post.excerpt || "";
     const rawOgImage = post.cover_image_url || "https://biniyogbriddhi.com/new-og-image.png";
     const ogImage = rawOgImage.startsWith("http")
       ? rawOgImage
@@ -34,11 +34,11 @@ export const Route = createFileRoute("/blog/$slug")({
       "@context": "https://schema.org",
       "@type": "Article",
       headline: post.title,
-      description: post.excerpt,
-      image: post.cover_image_url,
+      description: post.excerpt || "",
+      image: post.cover_image_url || undefined,
       author: {
         "@type": "Person",
-        name: post.author_name,
+        name: post.author_name || "বিনিয়োগ বৃদ্ধি",
       },
       publisher: {
         "@type": "Organization",

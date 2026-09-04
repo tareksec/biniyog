@@ -5,7 +5,7 @@ import type { BlogPost, BlogCategory } from "@/lib/database.types";
 export async function fetchBlogCategories(): Promise<BlogCategory[]> {
   const { data, error } = await supabase
     .from("blog_categories")
-    .select("id, name, slug, description, created_at")
+    .select("id, name, slug, created_at")
     .order("name", { ascending: true });
 
   if (error) {
@@ -52,7 +52,7 @@ export function useBlogPosts() {
 }
 
 const BLOG_POST_LIST_COLUMNS = `
-  id, slug, title, excerpt, cover_image_url, author_name, read_time_minutes, status, published_at, category_id, created_at,
+  id, slug, title, excerpt, content_html, cover_image_url, author_name, status, published_at, category_id, created_at,
   category:blog_categories(id, name, slug)
 `;
 
@@ -80,15 +80,36 @@ export function usePublishedBlogPosts() {
 }
 
 export async function fetchBlogPostBySlug(slug: string): Promise<(BlogPost & { category: BlogCategory | null }) | null> {
-  const { data, error } = await supabase
+  let decodedSlug = slug;
+  try {
+    decodedSlug = decodeURIComponent(slug);
+  } catch {
+    decodedSlug = slug;
+  }
+
+  let { data, error } = await supabase
     .from("blog_posts")
     .select(`
       *,
       category:blog_categories(*)
     `)
-    .eq("slug", slug)
+    .eq("slug", decodedSlug)
     .eq("status", "published")
     .maybeSingle();
+
+  if (!data && decodedSlug !== slug) {
+    const fallback = await supabase
+      .from("blog_posts")
+      .select(`
+        *,
+        category:blog_categories(*)
+      `)
+      .eq("slug", slug)
+      .eq("status", "published")
+      .maybeSingle();
+    data = fallback.data;
+    error = fallback.error;
+  }
 
   if (error) {
     console.warn("[fetchBlogPostBySlug] Supabase error:", error.message);
