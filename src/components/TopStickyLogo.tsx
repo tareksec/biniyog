@@ -26,8 +26,10 @@ export function TopStickyLogo() {
     }
   };
 
+  const isOpportunities = router.location.pathname.startsWith("/opportunities");
+
   return (
-    <header className="fixed top-2.5 sm:top-3.5 left-0 right-0 z-40 flex justify-center pointer-events-none px-4 transition-all duration-300">
+    <header className={`fixed top-2.5 sm:top-3.5 left-0 right-0 z-40 flex justify-center pointer-events-none px-4 transition-all duration-300 ${isOpportunities ? "hidden md:flex" : ""}`}>
       <button
         onClick={handleClick}
         className={`pointer-events-auto inline-flex items-center gap-2.5 px-4 py-1.5 sm:px-5 sm:py-2 rounded-full transition-all duration-300 active:scale-95 cursor-pointer ${

@@ -426,12 +426,14 @@ function FloatingWhatsAppButton() {
     return null;
   }
 
+  const isOpportunities = pathname.startsWith("/opportunities");
+
   return (
     <a
       href="https://wa.me/8801316110209"
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-[80px] sm:bottom-24 md:bottom-28 right-3.5 sm:right-6 z-40 flex h-11 w-11 sm:h-13 sm:w-13 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg transition-transform hover:scale-110 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-[#25D366]/40"
+      className={`fixed bottom-[80px] sm:bottom-24 md:bottom-28 right-3.5 sm:right-6 z-40 flex h-11 w-11 sm:h-13 sm:w-13 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg transition-transform hover:scale-110 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-[#25D366]/40 ${isOpportunities ? "hidden md:flex" : ""}`}
       aria-label="হোয়াটসঅ্যাপে যোগাযোগ করুন"
     >
       <svg

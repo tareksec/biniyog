@@ -84,9 +84,11 @@ export function GlobalNav() {
     </div>
   );
 
+  const isOpportunities = router.location.pathname.startsWith('/opportunities');
+
   return (
     <>
-      <div className="fixed left-0 right-0 bottom-4 sm:bottom-6 z-50 flex justify-center px-2 sm:px-4 transition-all duration-300 pointer-events-none">
+      <div className={`fixed left-0 right-0 bottom-4 sm:bottom-6 z-50 flex justify-center px-2 sm:px-4 transition-all duration-300 pointer-events-none ${isOpportunities ? "hidden md:flex" : ""}`}>
         <div className="pointer-events-auto">
           <GlassDock 
             items={dockItems} 

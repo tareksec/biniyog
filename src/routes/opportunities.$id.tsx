@@ -27,7 +27,25 @@ import {
 } from "@/lib/projects";
 import { motion, AnimatePresence } from "framer-motion";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { Lock, Building2, Copy, Check, ShieldCheck, ArrowRight, Clock, ShieldAlert, MessageSquarePlus } from "lucide-react";
+import {
+  Lock,
+  Building2,
+  Copy,
+  Check,
+  ShieldCheck,
+  ArrowRight,
+  Clock,
+  ShieldAlert,
+  MessageSquarePlus,
+  Star,
+  Share2,
+  Bookmark,
+  MapPin,
+  ChevronLeft,
+} from "lucide-react";
+import { formatProfit } from "@/components/OpportunityCard";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
+import { toast } from "sonner";
 
 const InvestmentCalculator = lazy(() => import("@/components/InvestmentCalculator").then(m => ({ default: m.InvestmentCalculator })));
 
@@ -138,6 +156,57 @@ function OpportunityDetailsPage() {
   const router = useRouter();
   const navigate = useNavigate();
   const [showStickyCta, setShowStickyCta] = useState(false);
+  const profitData = formatProfit(project.expected_profit || "", project.profit_period);
+  const risk = getRiskLevel(project);
+
+  const [isBookmarked, setIsBookmarked] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      const stored = localStorage.getItem("biniyog_saved_opps");
+      if (!stored) return false;
+      const ids: string[] = JSON.parse(stored);
+      return ids.includes(project.id);
+    } catch {
+      return false;
+    }
+  });
+
+  const handleBookmark = () => {
+    setIsBookmarked((prev) => {
+      const next = !prev;
+      try {
+        const stored = localStorage.getItem("biniyog_saved_opps");
+        const ids: string[] = stored ? JSON.parse(stored) : [];
+        const nextIds = next ? Array.from(new Set([...ids, project.id])) : ids.filter((id) => id !== project.id);
+        localStorage.setItem("biniyog_saved_opps", JSON.stringify(nextIds));
+        if (next) toast.success("বুকমার্কে সংরক্ষণ করা হয়েছে");
+        else toast.info("বুকমার্ক থেকে সরানো হয়েছে");
+      } catch {}
+      return next;
+    });
+  };
+
+  const handleShare = async () => {
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({
+          title: project.name,
+          text: `${project.name} - লাভজনক বিনিয়োগ সুযোগ`,
+          url: window.location.href,
+        });
+      } catch {}
+    } else if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success("লিংক কপি করা হয়েছে");
+    }
+  };
+
+  const scrollToContact = () => {
+    const el = document.getElementById("bank-details-section");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -175,8 +244,9 @@ function OpportunityDetailsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-20 border-b border-border/70 bg-background/85 backdrop-blur">
+    <div className="min-h-screen bg-background text-foreground pb-20 md:pb-0">
+      {/* Desktop Sticky Header */}
+      <header className="sticky top-0 z-20 border-b border-border/70 bg-background/85 backdrop-blur hidden md:block">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-5 py-4 sm:px-8">
           <button
             onClick={handleBack}
@@ -191,73 +261,187 @@ function OpportunityDetailsPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-5 py-10 sm:px-8 sm:py-14">
-        {/* Back navigation button */}
-        <div className="mb-6 flex items-center justify-between">
+      {/* ══════════════════════════════════════════════════════════════════
+          SCREEN 3: Detail page mobile (/opportunities/$id)
+          ══════════════════════════════════════════════════════════════════ */}
+      <div className="md:hidden">
+        {/* Full-bleed hero image at top (no border radius, edge to edge) */}
+        <div className="relative w-full h-[360px] sm:h-[400px] overflow-hidden bg-zinc-900">
+          <img
+            src={resolveImageUrl(project)}
+            alt={`${project.name} SME বিনিয়োগ`}
+            className="h-full w-full object-cover"
+            fetchPriority="high"
+          />
+          {/* Subtle gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#14181f] via-transparent to-black/50 pointer-events-none" />
+
+          {/* Back button top-left, share + bookmark top-right — floating over image */}
           <button
+            type="button"
             onClick={handleBack}
-            className="group inline-flex items-center gap-2 rounded-xl bg-card border border-border px-4 py-2.5 text-sm font-semibold text-foreground shadow-sm transition-all hover:bg-muted/80 hover:border-primary/40 hover:-translate-x-0.5 cursor-pointer"
+            className="absolute top-4 left-4 z-20 h-10 w-10 rounded-full bg-black/45 backdrop-blur-md text-white border border-white/20 flex items-center justify-center hover:bg-black/65 transition-colors shadow-md cursor-pointer"
+            aria-label="ফিরে যান"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-primary transition-transform group-hover:-translate-x-1" aria-hidden="true">
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-            <span>সব সুযোগ</span>
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+
+          <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleShare}
+              className="h-10 w-10 rounded-full bg-black/45 backdrop-blur-md text-white border border-white/20 flex items-center justify-center hover:bg-black/65 transition-colors shadow-md cursor-pointer"
+              aria-label="শেয়ার করুন"
+              title="শেয়ার করুন"
+            >
+              <Share2 className="h-4.5 w-4.5" />
+            </button>
+            <button
+              type="button"
+              onClick={handleBookmark}
+              className="h-10 w-10 rounded-full bg-black/45 backdrop-blur-md text-white border border-white/20 flex items-center justify-center hover:bg-black/65 transition-colors shadow-md cursor-pointer"
+              aria-label="বুকমার্ক"
+              title="বুকমার্ক"
+            >
+              <Bookmark className={`h-4.5 w-4.5 ${isBookmarked ? "fill-amber-400 text-amber-400" : ""}`} />
+            </button>
+          </div>
+        </div>
+
+        {/* Below image: PrimeHouse app dark styling */}
+        <div className="relative -mt-6 rounded-t-[28px] bg-[#14181f] text-white p-5 border-t border-white/10 shadow-2xl z-10">
+          {/* Below image: two pill badges — ⭐ মুনাফা XX% + মুশারাকা */}
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-800/90 text-amber-300 border border-zinc-700/80 text-xs font-semibold backdrop-blur-sm">
+              <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+              <span>মুনাফা {profitData.percentage}</span>
+            </span>
+            <span className="inline-flex items-center px-3 py-1 rounded-full bg-zinc-800/90 text-zinc-200 border border-zinc-700/80 text-xs font-semibold backdrop-blur-sm">
+              {project.investment_type || "মুশারাকা"}
+            </span>
+          </div>
+
+          {/* Large bold opportunity name */}
+          <h1 className="mt-3 font-display text-2xl sm:text-3xl font-bold text-white tracking-tight leading-snug">
+            {project.name}
+          </h1>
+
+          {/* Location row with pin icon: district/city if available */}
+          <div className="mt-1.5 flex items-center gap-1.5 text-xs text-zinc-400 font-medium">
+            <MapPin className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+            <span>{project.address || "ঢাকা, বাংলাদেশ"}</span>
+          </div>
+
+          {/* Large prominent minimum investment amount */}
+          <div className="mt-4">
+            <div className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">
+              সর্বনিম্ন বিনিয়োগ
+            </div>
+            <div className="text-3xl font-extrabold text-white tracking-tight mt-0.5">
+              {project.investment_amount || "৳ ১,০০,০০০"}
+            </div>
+          </div>
+
+          {/* Info row: মুনাফা X% · মেয়াদ X মাস · ঝুঁকি: নিম্ন with dividers */}
+          <div className="mt-4 pt-3.5 border-t border-white/10 flex items-center justify-between text-xs text-zinc-300 font-medium">
+            <div className="flex items-center gap-1">
+              <span className="text-zinc-400">মুনাফা:</span>
+              <span className="text-white font-bold">{profitData.percentage}</span>
+            </div>
+            <span className="text-zinc-600">|</span>
+            <div className="flex items-center gap-1">
+              <span className="text-zinc-400">মেয়াদ:</span>
+              <span className="text-white font-bold">{project.profit_period || "১২ মাস"}</span>
+            </div>
+            <span className="text-zinc-600">|</span>
+            <div className="flex items-center gap-1">
+              <span className="text-zinc-400">ঝুঁকি:</span>
+              <span className="text-white font-bold">{risk.label}</span>
+            </div>
+          </div>
+
+          {/* Full-width dark CTA button at bottom: "বিস্তারিত জানুন ও যোগাযোগ করুন →" */}
+          <button
+            type="button"
+            onClick={scrollToContact}
+            className="w-full mt-6 py-3.5 px-6 rounded-full bg-white text-zinc-950 hover:bg-zinc-100 font-bold text-sm shadow-xl flex items-center justify-center gap-2 transition-transform active:scale-98 cursor-pointer"
+          >
+            <span>বিস্তারিত জানুন ও যোগাযোগ করুন</span>
+            <ArrowRight className="h-4 w-4" />
           </button>
         </div>
+      </div>
 
-        {/* Banner Images */}
-        <div className="mb-10 w-full overflow-hidden rounded-2xl border border-border bg-muted">
-          {resolveImageUrls(project).length > 1 ? (
-            <Carousel className="w-full">
-              <CarouselContent>
-                {resolveImageUrls(project).map((url, i) => (
-                  <CarouselItem key={i}>
-                    <img
-                      src={url}
-                      alt={`${project.name} SME বিনিয়োগ সুযোগ বাংলাদেশ`}
-                      className="h-64 w-full object-cover sm:h-80 lg:h-96"
-                      loading={i === 0 ? "eager" : "lazy"}
-                      decoding="async"
-                      fetchPriority={i === 0 ? "high" : "auto"}
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=1200&auto=format&fit=crop";
-                      }}
-                    />
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <div className="hidden sm:block">
-                <CarouselPrevious className="left-4 bg-background/80 hover:bg-background" />
-                <CarouselNext className="right-4 bg-background/80 hover:bg-background" />
-              </div>
-            </Carousel>
-          ) : (
-            <img
-              src={resolveImageUrl(project)}
-              alt={`${project.name} SME বিনিয়োগ সুযোগ বাংলাদেশ`}
-              className="h-64 w-full object-cover sm:h-80 lg:h-96"
-              decoding="async"
-              fetchPriority="high"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=1200&auto=format&fit=crop";
-              }}
-            />
-          )}
-        </div>
+      <main className="mx-auto max-w-4xl px-5 py-6 sm:px-8 sm:py-14">
+        {/* Desktop-only back navigation button & banner images & title */}
+        <div className="hidden md:block">
+          {/* Back navigation button */}
+          <div className="mb-6 flex items-center justify-between">
+            <button
+              onClick={handleBack}
+              className="group inline-flex items-center gap-2 rounded-xl bg-card border border-border px-4 py-2.5 text-sm font-semibold text-foreground shadow-sm transition-all hover:bg-muted/80 hover:border-primary/40 hover:-translate-x-0.5 cursor-pointer"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-primary transition-transform group-hover:-translate-x-1" aria-hidden="true">
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+              </svg>
+              <span>সব সুযোগ</span>
+            </button>
+          </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <span className={`pill ${funded ? "bg-muted text-muted-foreground" : "bg-accent text-accent-foreground"}`}>
-            <span className={`h-1.5 w-1.5 rounded-full ${funded ? "bg-muted-foreground" : "bg-primary"}`} />
-            {statusLabel(project)}
-          </span>
-          <span className={`pill border-none ${getRiskLevel(project).bg} ${getRiskLevel(project).color}`}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-              <path d="M12 2L2 22h20L12 2zM12 16v-6M12 20h.01" />
-            </svg>
-            {getRiskLevel(project).label}
-          </span>
+          {/* Banner Images */}
+          <div className="mb-10 w-full overflow-hidden rounded-2xl border border-border bg-muted">
+            {resolveImageUrls(project).length > 1 ? (
+              <Carousel className="w-full">
+                <CarouselContent>
+                  {resolveImageUrls(project).map((url, i) => (
+                    <CarouselItem key={i}>
+                      <img
+                        src={url}
+                        alt={`${project.name} SME বিনিয়োগ সুযোগ বাংলাদেশ`}
+                        className="h-64 w-full object-cover sm:h-80 lg:h-96"
+                        loading={i === 0 ? "eager" : "lazy"}
+                        decoding="async"
+                        fetchPriority={i === 0 ? "high" : "auto"}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=1200&auto=format&fit=crop";
+                        }}
+                      />
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <div className="hidden sm:block">
+                  <CarouselPrevious className="left-4 bg-background/80 hover:bg-background" />
+                  <CarouselNext className="right-4 bg-background/80 hover:bg-background" />
+                </div>
+              </Carousel>
+            ) : (
+              <img
+                src={resolveImageUrl(project)}
+                alt={`${project.name} SME বিনিয়োগ সুযোগ বাংলাদেশ`}
+                className="h-64 w-full object-cover sm:h-80 lg:h-96"
+                decoding="async"
+                fetchPriority="high"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=1200&auto=format&fit=crop";
+                }}
+              />
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <span className={`pill ${funded ? "bg-muted text-muted-foreground" : "bg-accent text-accent-foreground"}`}>
+              <span className={`h-1.5 w-1.5 rounded-full ${funded ? "bg-muted-foreground" : "bg-primary"}`} />
+              {statusLabel(project)}
+            </span>
+            <span className={`pill border-none ${getRiskLevel(project).bg} ${getRiskLevel(project).color}`}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                <path d="M12 2L2 22h20L12 2zM12 16v-6M12 20h.01" />
+              </svg>
+              {getRiskLevel(project).label}
+            </span>
+          </div>
+          <h1 className="mt-4 font-display text-3xl sm:text-4xl font-bold text-foreground">{project.name}</h1>
         </div>
-        <h1 className="mt-4 font-display text-3xl sm:text-4xl font-bold text-foreground">{project.name}</h1>
         
         {/* Owner Info Card */}
         <div className="mt-5 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/80 bg-surface/80 p-4 shadow-sm sm:p-5">
@@ -382,23 +566,22 @@ function OpportunityDetailsPage() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 15, scale: 0.92 }}
             transition={{ duration: 0.22, ease: "easeOut" }}
-            className="fixed bottom-[74px] left-1/2 -translate-x-1/2 z-[45] md:hidden pointer-events-auto"
+            className="fixed bottom-[68px] left-1/2 -translate-x-1/2 z-[45] md:hidden pointer-events-auto"
           >
-            <a
-              href="https://docs.google.com/spreadsheets/d/1HsSR7t_2zZaNbvqmbhWiuYikfYsF8rfzcQK2gmfIB4U/edit?gid=0#gid=0"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-[13.5px] font-bold text-white shadow-[0_8px_25px_rgba(16,185,129,0.35)] border border-white/20 backdrop-blur-md transition-all active:scale-95 whitespace-nowrap"
-              style={{ background: "linear-gradient(135deg, #15803d 0%, #0d5231 100%)" }}
+            <button
+              type="button"
+              onClick={scrollToContact}
+              className="flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-xs font-bold text-white shadow-[0_8px_25px_rgba(0,0,0,0.6)] border border-white/20 backdrop-blur-md transition-all active:scale-95 whitespace-nowrap bg-zinc-900 cursor-pointer"
             >
-              <span>বিনিয়োগ শুরু করুন</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M5 12h14M13 5l7 7-7 7" />
-              </svg>
-            </a>
+              <span>বিস্তারিত জানুন ও যোগাযোগ করুন</span>
+              <ArrowRight className="h-4 w-4" />
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ── Fixed Mobile Bottom Navigation Bar ── */}
+      <MobileBottomNav />
     </div>
   );
 }
@@ -770,7 +953,7 @@ function BankDetailsSection({ project, funded }: { project: Opportunity; funded:
   const redirectPath = `/opportunities/${project.slug || project.id}`;
 
   return (
-    <section className="mt-12 border-t border-border/80 pt-10 rounded-2xl border border-dashed border-border bg-surface/70 p-6 sm:p-8">
+    <section id="bank-details-section" className="mt-12 border-t border-border/80 pt-10 rounded-2xl border border-dashed border-border bg-surface/70 p-6 sm:p-8">
       <div className="flex items-center gap-3 border-l-4 border-primary pl-3.5">
         <h3 className="font-display text-xl font-bold text-foreground sm:text-2xl">যোগাযোগ ও ব্যাংক তথ্য</h3>
       </div>

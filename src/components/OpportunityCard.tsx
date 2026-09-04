@@ -1,10 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { motion } from "framer-motion";
-import { Link, useNavigate } from "@tanstack/react-router";
-import { Heart, ArrowRight } from "lucide-react";
-import { useBookmarks } from "@/hooks/useBookmarks";
-import { ReviewRatingModal } from "@/components/ReviewRatingModal";
-import { submitUserReview } from "@/lib/user_reviews";
+import { useNavigate } from "@tanstack/react-router";
+import { Bookmark, BadgeCheck, Sprout, AlertTriangle, Handshake, Clock } from "lucide-react";
 import {
   type Opportunity,
   isFullyFunded,
@@ -110,44 +107,51 @@ export function riskChipStyle(level: "low" | "med" | "high"): { bg: string; text
   }
 }
 
+/* ──── Card Ambient Frosted Gradients (matching reference image) ──── */
+const CARD_GRADIENTS = [
+  // 1. Sage / Dark Forest Frosted Tint (Ref Card 1)
+  "from-[#243d34]/95 via-[#1b2f28]/95 to-[#12201b]/95",
+  // 2. Warm Sunset / Amber Slate Frosted Tint (Ref Card 2)
+  "from-[#343e4c]/95 via-[#3a3229]/95 to-[#1d1d20]/95",
+  // 3. Twilight Cyan / Blue Dusk Frosted Tint (Ref Card 3)
+  "from-[#1c2c44]/95 via-[#1b2234]/95 to-[#111622]/95",
+  // 4. Olive Forest / Meadow Frosted Tint (Ref Card 4)
+  "from-[#2e3728]/95 via-[#232c20]/95 to-[#151c14]/95",
+];
+
 /* ────────────────────────────────────────────────────────────
-   Main OpportunityCard
+   Main OpportunityCard - Replicated 1:1 from Reference Design
    ──────────────────────────────────────────────────────────── */
 export function OpportunityCard({
   project,
-  index,
+  index = 0,
   onQuickView,
   isComparing = false,
   onCompareToggle,
 }: {
   project: Opportunity;
-  index: number;
+  index?: number;
   onQuickView?: () => void;
   isComparing?: boolean;
   onCompareToggle?: () => void;
 }) {
   const [imgError, setImgError] = useState(false);
-  const { isBookmarked, toggleBookmark } = useBookmarks();
-  const saved = isBookmarked(project.id);
   const navigate = useNavigate();
-  const [reviewModalOpen, setReviewModalOpen] = useState(false);
 
   const handleCardClick = () => {
-    if (onQuickView) {
-      onQuickView();
-    } else {
-      navigate({ to: "/opportunities/$id", params: { id: project.id } });
-    }
+    navigate({ to: "/opportunities/$id", params: { id: project.id } });
   };
+
   const funded = isFullyFunded(project);
-  const active = isOpen(project);
-  const risk = getRiskLevel(project);
   const catIcon = getCategoryIcon(project.category);
+  const risk = getRiskLevel(project);
   const profitData = formatProfit(project.expected_profit || "", project.profit_period);
 
   const cardImage =
     (project.image_urls && project.image_urls.length > 0 && project.image_urls[0]?.trim()) ||
     resolveImageUrl(project);
+
+  const gradientClass = CARD_GRADIENTS[index % CARD_GRADIENTS.length];
 
   return (
     <motion.div
@@ -159,195 +163,111 @@ export function OpportunityCard({
     >
       <div
         onClick={handleCardClick}
-        className={`group relative flex h-full flex-col overflow-hidden rounded-[1.5rem] bg-card border border-border/80 card-hover cursor-pointer shadow-sm transition-all duration-300 ${
-          funded ? "opacity-75 hover:opacity-100" : ""
-        } ${isComparing ? "ring-2 ring-primary bg-primary/5" : ""}`}
-        style={{ boxShadow: "0 8px 30px rgba(0,0,0,0.06)" }}
+        className={`group relative flex flex-col justify-between min-h-[480px] overflow-hidden rounded-[2rem] border border-white/20 dark:border-white/10 bg-gradient-to-b ${gradientClass} backdrop-blur-md p-3.5 sm:p-4 shadow-xl shadow-black/10 cursor-pointer hover:scale-105 transition-transform duration-300 ${
+          funded ? "opacity-80 hover:opacity-100" : ""
+        }`}
       >
-        {/* ── Top Image Section (h-48, full width, rounded top) ── */}
-        <div className="relative w-full h-48 bg-gradient-to-br from-green-600 via-emerald-700 to-teal-900 overflow-hidden rounded-t-[1.5rem]">
+        {/* ── Top Inset Image ── */}
+        <div className="relative w-full aspect-[4/3] rounded-[1.4rem] overflow-hidden bg-zinc-900/60 shadow-inner">
           {!imgError && cardImage ? (
             <img
               src={cardImage}
-              alt={`${project.name} বিনিয়োগ সুযোগ বাংলাদেশ`}
-              className="h-48 w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+              alt={`${project.name} বিনিয়োগ সুযোগ`}
+              className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
               loading="lazy"
               decoding="async"
               onError={() => setImgError(true)}
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center text-white/30">
-              <span className="text-4xl">{catIcon.icon}</span>
+            <div className="flex h-full w-full items-center justify-center text-white/40">
+              <span className="text-3xl">{catIcon.icon}</span>
             </div>
           )}
 
-          {/* Live / Status Badge (Top-Left corner over image) */}
-          <div className="absolute top-3 left-3 z-10">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-black/60 backdrop-blur-md px-3 py-1 text-xs font-semibold text-white shadow-md border border-white/10">
-              <span className="relative flex h-2 w-2">
-                {active && (
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                )}
-                <span
-                  className={`relative inline-flex h-2 w-2 rounded-full ${
-                    active ? "bg-emerald-400" : "bg-zinc-400"
-                  }`}
-                />
-              </span>
-              <span>{statusLabel(project)}</span>
+          {/* Smooth gradient overlay over photo */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 pointer-events-none" />
+
+          {/* Top-Right Frosted Bookmark Button (UI-only, non-functional) */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+            className="absolute top-3 right-3 z-10 flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-black/35 backdrop-blur-md border border-white/20 text-white/90 hover:bg-black/50 hover:text-white transition-all shadow-sm cursor-pointer"
+            title="বুকমার্ক"
+          >
+            <Bookmark className="h-4 w-4 stroke-[2]" />
+          </button>
+        </div>
+
+        {/* ── Agency/Category + Verified Badge & Title ── */}
+        <div className="mt-3 flex flex-col items-center justify-center text-center px-1">
+          {/* Category name + Verified check badge */}
+          <div className="flex items-center justify-center gap-1.5 text-xs font-medium text-white/85">
+            <span className="line-clamp-1">{project.category || "ব্যবসা"}</span>
+            <BadgeCheck className="h-3.5 w-3.5 fill-amber-400 text-zinc-950 shrink-0" />
+          </div>
+
+          {/* Bold White Title */}
+          <h3 className="mt-1 text-center font-bold text-base sm:text-lg text-white tracking-tight line-clamp-1 group-hover:text-amber-100 transition-colors">
+            {project.name || "—"}
+          </h3>
+        </div>
+
+        {/* ── Middle Meta Info (3-Badge Row & Payment Schedule) ── */}
+        <div className="my-auto py-2 flex flex-col items-center justify-center">
+          {/* ── Badge row — 3 inline pill badges side by side ── */}
+          <div className="flex items-center justify-center flex-wrap gap-1.5 px-0.5">
+            {/* Category: green background */}
+            <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 backdrop-blur-sm font-medium">
+              <Sprout className="h-3 w-3 shrink-0 text-emerald-400" />
+              <span className="truncate max-w-[85px]">{project.category || "এগ্রো/কৃষি"}</span>
+            </span>
+
+            {/* Risk Level: amber/orange background */}
+            <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 backdrop-blur-sm font-medium">
+              <AlertTriangle className="h-3 w-3 shrink-0 text-amber-400" />
+              <span>{risk.label || "মধ্যম ঝুঁকি"}</span>
+            </span>
+
+            {/* Investment Type: blue/purple background */}
+            <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 backdrop-blur-sm font-medium">
+              <Handshake className="h-3 w-3 shrink-0 text-blue-400" />
+              <span className="truncate max-w-[85px]">{project.investment_type || "মুশারাকা"}</span>
             </span>
           </div>
 
-          {/* Heart / Favourite icon & Compare button (Top-Right corner over image) */}
-          <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
-            {onCompareToggle && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onCompareToggle();
-                }}
-                className={`h-9 w-9 flex items-center justify-center rounded-full backdrop-blur-md shadow-md transition-all ${
-                  isComparing
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-white/90 text-zinc-700 hover:bg-white dark:bg-zinc-900/90 dark:text-zinc-200"
-                }`}
-                title={isComparing ? "তুলনা থেকে সরান" : "তুলনা করুন"}
-              >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5" />
-                </svg>
-              </button>
-            )}
-
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleBookmark(project.id);
-              }}
-              className="h-9 w-9 flex items-center justify-center rounded-full bg-white shadow-md backdrop-blur-md transition-all hover:scale-105 active:scale-95 text-zinc-700 hover:text-rose-600 dark:bg-zinc-900/90 dark:text-zinc-200"
-              title={saved ? "সংরক্ষণ থেকে সরান" : "সংরক্ষণ করুন"}
-            >
-              <Heart
-                className={`h-4 w-4 transition-colors ${
-                  saved ? "fill-rose-500 text-rose-500" : "text-zinc-600 hover:text-rose-500 dark:text-zinc-300"
-                }`}
-              />
-            </button>
+          {/* ── Payment Schedule ── */}
+          <div className="mt-2.5 flex items-center justify-center gap-1.5 text-xs text-white/75 font-medium">
+            <Clock className="h-3.5 w-3.5 text-white/60 shrink-0" />
+            <span>{project.profit_period || "চুক্তি অনুযায়ী"}</span>
           </div>
         </div>
 
-        {/* ── Inner card content below image ── */}
-        <div className="flex flex-1 flex-col p-5 sm:p-6">
-          {/* Header Row: Category Icon & Title */}
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-3 min-w-0">
-              <span className={`flex-shrink-0 grid h-10 w-10 place-items-center rounded-xl ${catIcon.bg} ${catIcon.fg}`}>
-                {catIcon.icon}
-              </span>
-              <div className="min-w-0">
-                <h3 className="font-display text-base sm:text-lg font-bold leading-snug text-foreground line-clamp-2 min-h-[2.75rem] group-hover:text-primary transition-colors">
-                  {project.name || "—"}
-                </h3>
-                {project.owner_name && (
-                  <p className="mt-0.5 text-xs text-muted-foreground font-medium line-clamp-1">
-                    {project.owner_name}
-                  </p>
-                )}
-              </div>
+        {/* ── Dark Bottom Info Bar (Two Columns) ── */}
+        <div className="mt-auto rounded-[1.25rem] bg-[#141816]/85 dark:bg-black/60 backdrop-blur-md border border-white/10 p-3 sm:p-3.5 grid grid-cols-2 gap-2 items-center">
+          {/* Left Column (Timer-style) */}
+          <div className="min-w-0">
+            <div className="text-[11px] font-medium text-zinc-400 tracking-wide mb-1 truncate">
+              সর্বনিম্ন বিনিয়োগ
+            </div>
+            <div className="flex items-center gap-1.5 text-white font-bold text-xs sm:text-sm tracking-tight truncate">
+              <span className="h-2 w-2 rounded-full bg-white/90 shrink-0 shadow-[0_0_6px_rgba(255,255,255,0.7)]" />
+              <span className="truncate">{project.investment_amount || "৳ ৫০,০০০"}</span>
             </div>
           </div>
 
-          {/* Primary Metric */}
-          <div className="mt-5 flex items-center justify-between gap-4">
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">নুন্যতম বিনিয়োগ</p>
-              <p className="mt-1.5 num text-2xl sm:text-[28px] font-extrabold text-foreground leading-none tracking-tight">
-                {project.investment_amount || "—"}
-              </p>
-              <div className="mt-3 flex items-baseline gap-1.5">
-                <span className="num text-lg font-bold text-primary leading-none">{profitData.percentage}</span>
-                <span className="text-xs font-medium text-muted-foreground">{profitData.freq} মুনাফা</span>
-              </div>
+          {/* Right Column */}
+          <div className="min-w-0 text-right">
+            <div className="text-[11px] font-medium text-zinc-400 tracking-wide mb-1 truncate">
+              মুনাফা
             </div>
-          </div>
-
-          {/* Info Chips */}
-          <div className="mt-5 flex flex-wrap gap-2">
-            {/* Category chip */}
-            <span className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold ${catIcon.bg} ${catIcon.fg}`}>
-              {catIcon.icon}
-              {project.category || "ব্যবসা"}
-            </span>
-
-            {/* Risk chip */}
-            <span className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold ${riskChipStyle(risk.level).bg} ${riskChipStyle(risk.level).text}`}>
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2L2 22h20L12 2zM12 16v-5M12 20h.01"/></svg>
-              {risk.label}
-            </span>
-
-            {/* Investment type chip */}
-            {project.investment_type && (
-              <span className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                {project.investment_type}
-              </span>
-            )}
-            {/* Duration chip */}
-            <span className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold bg-muted/50 text-muted-foreground dark:bg-muted/30">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              {project.profit_period || "চুক্তি অনুযায়ী"}
-            </span>
-          </div>
-
-          {/* Actions */}
-          <div className="mt-auto pt-6 flex flex-col gap-2">
-            <Link
-              to="/opportunities/$id"
-              params={{ id: project.id }}
-              onClick={(e) => e.stopPropagation()}
-              className="inline-flex w-full min-h-[44px] items-center justify-center gap-2 rounded-xl bg-primary/10 px-4 py-3 text-sm font-bold text-primary transition-colors hover:bg-primary hover:text-primary-foreground group"
-            >
-              <span>বিস্তারিত দেখুন</span>
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-            </Link>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setReviewModalOpen(true);
-              }}
-              className="inline-flex w-full min-h-[44px] items-center justify-center gap-1.5 rounded-xl border border-border/40 bg-transparent px-4 py-3 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/30 hover:text-primary cursor-pointer"
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-              </svg>
-              রিভিউ দিন
-            </button>
+            <div className="text-right font-bold text-xs sm:text-sm text-[#d4e857] tracking-tight truncate">
+              {profitData.percentage}
+            </div>
           </div>
         </div>
       </div>
-
-      {/* Review Modal */}
-      <ReviewRatingModal
-        isOpen={reviewModalOpen}
-        onClose={() => setReviewModalOpen(false)}
-        targetType="opportunity"
-        targetId={project.id}
-        onSubmit={async (data) => {
-          await submitUserReview({
-            reviewer_name: "বিনিয়োগকারী",
-            rating: data.rating,
-            note: data.note,
-            has_invested: data.has_invested,
-            user_identity: data.user_identity,
-            investment_details: data.investment_details,
-            target_type: "opportunity",
-            target_id: project.id,
-          });
-        }}
-      />
     </motion.div>
   );
 }

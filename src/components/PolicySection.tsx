@@ -119,12 +119,11 @@ function StickyScrollCard({
       }}
       className={`sticky w-full max-w-4xl mx-auto ${index !== totalCards - 1 ? 'mb-12 sm:mb-16' : 'mb-0'}`}
     >
-      <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-8 sm:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] will-change-transform">
+      <div className="relative overflow-hidden rounded-3xl border border-[#cbe5d4] dark:border-[#235347]/50 bg-[#eaf5ed] dark:bg-[#163832] p-8 sm:p-12 shadow-[0_20px_60px_rgba(0,0,0,0.3)] will-change-transform">
         
-        {/* Depth overlay removed per user request to keep cards white */}
         <div className="relative z-20 flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:gap-10">
           <div className="flex-shrink-0">
-            <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
+            <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl bg-white/70 dark:bg-black/20 flex items-center justify-center border border-primary/20 shadow-sm">
               <Icon className="w-8 h-8 sm:w-12 sm:h-12 text-primary" />
             </div>
           </div>
@@ -166,20 +165,29 @@ export function PolicySection() {
     <section 
       id="policy" 
       // Important: Removed 'overflow-hidden' because it breaks 'position: sticky'
-      className="border-t border-border bg-surface/75 backdrop-blur-[2px] relative overflow-x-clip py-16 sm:py-24"
+      className="border-t border-emerald-950/60 bg-[#0B2B26] text-white relative overflow-x-clip py-20 sm:py-28"
     >
-      <div ref={containerRef} className="px-5 sm:px-8 max-w-7xl mx-auto">
+      {/* Subtle ambient radial glow */}
+      <div 
+        className="pointer-events-none absolute inset-0 opacity-25"
+        style={{
+          background: "radial-gradient(circle at 50% 15%, rgba(142, 182, 155, 0.3), transparent 60%)",
+        }}
+        aria-hidden="true"
+      />
+
+      <div ref={containerRef} className="relative z-10 px-5 sm:px-8 max-w-7xl mx-auto">
         
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
-          <span className="inline-flex items-center gap-2 text-xs font-bold text-primary">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+          <span className="inline-flex items-center gap-2 text-xs font-bold text-emerald-300 bg-emerald-900/50 border border-emerald-600/40 px-3.5 py-1.5 rounded-full shadow-sm">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
             আমাদের নীতিমালা
           </span>
-          <h2 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl">
+          <h2 className="mt-4 text-3xl font-bold leading-tight sm:text-4xl md:text-5xl text-white font-display tracking-tight">
             চুম্বক অংশ
           </h2>
-          <p className="mt-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
+          <p className="mt-4 text-base leading-relaxed text-emerald-100/80 sm:text-lg max-w-2xl mx-auto">
             স্বচ্ছতা ও নৈতিকতার সাথে বিনিয়োগ বৃদ্ধি পরিচালনায় আমাদের অনুসৃত ৫টি মূল ভিত্তি।
           </p>
         </div>

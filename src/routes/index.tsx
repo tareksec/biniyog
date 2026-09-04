@@ -1,10 +1,16 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
-import { useMemo, useState, useEffect, lazy, Suspense } from "react";
+import { useMemo, useState, useEffect, useRef, lazy, Suspense } from "react";
 import { motion, useReducedMotion, AnimatePresence } from "framer-motion";
-import { OpportunityCard, getCategoryIcon } from "@/components/OpportunityCard";
-import { useOpportunities, isFullyFunded, isOpen, statusLabel, parseAmount, parseRoi } from "@/lib/projects";
+import { OpportunityCard, getCategoryIcon, formatProfit } from "@/components/OpportunityCard";
+import { useOpportunities, isFullyFunded, isOpen, statusLabel, parseAmount, parseRoi, resolveImageUrl } from "@/lib/projects";
 import type { Opportunity } from "@/lib/projects";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 import { CountUp } from "@/components/CountUp";
 import {
   InstructorSection,
@@ -1029,75 +1035,326 @@ function HowItWorks() {
   );
 }
 
+function useIsHydrated() {
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
+  return hydrated;
+}
+
 function Opportunities({ opportunities }: { opportunities: Opportunity[] }) {
-  const prefersReduced = usePrefersReducedMotion();
-  const isLoading = opportunities.length === 0;
-  
+  const isHydrated = useIsHydrated();
+  const containerRef = useRef<HTMLElement>(null);
+  const isLoading = !opportunities || opportunities.length === 0;
+
   const previewList = useMemo(() => {
     let list = (opportunities || []).slice();
     list.sort((a, b) => Number(isFullyFunded(a)) - Number(isFullyFunded(b)));
     return list.slice(0, 6);
   }, [opportunities]);
 
+  const topOpportunities = useMemo(() => previewList.slice(0, 3), [previewList]);
+  const bottomOpportunities = useMemo(() => previewList.slice(3, 6), [previewList]);
+
+  useEffect(() => {
+    if (!isHydrated || !containerRef.current) return;
+
+    const ctx = gsap.context(() => {
+      // 1. Left heading block: fade up + slight x:-30 slide in
+      gsap.from(".gsap-heading-left", {
+        scrollTrigger: {
+          trigger: ".gsap-heading-left",
+          start: "top 80%",
+        },
+        x: -30,
+        y: 20,
+        opacity: 0,
+        duration: 0.9,
+        ease: "power3.out",
+      });
+
+      // 2. Top portrait cards: staggered entrance
+      gsap.from(".gsap-portrait-card", {
+        scrollTrigger: {
+          trigger: ".gsap-portrait-grid",
+          start: "top 80%",
+        },
+        y: 60,
+        opacity: 0,
+        stagger: 0.15,
+        duration: 0.8,
+        ease: "power2.out",
+      });
+
+      // 3. Bottom landscape cards: same stagger pattern
+      gsap.from(".gsap-landscape-card", {
+        scrollTrigger: {
+          trigger: ".gsap-landscape-grid",
+          start: "top 80%",
+        },
+        y: 60,
+        opacity: 0,
+        stagger: 0.12,
+        duration: 0.8,
+        ease: "power2.out",
+      });
+
+      // 4. Right CTA box: scale from scale: 0.92, opacity: 0 to full
+      gsap.from(".gsap-cta-box", {
+        scrollTrigger: {
+          trigger: ".gsap-cta-box",
+          start: "top 80%",
+        },
+        scale: 0.92,
+        opacity: 0,
+        duration: 0.7,
+        ease: "power2.out",
+      });
+    }, containerRef);
+
+    return () => ctx.revert();
+  }, [isHydrated, previewList]);
+
+  if (isLoading) {
+    return (
+      <section id="opportunities" className="bg-[#f8f8f6] dark:bg-[#0c1211] border-t border-border/60 py-24 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </section>
+    );
+  }
+
   return (
-    <section id="opportunities" className="border-t border-border bg-surface/75 backdrop-blur-[2px]">
-      <div className="mx-auto max-w-7xl px-5 py-24 sm:px-8 sm:py-28">
-        <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
-          <div className="max-w-2xl">
-            <SectionHeader
-              eyebrow="সক্রিয় সুযোগ"
-              title="বর্তমানে চলমান বিনিয়োগের সুযোগ"
-              align="left"
-            />
-            <p className="mt-4 text-muted-foreground">
-              প্রতিটি সুযোগ যাচাইকৃত। ব্যাংক ও যোগাযোগের তথ্য নিরাপত্তা যাচাইয়ের
-              পরে দৃশ্যমান।
+    <section
+      id="opportunities"
+      ref={containerRef}
+      className="border-t border-border/60 bg-[#f8f8f6] dark:bg-[#0c1211] py-20 sm:py-28 text-foreground transition-colors overflow-hidden"
+    >
+      <div className="mx-auto max-w-7xl px-5 sm:px-8">
+        {/* ═══════════════════════════════════════════════════════════════
+            ROW 1 (Top section) — 2 columns:
+            Left: Section badge + heading + desc + 2 CTAs
+            Right: 3 tall portrait cards
+           ═══════════════════════════════════════════════════════════════ */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+          {/* Left Column (lg:col-span-5) */}
+          <div className="gsap-heading-left lg:col-span-5 flex flex-col items-start">
+            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 border border-primary/20 px-3.5 py-1.5 text-xs font-bold text-primary mb-5">
+              <span>🌱</span>
+              <span className="uppercase tracking-wider">সক্রিয় সুযোগ</span>
+            </div>
+
+            <h2 className="text-3xl sm:text-4xl md:text-[42px] font-extrabold text-foreground tracking-tight leading-[1.18]">
+              আমরা গড়ছি একটি <span className="text-primary">টেকসই</span>, স্বচ্ছ ও সমৃদ্ধ ভবিষ্যৎ।
+            </h2>
+
+            <p className="mt-5 text-base sm:text-lg text-muted-foreground leading-relaxed max-w-md">
+              যাচাইকৃত সম্ভাবনাময় ক্ষুদ্র ও মাঝারি ব্যবসায় সরাসরি অংশীদার হয়ে দেশীয় অর্থনৈতিক উন্নয়নে ভূমিকা রাখুন এবং নিরাপদ মুনাফা অর্জন করুন।
             </p>
+
+            <div className="mt-8 flex flex-wrap items-center gap-4">
+              <Link
+                to="/opportunities"
+                className="inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-6 py-3.5 text-sm sm:text-base font-bold shadow-md hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <span>সব সুযোগ দেখুন</span>
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
+                to="/about"
+                className="inline-flex items-center gap-2 rounded-full border border-border bg-white dark:bg-zinc-800 text-foreground px-6 py-3.5 text-sm sm:text-base font-bold shadow-sm hover:bg-muted transition-all hover:scale-[1.02] active:scale-[0.98]"
+              >
+                বিস্তারিত জানুন
+              </Link>
+            </div>
           </div>
-          <div className="pill bg-card">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-            <span className="text-muted-foreground">
-              <span className="num font-bold text-foreground">
-                {(opportunities || []).filter((p) => !isFullyFunded(p)).length}
-              </span>{" "}
-              টি সক্রিয় সুযোগ
-            </span>
+
+          {/* Right Column: 3 tall portrait cards (lg:col-span-7) */}
+          <div className="gsap-portrait-grid lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-4.5">
+            {topOpportunities.map((p) => {
+              const catIcon = getCategoryIcon(p.category);
+              const profitData = formatProfit(p.expected_profit || "", p.profit_period);
+              const img = resolveImageUrl(p);
+
+              return (
+                <div
+                  key={p.id}
+                  className="gsap-portrait-card group relative h-[380px] sm:h-[420px] rounded-[20px] overflow-hidden shadow-lg border border-black/10 dark:border-white/10 hover:scale-[1.02] transition-transform duration-300"
+                >
+                  <Link
+                    to="/opportunities/$id"
+                    params={{ id: p.id }}
+                    className="block h-full w-full relative"
+                  >
+                    {/* Full image background */}
+                    <img
+                      src={img}
+                      alt={p.name}
+                      className="absolute inset-0 h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
+                      decoding="async"
+                    />
+
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+
+                    {/* Bottom-left overlay info */}
+                    <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5 flex flex-col justify-end text-white">
+                      {/* Small circular icon + category name */}
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/20 backdrop-blur-md text-white text-xs border border-white/20 shadow-sm">
+                          {catIcon.icon}
+                        </span>
+                        <span className="text-xs font-bold text-white/90 tracking-wide uppercase line-clamp-1">
+                          {p.category || "ব্যবসা"}
+                        </span>
+                      </div>
+
+                      {/* Card title in white bold text */}
+                      <h3 className="text-base sm:text-lg font-bold text-white leading-snug line-clamp-2 drop-shadow-sm">
+                        {p.name}
+                      </h3>
+
+                      {/* Short description */}
+                      <p className="mt-1.5 text-xs text-white/80 line-clamp-2 font-medium">
+                        সর্বনিম্ন {p.investment_amount || "৳ ৫০,০০০"} • লাভ {profitData.percentage}
+                      </p>
+                    </div>
+                  </Link>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {isLoading ? (
-          <div className="mt-16 flex items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        {/* ═══════════════════════════════════════════════════════════════
+            Row 2 (Bottom section) — reversed layout:
+            Left: 3 landscape/horizontal cards
+            Right: Large heading + desc + link + newsletter/CTA box
+           ═══════════════════════════════════════════════════════════════ */}
+        <div className="mt-20 lg:mt-28 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+          {/* Left Side: 3 landscape cards (lg:col-span-7) */}
+          <div className="gsap-landscape-grid lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-4.5">
+            {bottomOpportunities.map((p) => {
+              const profitData = formatProfit(p.expected_profit || "", p.profit_period);
+              const img = resolveImageUrl(p);
+
+              return (
+                <div
+                  key={p.id}
+                  className="gsap-landscape-card group flex flex-col justify-between h-full bg-white dark:bg-zinc-900/90 rounded-[20px] p-3 sm:p-3.5 border border-border/80 shadow-sm hover:scale-[1.02] transition-transform duration-300"
+                >
+                  <Link
+                    to="/opportunities/$id"
+                    params={{ id: p.id }}
+                    className="block flex-1 flex flex-col"
+                  >
+                    {/* Image top half */}
+                    <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+                      <img
+                        src={img}
+                        alt={p.name}
+                        className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                        loading="lazy"
+                        decoding="async"
+                      />
+
+                      {/* Category pill badge overlaid at bottom of image */}
+                      <span className="absolute bottom-2.5 left-2.5 rounded-full bg-white/95 dark:bg-black/85 backdrop-blur-md px-3 py-1 text-[11px] font-bold text-zinc-900 dark:text-zinc-100 shadow-sm border border-black/5 dark:border-white/10">
+                        {p.category || "ব্যবসা"}
+                      </span>
+                    </div>
+
+                    {/* Content below image */}
+                    <div className="mt-3.5 flex flex-col flex-1">
+                      {/* Bold title below image */}
+                      <h3 className="font-bold text-base sm:text-lg text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+                        {p.name}
+                      </h3>
+
+                      {/* Short description text */}
+                      <p className="mt-1 text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                        সর্বনিম্ন বিনিয়োগ {p.investment_amount || "৳ ৫০,০০০"} | লাভ {profitData.percentage}
+                      </p>
+
+                      {/* "বিস্তারিত →" link with arrow */}
+                      <div className="mt-3 pt-2 border-t border-border/40 inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-primary hover:underline">
+                        <span>বিস্তারিত</span>
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+              );
+            })}
           </div>
-        ) : (
-          <>
-            <motion.div
-              variants={staggerContainer}
-              initial={prefersReduced ? "show" : "hidden"}
-              whileInView="show"
-              viewport={{ once: true, amount: 0.05 }}
-              className="mt-12 grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3"
-            >
-              {previewList.map((p, i) => (
-                <motion.div key={p.id} variants={revealVariants}>
-                  <OpportunityCard project={p} index={i} />
-                </motion.div>
-              ))}
-            </motion.div>
-            
-            <div className="mt-16 flex justify-center">
-              <Link
-                to="/opportunities"
-                className="inline-flex items-center gap-2 rounded-full border-2 border-primary bg-background px-8 py-3.5 text-[15px] font-bold text-primary shadow-sm btn-hover hover:bg-primary hover:text-primary-foreground"
-              >
-                সব সুযোগ দেখুন
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M5 12h14M13 5l7 7-7 7" />
-                </svg>
-              </Link>
+
+          {/* Right Side: Heading, Link & Newsletter/CTA Box (lg:col-span-5) */}
+          <div className="lg:col-span-5 flex flex-col items-start">
+            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 border border-primary/20 px-3.5 py-1.5 text-xs font-bold text-primary mb-4">
+              <span>🛡️</span>
+              <span className="uppercase tracking-wider">যাচাইকৃত বিনিয়োগ</span>
             </div>
-          </>
-        )}
+
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight leading-[1.18]">
+              যাচাইকৃত বিনিয়োগ। <br className="hidden sm:inline" />স্বচ্ছ প্রক্রিয়া।
+            </h2>
+
+            <p className="mt-3.5 text-sm sm:text-base text-muted-foreground leading-relaxed">
+              আমাদের টিম প্রতিটি ব্যবসার কাগজপত্র, আর্থিক অডিট ও লাভজনক সক্ষমতা পুঙ্খানুপুঙ্খ যাচাই করে। আমরা আপনার কষ্টার্জিত বিনিয়োগ সুরক্ষায় সর্বদা প্রতিজ্ঞাবদ্ধ।
+            </p>
+
+            <Link
+              to="/opportunities"
+              className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-primary hover:underline"
+            >
+              <span>সব সুযোগ দেখুন</span>
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+
+            {/* Newsletter/CTA box with accent background (lime/green color) */}
+            <div className="gsap-cta-box w-full rounded-2xl bg-[#d5ea66] p-5 sm:p-6 mt-6 shadow-sm border border-[#c4dc53] text-[#1a2b15]">
+              <h3 className="font-extrabold text-lg sm:text-xl tracking-tight text-[#152410]">
+                আজই যুক্ত হোন
+              </h3>
+              <p className="mt-1 text-xs sm:text-sm text-[#2a3c20] leading-relaxed">
+                আমাদের অভিজ্ঞ ফাইন্যান্সিয়াল টিমের সাথে কথা বলে আপনার জন্য সঠিক ব্যবসায়িক বিনিয়োগ পরিকল্পনা বেছে নিন।
+              </p>
+
+              <a
+                href={CONSULTANCY_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 flex items-center justify-between gap-2 rounded-full bg-[#1b2b1a] text-white px-5 py-3 text-xs sm:text-sm font-bold shadow-md hover:bg-black transition-all group cursor-pointer"
+              >
+                <span>ফ্রি কনসালটেশন বুক করুন</span>
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </a>
+
+              {/* Avatar social proof row */}
+              <div className="mt-4 flex items-center gap-2.5 pt-2 border-t border-[#c0d84a]">
+                <div className="flex -space-x-2">
+                  <img
+                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100&auto=format&fit=crop"
+                    className="h-6 w-6 rounded-full border-2 border-[#d5ea66] object-cover"
+                    alt=""
+                  />
+                  <img
+                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100&auto=format&fit=crop"
+                    className="h-6 w-6 rounded-full border-2 border-[#d5ea66] object-cover"
+                    alt=""
+                  />
+                  <img
+                    src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=100&auto=format&fit=crop"
+                    className="h-6 w-6 rounded-full border-2 border-[#d5ea66] object-cover"
+                    alt=""
+                  />
+                </div>
+                <span className="text-[11px] font-bold text-[#1e2e17]">
+                  হাজারো সন্তুষ্ট বিনিয়োগকারীর আস্থা
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );
