@@ -106,7 +106,7 @@ function OpportunitiesPage() {
   const [savedIds, setSavedIds] = useState<Set<string>>(() => {
     if (typeof window === "undefined") return new Set();
     try {
-      const stored = localStorage.getItem("biniyog_saved_opps");
+      const stored = localStorage.getItem("biniyog_saved_opportunities");
       return stored ? new Set(JSON.parse(stored)) : new Set();
     } catch {
       return new Set();
@@ -124,7 +124,8 @@ function OpportunitiesPage() {
         toast.success("বুকমার্কে সংরক্ষণ করা হয়েছে");
       }
       try {
-        localStorage.setItem("biniyog_saved_opps", JSON.stringify(Array.from(next)));
+        localStorage.setItem("biniyog_saved_opportunities", JSON.stringify(Array.from(next)));
+        window.dispatchEvent(new Event("bookmarks_changed"));
       } catch {}
       return next;
     });

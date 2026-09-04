@@ -2,6 +2,7 @@ import { useState, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "@tanstack/react-router";
 import { Bookmark, BadgeCheck, Sprout, AlertTriangle, Handshake, Clock } from "lucide-react";
+import { useBookmarks } from "@/hooks/useBookmarks";
 import {
   type Opportunity,
   isFullyFunded,
@@ -137,6 +138,8 @@ export function OpportunityCard({
 }) {
   const [imgError, setImgError] = useState(false);
   const navigate = useNavigate();
+  const { isBookmarked, toggleBookmark } = useBookmarks();
+  const saved = isBookmarked(project.id);
 
   const handleCardClick = () => {
     navigate({ to: "/opportunities/$id", params: { id: project.id } });
@@ -187,16 +190,17 @@ export function OpportunityCard({
           {/* Smooth gradient overlay over photo */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 pointer-events-none" />
 
-          {/* Top-Right Frosted Bookmark Button (UI-only, non-functional) */}
+          {/* Top-Right Frosted Bookmark Button */}
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
+              toggleBookmark(project.id);
             }}
             className="absolute top-3 right-3 z-10 flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-black/35 backdrop-blur-md border border-white/20 text-white/90 hover:bg-black/50 hover:text-white transition-all shadow-sm cursor-pointer"
             title="বুকমার্ক"
           >
-            <Bookmark className="h-4 w-4 stroke-[2]" />
+            <Bookmark className={`h-4 w-4 stroke-[2] ${saved ? "fill-amber-400 text-amber-400" : ""}`} />
           </button>
         </div>
 

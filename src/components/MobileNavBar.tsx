@@ -32,11 +32,6 @@ export function MobileNavBar() {
   const iconRef = useRef<HTMLDivElement>(null);
   const isMounted = useRef(false);
 
-  // Don't render on admin dashboard
-  if (pathname.startsWith("/admin")) {
-    return null;
-  }
-
   // Determine active tab index in order:
   // 0: Home (/), 1: About (/about), 2: Opportunities (/opportunities), 3: Blog (/blog), 4: Dashboard (/dashboard)
   let activeIndex = 0;
@@ -111,6 +106,7 @@ export function MobileNavBar() {
 
   // On mount and when activeIndex changes
   useLayoutEffect(() => {
+    if (pathname.startsWith("/admin")) return; // skip animation on admin pages
     if (!isMounted.current) {
       isMounted.current = true;
       requestAnimationFrame(() => {
@@ -119,17 +115,18 @@ export function MobileNavBar() {
     } else {
       updateCirclePosition(true);
     }
-  }, [activeIndex]);
+  }, [activeIndex, pathname]);
 
   // Window resize handler to maintain accurate position
   useEffect(() => {
+    if (pathname.startsWith("/admin")) return;
     const handleResize = () => {
       updateCirclePosition(false);
     };
 
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [activeIndex]);
+  }, [activeIndex, pathname]);
 
   const handleTabClick = (e: React.MouseEvent, index: number) => {
     if (index === 0 && pathname === "/" && !hash) {
@@ -149,6 +146,11 @@ export function MobileNavBar() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
+
+  // Don't render on admin pages — AFTER all hooks to satisfy Rules of Hooks
+  if (pathname.startsWith("/admin")) {
+    return null;
+  }
 
   const ActiveIcon = NAV_ITEMS[displayedIndex]?.icon || Home;
 
