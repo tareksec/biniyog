@@ -14,6 +14,7 @@ import { usePrefersReducedMotion, pageTransition } from "@/lib/animations";
 import { GlobalNav } from "@/components/GlobalNav";
 import { TopStickyLogo } from "@/components/TopStickyLogo";
 import { Footer } from "@/components/Footer";
+import { MobileNavBar } from "@/components/MobileNavBar";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "sonner";
@@ -405,6 +406,9 @@ function RootComponent() {
             </div>
           )}
           {!isAdminRoute && <Footer />}
+          <div className="md:hidden">
+            <MobileNavBar />
+          </div>
         </div>
         
         {/* Global floating elements */}

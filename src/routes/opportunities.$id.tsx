@@ -3,9 +3,7 @@ import { createFileRoute, Link, notFound, useRouter, useNavigate } from "@tansta
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
-import type { Testimonial } from "@/lib/database.types";
-import { TestimonialCard } from "@/components/TestimonialsSection";
-import { UserReviewCard } from "@/components/UserReviewCard";
+import type { Testimonial, UserReview } from "@/lib/database.types";
 import { ReviewRatingModal } from "@/components/ReviewRatingModal";
 import { getApprovedReviews, submitUserReview } from "@/lib/user_reviews";
 import {
@@ -42,9 +40,9 @@ import {
   Bookmark,
   MapPin,
   ChevronLeft,
+  Coins,
 } from "lucide-react";
 import { formatProfit } from "@/components/OpportunityCard";
-import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { toast } from "sonner";
 
 const InvestmentCalculator = lazy(() => import("@/components/InvestmentCalculator").then(m => ({ default: m.InvestmentCalculator })));
@@ -545,9 +543,7 @@ function OpportunityDetailsPage() {
           <InvestmentCalculator />
         </Suspense>
 
-        <OpportunityTestimonials project={project} />
-
-        <OpportunityUserReviews project={project} />
+        <OpportunityReviewsSection project={project} />
 
         <BankDetailsSection project={project} funded={funded} />
 
@@ -579,9 +575,6 @@ function OpportunityDetailsPage() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* ── Fixed Mobile Bottom Navigation Bar ── */}
-      <MobileBottomNav />
     </div>
   );
 }
@@ -758,26 +751,166 @@ function PayoutTrackRecord({ records = [] }: { records?: OpportunityPayout[] }) 
   );
 }
 
-function OpportunityTestimonials({ project }: { project: Opportunity }) {
-  const { data: testimonials = [], isLoading, isError, error } = useQuery({
-    queryKey: ["testimonials-opp", project.id],
-    queryFn: () => fetchTestimonialsSSR(project.id),
-    staleTime: 1000 * 60 * 5, // 5 min
-  });
+interface UnifiedReviewItem {
+  id: string;
+  source: "testimonial" | "user_review";
+  companyName: string;
+  quote: string;
+  reviewerName: string;
+  roleOrOccupation: string;
+  avatarUrl?: string | null;
+  rating?: number | null;
+  investmentAmount?: string | null;
+  hasInvested?: boolean;
+  createdAt?: string | null;
+}
 
-  if (isError) {
-    console.error("OpportunityTestimonials query failed:", error);
-  }
+function UnifiedReviewCard({
+  review,
+  opportunityName,
+}: {
+  review: UnifiedReviewItem;
+  opportunityName: string;
+}) {
+  const initial = (review.reviewerName || "").trim().charAt(0) || "ব";
+  const displayCompany = review.companyName || opportunityName;
 
   return (
-    <section className="mt-12 border-t border-border/80 pt-10">
-      <div className="flex items-center gap-3 border-l-4 border-primary pl-3.5 mb-2">
-        <h3 className="font-display text-xl font-bold text-foreground sm:text-2xl">
-          {project.name} নিয়ে বিনিয়োগকারীদের মতামত
-        </h3>
+    <div className="w-full h-full flex flex-col justify-between rounded-3xl border border-border/80 bg-card p-6 sm:p-7 shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
+      <div>
+        {/* Company name pill badge top-left (from old system) or opportunity name */}
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold text-primary w-fit">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+            <span className="truncate max-w-[200px]">{displayCompany}</span>
+          </div>
+
+          {review.hasInvested && (
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+              <Check className="w-3 h-3 text-emerald-600" />
+              <span>বিনিয়োগকারী</span>
+            </span>
+          )}
+        </div>
+
+        {/* Quote icon " */}
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          className="text-primary/35 mb-2"
+          aria-hidden="true"
+        >
+          <path d="M7.17 6C4.87 6 3 7.87 3 10.17V18h7v-7.83H6.5C6.5 8.7 7.7 7.5 9.17 7.5V6h-2zM17.17 6c-2.3 0-4.17 1.87-4.17 4.17V18h7v-7.83h-3.5c0-1.47 1.2-2.67 2.67-2.67V6h-2z" />
+        </svg>
+
+        {/* Review text */}
+        <p className="text-base leading-relaxed text-foreground sm:text-[16.5px] font-normal">
+          "{review.quote}"
+        </p>
+
+        {/* Investment details/amount badge if provided */}
+        {review.investmentAmount && review.investmentAmount.trim() && (
+          <div className="mt-3.5 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-md border border-emerald-200 dark:border-emerald-800/50">
+            <Coins className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+            <span>{review.investmentAmount.trim()}</span>
+          </div>
+        )}
       </div>
-      
-      {testimonials.length > 0 && (
+
+      {/* Divider line */}
+      <footer className="mt-6 flex items-center justify-between gap-3 pt-4 border-t border-border/60">
+        {/* Avatar circle + reviewer name + role/occupation */}
+        <div className="flex items-center gap-3 min-w-0">
+          {review.avatarUrl ? (
+            <img
+              src={review.avatarUrl}
+              alt={review.reviewerName}
+              className="h-11 w-11 shrink-0 rounded-full object-cover border border-border"
+              loading="lazy"
+              decoding="async"
+            />
+          ) : (
+            <div className="h-11 w-11 shrink-0 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm border border-primary/20">
+              {initial}
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-sm font-semibold text-foreground">
+              {review.reviewerName}
+            </div>
+            <div className="truncate text-xs text-muted-foreground">
+              {review.roleOrOccupation}
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+function OpportunityReviewsSection({ project }: { project: Opportunity }) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const queryClient = useQueryClient();
+
+  // Source 1: old manually added testimonials (SSR preloaded + query cache)
+  const { data: testimonials = [], isLoading: isLoadingOld } = useQuery({
+    queryKey: ["testimonials-opp", project.id],
+    queryFn: () => fetchTestimonialsSSR(project.id),
+    staleTime: 1000 * 60 * 5,
+  });
+
+  // Source 2: user submitted reviews for this opportunity
+  const { data: userReviews = [], isLoading: isLoadingNew } = useQuery({
+    queryKey: ["user-reviews-opp", project.id],
+    queryFn: () => getApprovedReviews("opportunity", project.id),
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const oldReviews: Testimonial[] =
+    Array.isArray((project as any).testimonials) && (project as any).testimonials.length > 0
+      ? (project as any).testimonials
+      : testimonials;
+
+  const newReviews: UserReview[] = userReviews ?? [];
+
+  // Combine both sources: all old reviews first, then user-submitted reviews below them
+  const allReviews: UnifiedReviewItem[] = [
+    ...oldReviews.map((t) => ({
+      id: `testimonial-${t.id}`,
+      source: "testimonial" as const,
+      companyName: t.brand_name || project.name,
+      quote: t.quote,
+      reviewerName: t.name || "বিনিয়োগকারী",
+      roleOrOccupation: [t.role_title, t.location].filter(Boolean).join(" • ") || "বিনিয়োগকারী",
+      avatarUrl: t.avatar_url,
+      rating: t.rating,
+      investmentAmount: t.investment_amount,
+      hasInvested: true,
+      createdAt: t.created_at,
+    })),
+    ...newReviews.map((r) => ({
+      id: `user-review-${r.id}`,
+      source: "user_review" as const,
+      companyName: project.name,
+      quote: r.note,
+      reviewerName: (r.reviewer_name || "").trim() || "বিনিয়োগকারী",
+      roleOrOccupation: r.user_identity || (r.has_invested ? "বিনিয়োগকারী" : "যাচাইকৃত মতামত"),
+      avatarUrl: null,
+      rating: typeof r.rating === "number" ? (r.rating > 1 ? r.rating : Math.round(r.rating * 5)) : null,
+      investmentAmount: r.investment_details,
+      hasInvested: r.has_invested,
+      createdAt: r.created_at,
+    })),
+  ];
+
+  const isLoading = isLoadingOld && isLoadingNew && allReviews.length === 0;
+
+  return (
+    <section className="mt-14 border-t border-border/80 pt-10">
+      {/* Schema.org Review structured data */}
+      {allReviews.length > 0 && (
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -785,62 +918,34 @@ function OpportunityTestimonials({ project }: { project: Opportunity }) {
               "@context": "https://schema.org",
               "@type": "Product",
               "@id": `https://biniyogbriddhi.com/opportunities/${project.slug || project.id}`,
-              review: testimonials.filter(t => t.rating).map(t => ({
+              review: allReviews.filter((r) => r.rating).map((r) => ({
                 "@type": "Review",
                 author: {
                   "@type": "Person",
-                  name: t.name || "বিনিয়োগকারী",
+                  name: r.reviewerName,
                 },
-                datePublished: t.created_at,
-                reviewBody: t.quote,
+                datePublished: r.createdAt,
+                reviewBody: r.quote,
                 reviewRating: {
                   "@type": "Rating",
-                  ratingValue: t.rating,
+                  ratingValue: r.rating,
                   bestRating: 5,
                 },
               })),
               aggregateRating: {
                 "@type": "AggregateRating",
-                ratingValue: (testimonials.filter(t => t.rating).reduce((acc, curr) => acc + (curr.rating || 5), 0) / (testimonials.filter(t => t.rating).length || 1)).toFixed(1),
-                reviewCount: testimonials.filter(t => t.rating).length || 1,
+                ratingValue: (
+                  allReviews.filter((r) => r.rating).reduce((acc, curr) => acc + (curr.rating || 5), 0) /
+                  (allReviews.filter((r) => r.rating).length || 1)
+                ).toFixed(1),
+                reviewCount: allReviews.filter((r) => r.rating).length || 1,
               },
             }),
           }}
         />
       )}
 
-      <div className="mb-6" />
-
-      {isLoading ? (
-        <div className="py-8 text-center text-sm text-muted-foreground">লোড হচ্ছে...</div>
-      ) : !isError && testimonials.length > 0 ? (
-        <div className="flex flex-nowrap overflow-x-auto gap-5 pb-6 snap-x" style={{ scrollbarWidth: "thin" }}>
-          {testimonials.map((t) => (
-            <div key={t.id} className="snap-start shrink-0">
-              <TestimonialCard item={t} />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="py-8 text-center text-sm text-muted-foreground">
-          এখনও কোনো মতামত যোগ করা হয়নি। প্রথম রিভিউটি আপনি দিন!
-        </div>
-      )}
-    </section>
-  );
-}
-
-function OpportunityUserReviews({ project }: { project: Opportunity }) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const queryClient = useQueryClient();
-
-  const { data: reviews = [], isLoading } = useQuery({
-    queryKey: ["user-reviews-opp", project.id],
-    queryFn: () => getApprovedReviews("opportunity", project.id),
-  });
-
-  return (
-    <section className="mt-14 border-t border-border/80 pt-10">
+      {/* Header: Section heading + subtext on left, "রিভিউ দিন" button on top-right */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-3 border-l-4 border-primary pl-3.5">
           <div>
@@ -867,19 +972,18 @@ function OpportunityUserReviews({ project }: { project: Opportunity }) {
         <div className="py-12 text-center text-sm text-muted-foreground">
           রিভিউ লোড হচ্ছে...
         </div>
-      ) : reviews.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {reviews.map((r) => (
-            <div key={r.id} className="h-full">
-              <UserReviewCard
-                review={r}
-                opportunity={project}
-                showTargetBadge={false}
-              />
-            </div>
+      ) : allReviews.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          {allReviews.map((r) => (
+            <UnifiedReviewCard
+              key={r.id}
+              review={r}
+              opportunityName={project.name}
+            />
           ))}
         </div>
       ) : (
+        /* Empty state: If zero total reviews → show empty state with "প্রথম মতামত দিন" CTA */
         <div className="rounded-3xl border border-dashed border-border/80 bg-card/40 p-8 sm:p-12 text-center">
           <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-3">
             <MessageSquarePlus className="w-6 h-6" />
@@ -919,6 +1023,7 @@ function OpportunityUserReviews({ project }: { project: Opportunity }) {
             target_id: project.id,
           });
           queryClient.invalidateQueries({ queryKey: ["user-reviews-opp", project.id] });
+          queryClient.invalidateQueries({ queryKey: ["testimonials-opp", project.id] });
         }}
       />
     </section>

@@ -5,7 +5,6 @@ import { Search, X, MapPin, ChevronDown, Bookmark, SlidersHorizontal } from "luc
 import { OpportunityCard, formatProfit } from "@/components/OpportunityCard";
 import { useOpportunities, useTotalUsersCount, getRiskLevel, resolveImageUrl } from "@/lib/projects";
 import { Button } from "@/components/ui/button";
-import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { toast } from "sonner";
 
 interface OpportunitiesSearch {
@@ -507,9 +506,6 @@ function OpportunitiesPage() {
           </div>
         )}
       </div>
-
-      {/* ── Fixed Mobile Bottom Navigation Bar ── */}
-      <MobileBottomNav />
     </div>
   );
 }

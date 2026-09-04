@@ -527,7 +527,7 @@ function Hero({
         <div
           style={{
             position: "absolute",
-            bottom: "20px",
+            bottom: "96px",
             left: "16px",
             right: "16px",
             zIndex: 10,
